@@ -47,7 +47,6 @@ sylkie ra -interface <interface> \
     --prefix <router prefix> \
     --timeout <time between adverts> \
     --repeat <number of times to send the request>
-}
 ```
 
 #### Router Advert Examples
