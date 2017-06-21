@@ -21,13 +21,24 @@
 #ifndef SYLKIE_SRC_INCLUDE_CMDS_H
 #define SYLKIE_SRC_INCLUDE_CMDS_H
 
+#include <sylkie_config.h>
+
+#ifdef BUILD_JSON
 #include <json-c/json.h>
+#endif
 
 // various subcommands to the sylkie command
-int na_cmdline(int argc, const char** argv);
-pid_t na_json(struct json_object* jobj);
 
+// neighbor advert subcommand functions
+int na_cmdline(int argc, const char** argv);
+#ifdef BUILD_JSON
+pid_t na_json(struct json_object* jobj);
+#endif
+
+// router advert subcommand functions
 int ra_cmdline(int argc, const char** argv);
+#ifdef BUILD_JSON
 pid_t ra_json(struct json_object* jobj);
+#endif
 
 #endif

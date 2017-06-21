@@ -1,4 +1,4 @@
 *.o
 *.so
 build
-config.h
+sylkie_config.h

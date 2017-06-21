@@ -48,7 +48,7 @@ ForEachMacros:   [ foreach, json_object_type_foreach ]
 IncludeCategories: 
   - Regex:           '^"(llvm|llvm-c|clang|clang-c)/'
     Priority:        2
-  - Regex:           '^(<|"(gtest|isl|json)/)'
+  - Regex:           '^(<|"(gtest|isl|json|sylkie_config)/)'
     Priority:        3
   - Regex:           '.*'
     Priority:        1

@@ -28,7 +28,11 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
+#include <sylkie_config.h>
+
+#ifdef BUILD_JSON
 #include <json-c/json.h>
+#endif
 
 #include <utils.h>
 
@@ -141,6 +145,7 @@ int inner_do_na(const char* iface_name, u_int8_t* src_mac, u_int8_t* dst_mac,
     return retval;
 }
 
+#ifdef BUILD_JSON
 pid_t na_json(struct json_object* jobj) {
     pid_t pid = -1;
     int res = 0, repeat = 1, timeout = 0;
@@ -282,6 +287,7 @@ pid_t na_json(struct json_object* jobj) {
         return pid;
     }
 }
+#endif
 
 int na_cmdline(int argc, const char** argv) {
     int i = 1, res = -1, repeat = 1, timeout = 0;
