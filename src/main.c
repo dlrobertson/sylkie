@@ -19,6 +19,7 @@
 // SOFTWARE.
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <fcntl.h>
@@ -27,7 +28,11 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include <sylkie_config.h>
+
+#ifdef BUILD_JSON
 #include <json-c/json.h>
+#endif
 
 #include <buffer.h>
 #include <cmds.h>
@@ -89,10 +94,20 @@ void pid_buf_free(struct pid_buf* buf) {
 static const struct cmd {
     const char* name;
     int (*cmdline_func)(int argc, const char** argv);
+#ifdef BUILD_JSON
     pid_t (*json_func)(struct json_object* jobj);
-} cmds[] = {
-    {"na", na_cmdline, na_json}, {"ra", ra_cmdline, ra_json}, {NULL},
-};
+#endif
+} cmds[] = {{"na", na_cmdline,
+#ifdef BUILD_JSON
+             na_json
+#endif
+            },
+            {"ra", ra_cmdline,
+#ifdef BUILD_JSON
+             ra_json
+#endif
+            },
+            {NULL}};
 
 void usage(FILE* fd) {
     fprintf(fd, "Usage: sylkie [OPTIONS] OBJECT {COMMAND | help}\n"
@@ -100,7 +115,7 @@ void usage(FILE* fd) {
                 "where OPTIONS = { -v[ersion], -h[elp], -j[son]}\n");
 }
 
-void version(FILE* fd) { fprintf(fd, "sylkie version: 0.0.1\n"); }
+void version(FILE* fd) { fprintf(fd, "sylkie version: " SYLKIE_VERSION "\n"); }
 
 const struct cmd* find_cmd(const char* input) {
     const struct cmd* cmd;
@@ -130,6 +145,7 @@ struct sylkie_buffer* read_file(const char* arg) {
     return buf;
 }
 
+#ifdef BUILD_JSON
 pid_t run_json_cmd(int (*func)(struct json_object* jobj),
                    struct json_object* jobj) {
     pid_t pid = -1;
@@ -222,6 +238,7 @@ int run_from_json(const char* arg, struct pid_buf* pid_buf) {
 
     return 0;
 }
+#endif
 
 int main(int argc, const char** argv) {
     const char* arg;
@@ -260,7 +277,13 @@ int main(int argc, const char** argv) {
                     retval = -1;
                 } else {
                     ++argv;
+#ifdef BUILD_JSON
                     retval = run_from_json(*argv, pid_buf);
+#else
+                    fprintf(stderr, "sylkie must be built with json support to "
+                                    "use json functions\n");
+                    retval = -1;
+#endif
                 }
                 break;
             case '-':

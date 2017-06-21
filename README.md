@@ -8,8 +8,10 @@ Discovery Protocol.
 
 ### Dependencies
 
- - [libseccomp](https://github.com/seccomp/libseccomp)
- - [json-c](https://github.com/json-c/json-c)
+ - [libseccomp](https://github.com/seccomp/libseccomp) (Optional, but highly recommended)
+ - [json-c](https://github.com/json-c/json-c) (Optional, but recommended)
+
+See [The Wiki](https://github.com/dlrobertson/sylkie/wiki#building) for more details.
 
 ### Build
 

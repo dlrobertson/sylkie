@@ -21,8 +21,6 @@
 #ifndef SYLKIE_INCLUDE_SENDER_H
 #define SYLKIE_INCLUDE_SENDER_H
 
-#include "config.h"
-
 #include <linux/if_packet.h>
 #include <sys/types.h>
 

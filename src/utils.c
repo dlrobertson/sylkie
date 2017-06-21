@@ -18,17 +18,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <stdlib.h>
 #include <string.h>
 
-#include <linux/seccomp.h>
+#include <sylkie_config.h>
+
+#ifdef BUILD_SECCOMP
+#include <seccomp.h>
 #include <sys/prctl.h>
+#endif
 
 #include <utils.h>
 
-#include <seccomp.h>
-#include <sys/prctl.h>
-
 int lockdown(void) {
+#ifdef BUILD_SECCOMP
     scmp_filter_ctx ctx;
 
     if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)) {
@@ -46,6 +49,9 @@ int lockdown(void) {
     seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(exit), 0);
 
     return seccomp_load(ctx);
+#else
+    return 0;
+#endif
 }
 
 u_int8_t hex_char_to_byte(char ch) {

@@ -1,0 +1,19 @@
+language: c
+dist: trusty
+sudo: require
+compiler:
+  - clang
+  - gcc
+addons:
+  apt:
+    packages:
+      - cmake3
+      - libseccomp-dev
+      - libjson-c-dev
+      - clang-tidy-3.9
+      - ninja
+script:
+    - mkdir build
+    - cd build
+    - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=ASAN ..
+    - make

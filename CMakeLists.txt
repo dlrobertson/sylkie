@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.5)
 project(
     sylkie
     VERSION 0.0.1
@@ -32,6 +32,11 @@ set(CMAKE_EXTRA "${PROJECT_SOURCE_DIR}/CMake")
 
 include(CheckIncludeFile)
 
+# Additional options
+option(JSON "JSON" ON)
+option(SECCOMP "SECCOMP" ON)
+option(BUILD_DOCS "BUILD_DOCS" OFF)
+
 # Check OS
 
 message("-- Check for OS support")
@@ -42,7 +47,7 @@ endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set(BUILD_OS "linux")
-    SET(BUILD_LINUX 1)
+    set(BUILD_LINUX 1)
 else(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     message(FATAL_ERROR "This project is not yet supported on ${CMAKE_SYSTEM_NAME}")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -102,10 +107,6 @@ file(GLOB LIB_SRCS ${LIB_DIR}/*.c)
 
 file(GLOB EXE_SRCS ${EXE_DIR}/*.c)
 
-# Configure config.h
-
-configure_file(${INCLUDE_DIR}/config.in ${INCLUDE_DIR}/config.h)
-
 # CFLAGS
 
 set(DEFAULT_DEBUG "-std=c11 -g -ggdb -O0")
@@ -143,8 +144,6 @@ add_executable(${PROJECT_NAME}-bin ${EXE_SRCS} ${LIB_SRCS})
 set_target_properties(${PROJECT_NAME}-bin PROPERTIES
     OUTPUT_NAME ${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME}-bin PRIVATE ${EXE_DIR}/include)
-target_link_libraries(${PROJECT_NAME}-bin PRIVATE json-c)
-target_link_libraries(${PROJECT_NAME}-bin PRIVATE seccomp)
 
 add_library(${PROJECT_NAME}-shared SHARED ${LIB_SRCS})
 set_target_properties(${PROJECT_NAME}-shared PROPERTIES
@@ -155,6 +154,37 @@ set_target_properties(${PROJECT_NAME}-shared PROPERTIES
 add_library(${PROJECT_NAME}-static STATIC ${LIB_SRCS})
 set_target_properties(${PROJECT_NAME}-static PROPERTIES
     OUTPUT_NAME ${PROJECT_NAME})
+
+# Dependencies
+
+if(JSON)
+    check_include_file(json-c/json.h JSON_HEADER_FOUND)
+    find_library(JSON_LIB json-c)
+    if(JSON_LIB AND JSON_HEADER_FOUND)
+        target_link_libraries(${PROJECT_NAME}-bin PRIVATE json-c)
+    else(JSON_LIB AND JSON_HEADER_FOUND)
+        message(FATAL_ERROR "Could not find json-c library. Either install "
+            "json-c or run with -DJSON=OFF to build without json support")
+    endif(JSON_LIB AND JSON_HEADER_FOUND)
+    set(BUILD_JSON 1)
+endif(JSON)
+
+if(SECCOMP)
+    check_include_file(seccomp.h SECCOMP_HEADER_FOUND)
+    check_include_file(sys/prctl.h PRCTL_HEADER_FOUND)
+    find_library(SECCOMP_LIB seccomp)
+    if(SECCOMP_LIB AND SECCOMP_HEADER_FOUND AND PRCTL_HEADER_FOUND)
+        target_link_libraries(${PROJECT_NAME}-bin PRIVATE seccomp)
+    else(SECCOMP_LIB AND SECCOMP_HEADER_FOUND AND PRCTL_HEADER_FOUND)
+        message(FATAL_ERROR "Could not find seccomp library. Either install "
+            "libseccomp or run with -DSECCOMP=OFF to build without seccomp support")
+    endif(SECCOMP_LIB AND SECCOMP_HEADER_FOUND AND PRCTL_HEADER_FOUND)
+    set(BUILD_SECCOMP 1)
+endif(SECCOMP)
+
+# Configure sylkie_config.h
+
+configure_file(${INCLUDE_DIR}/config.in ${INCLUDE_DIR}/${PROJECT_NAME}_config.h)
 
 # Lints
 
@@ -168,21 +198,25 @@ add_custom_target(clang-format COMMAND clang-format -i -style=file
 
 # Docs
 
-find_package(Doxygen)
-if(DOXYGEN_FOUND)
-    set(DOC_FILES "")
-    foreach(str ${LIB_SRCS})
-        set(DOC_FILES "${DOC_FILES} ${str}")
-    endforeach(str)
-    foreach(str ${INCLUDE_FILES})
-        set(DOC_FILES "${DOC_FILES} ${str}")
-    endforeach(str)
-    add_custom_target(doc
-        ${DOXYGEN_EXECUTABLE}
-        ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
-        WORKING DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        )
-endif(DOXYGEN_FOUND)
+if(BUILD_DOCS)
+    find_package(Doxygen)
+    if(DOXYGEN_FOUND)
+        set(DOC_FILES "")
+        foreach(str ${LIB_SRCS})
+            set(DOC_FILES "${DOC_FILES} ${str}")
+        endforeach(str)
+        foreach(str ${INCLUDE_FILES})
+            set(DOC_FILES "${DOC_FILES} ${str}")
+        endforeach(str)
+        add_custom_target(doc
+            ${DOXYGEN_EXECUTABLE}
+            ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
+            WORKING DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+            )
+    else(DOXYGEN_FOUND)
+        message(FATAL_ERROR "Must have doxygen install to generate docs")
+    endif(DOXYGEN_FOUND)
+endif(BUILD_DOCS)
 
 # Install
 
