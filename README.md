@@ -1,4 +1,6 @@
-# `sylkie`
+# `sylkie` 
+
+[![Travis Build Status](https://img.shields.io/travis/dlrobertson/sylkie/master.svg?label=master%20build)](https://travis-ci.org/dlrobertson/sylkie)
 
 A command line tool and library for testing networks for common address
 spoofing security vulnerabilities in IPv6 networks using the Neighbor
