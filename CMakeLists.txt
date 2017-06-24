@@ -190,13 +190,12 @@ configure_file(${INCLUDE_DIR}/config.in ${INCLUDE_DIR}/${PROJECT_NAME}_config.h)
 
 # Lints
 
-file(GLOB_RECURSE ALL_SOURCE_FILES ${SRC_DIR}/*.c ${INCLUDE_DIR}/*.h)
-
 add_custom_target(clang-tidy COMMAND clang-tidy ${EXE_DIR}/*.c ${LIB_DIR}/*.c
     -- -std=c11 -I${INCLUDE_DIR} -I${EXE_DIR}/include)
 
 add_custom_target(clang-format COMMAND clang-format -i -style=file
-    ${EXE_DIR}/*.c ${EXE_DIR}/include/*.h ${LIB_DIR}/*.c ${INCLUDE_DIR}/*.h)
+    ${EXE_DIR}/*.c ${EXE_DIR}/include/*.h ${LIB_DIR}/*.c
+    ${TEST_DIR}/*.cpp ${INCLUDE_DIR}/*.h)
 
 # Docs
 
@@ -231,7 +230,7 @@ if(ENABLE_TESTS)
 
     file(GLOB TEST_SRCS ${TEST_DIR}/test_*.cpp)
 
-    add_executable(test_runner ${TEST_DIR}/runner.cpp ${TEST_SRCS} ${LIB_SRCS})
+    add_executable(test_runner ${TEST_DIR}/runner.cpp ${TEST_SRCS})
     set_target_properties(test_runner PROPERTIES LINKER_LANGUAGE CXX)
     target_link_libraries(test_runner ${PROJECT_NAME}-shared)
 

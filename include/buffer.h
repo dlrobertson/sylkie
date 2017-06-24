@@ -38,7 +38,9 @@ int sylkie_buffer_add(struct sylkie_buffer* buf, const void* data, size_t len);
 int sylkie_buffer_add_value(struct sylkie_buffer* buf, const u_int8_t data,
                             size_t len);
 
-void sylkie_buffer_print(struct sylkie_buffer* buf);
+struct sylkie_buffer* sylkie_buffer_clone(const struct sylkie_buffer* buf);
+
+void sylkie_buffer_print(const struct sylkie_buffer* buf);
 
 void sylkie_buffer_free(struct sylkie_buffer* buf);
 

@@ -21,19 +21,29 @@
 #ifndef SYLKIE_INCLUDE_PACKET_H
 #define SYLKIE_INCLUDE_PACKET_H
 
+#include <stdbool.h>
 #include <stdlib.h>
 
-#include "headers.h"
+#include "proto_list.h"
 
-enum sylkie_request_type { SYLKIE_PKT_NEIGH_DISC, SYLKIE_PKT_INVALID };
-
-struct sylkie_packet {
-    enum sylkie_request_type type;
-    void* data;
+struct sylkie_packet_cache {
+    struct sylkie_buffer* buf;
+    bool dirty;
 };
 
-struct sylkie_packet* sylkie_packet_init(enum sylkie_request_type type,
-                                         void* data);
+struct sylkie_packet {
+    struct sylkie_proto_list* lst;
+    struct sylkie_packet_cache cache;
+};
+
+struct sylkie_packet* sylkie_packet_init();
+
+enum sylkie_error sylkie_packet_add(struct sylkie_packet* pkt,
+                                    enum sylkie_proto_type type, void* data,
+                                    size_t sz);
+
+struct sylkie_buffer* sylkie_packet_to_buffer(struct sylkie_packet* pkt,
+                                              enum sylkie_error* err);
 
 void sylkie_packet_free(struct sylkie_packet* pkt);
 

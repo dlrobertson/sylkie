@@ -93,7 +93,17 @@ int sylkie_buffer_add_value(struct sylkie_buffer* buf, const u_int8_t data,
     }
 }
 
-void sylkie_buffer_print(struct sylkie_buffer* buf) {
+struct sylkie_buffer* sylkie_buffer_clone(const struct sylkie_buffer* buf) {
+    struct sylkie_buffer* other = sylkie_buffer_init(buf->cap);
+    if (other) {
+        other->len = buf->len;
+        memcpy(other->data, buf->data, buf->len);
+        return other;
+    }
+    return NULL;
+}
+
+void sylkie_buffer_print(const struct sylkie_buffer* buf) {
     if (buf && buf->data) {
         int i;
         for (i = 0; i < (buf->len - 1); ++i) {

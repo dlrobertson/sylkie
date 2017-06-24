@@ -32,7 +32,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <nd.h>
 #include <packet.h>
 #include <sender.h>
 
@@ -136,13 +135,7 @@ int sylkie_sender_send_packet(struct sylkie_sender* sender,
         return -1;
     }
 
-    switch (pkt->type) {
-    case SYLKIE_PKT_NEIGH_DISC:
-        buf = sylkie_nd_packet_to_buffer(pkt->data, err);
-        break;
-    default:
-        break;
-    }
+    buf = sylkie_packet_to_buffer(pkt, err);
 
     if (buf) {
         if (buf->len > sender->mtu) {
