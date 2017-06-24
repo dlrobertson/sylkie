@@ -22,12 +22,13 @@ cmake_minimum_required(VERSION 3.5)
 project(
     sylkie
     VERSION 0.0.1
-    LANGUAGES C
+    LANGUAGES C CXX
     )
 
 set(LIB_DIR "${PROJECT_SOURCE_DIR}/lib")
 set(EXE_DIR "${PROJECT_SOURCE_DIR}/src")
 set(INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include")
+set(TEST_DIR "${PROJECT_SOURCE_DIR}/tests")
 set(CMAKE_EXTRA "${PROJECT_SOURCE_DIR}/CMake")
 
 include(CheckIncludeFile)
@@ -36,6 +37,7 @@ include(CheckIncludeFile)
 option(JSON "JSON" ON)
 option(SECCOMP "SECCOMP" ON)
 option(BUILD_DOCS "BUILD_DOCS" OFF)
+option(ENABLE_TESTS "ENABLE_TESTS" OFF)
 
 # Check OS
 
@@ -217,6 +219,41 @@ if(BUILD_DOCS)
         message(FATAL_ERROR "Must have doxygen install to generate docs")
     endif(DOXYGEN_FOUND)
 endif(BUILD_DOCS)
+
+# Tests
+
+if(ENABLE_TESTS)
+    enable_testing()
+
+    include(CTest)
+
+    find_package(GTest)
+
+    file(GLOB TEST_SRCS ${TEST_DIR}/test_*.cpp)
+
+    add_executable(test_runner ${TEST_DIR}/runner.cpp ${TEST_SRCS} ${LIB_SRCS})
+    set_target_properties(test_runner PROPERTIES LINKER_LANGUAGE CXX)
+    target_link_libraries(test_runner ${PROJECT_NAME}-shared)
+
+    if(GTEST_FOUND)
+        include_directories(${GTEST_INCLUDE_DIRS})
+    else(GTEST_FOUND)
+        message(WARNING "Could not find gtest library. Assuming"
+                " ${CMAKE_BINARY_DIR}/libgtest.so will be provided")
+        add_library(gtest SHARED IMPORTED)
+        set_property(TARGET gtest PROPERTY IMPORTED_LOCATION
+                     "${CMAKE_BINARY_DIR}/libgtest.so")
+    endif(GTEST_FOUND)
+
+    target_link_libraries(test_runner gtest)
+
+    foreach(test ${TEST_SRCS})
+        get_filename_component(TEST_NAME ${test} NAME_WE)
+        add_test(test_runner test_runner ${TEST_NAME})
+    endforeach(test)
+
+    add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
+endif(ENABLE_TESTS)
 
 # Install
 
