@@ -45,14 +45,24 @@ struct sylkie_buffer* sylkie_buffer_init(size_t sz) {
 }
 
 static int maybe_realloc(struct sylkie_buffer* buf, size_t len) {
-    u_int8_t* tmp;
-    if (len && len > buf->cap) {
-        tmp = malloc(len);
+    size_t newcap = 0;
+    u_int8_t* tmp = NULL;
+
+    // Do not continue for zero length buffers
+    if (!len || !buf) {
+        return -1;
+    }
+
+    newcap = buf->len + len;
+    if (newcap > buf->cap) {
+        if (buf->data) {
+            tmp = realloc(buf->data, newcap);
+        } else {
+            tmp = malloc(newcap);
+        }
         if (tmp) {
-            memcpy(tmp, buf->data, buf->len);
-            free(buf->data);
+            buf->cap = newcap;
             buf->data = tmp;
-            buf->cap = len;
             return 0;
         } else {
             return -1;
@@ -63,7 +73,7 @@ static int maybe_realloc(struct sylkie_buffer* buf, size_t len) {
 }
 
 int sylkie_buffer_add(struct sylkie_buffer* buf, const void* data, size_t len) {
-    if (maybe_realloc(buf, len + buf->len)) {
+    if (maybe_realloc(buf, len)) {
         return -1;
     } else {
         memcpy(buf->data + buf->len, data, len);
@@ -74,7 +84,7 @@ int sylkie_buffer_add(struct sylkie_buffer* buf, const void* data, size_t len) {
 
 int sylkie_buffer_add_value(struct sylkie_buffer* buf, const u_int8_t data,
                             size_t len) {
-    if (maybe_realloc(buf, len + buf->len)) {
+    if (maybe_realloc(buf, len)) {
         return -1;
     } else {
         memset(buf->data + buf->len, data, len);
@@ -83,7 +93,17 @@ int sylkie_buffer_add_value(struct sylkie_buffer* buf, const u_int8_t data,
     }
 }
 
-void sylkie_buffer_print(struct sylkie_buffer* buf) {
+struct sylkie_buffer* sylkie_buffer_clone(const struct sylkie_buffer* buf) {
+    struct sylkie_buffer* other = sylkie_buffer_init(buf->cap);
+    if (other) {
+        other->len = buf->len;
+        memcpy(other->data, buf->data, buf->len);
+        return other;
+    }
+    return NULL;
+}
+
+void sylkie_buffer_print(const struct sylkie_buffer* buf) {
     if (buf && buf->data) {
         int i;
         for (i = 0; i < (buf->len - 1); ++i) {

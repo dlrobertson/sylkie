@@ -25,45 +25,54 @@
 
 #include "errors.h"
 
-enum sylkie_header_type {
-    SYLKIE_ETH,
-    SYLKIE_IPv4,
+enum sylkie_proto_type {
+    SYLKIE_ETH = 0,
     SYLKIE_IPv6,
     SYLKIE_ICMPv6, // Usefull to ensure checksums are calculated correctly
     SYLKIE_DATA,
     SYLKIE_INVALID_HDR_TYPE,
 };
 
-struct sylkie_header_node {
-    enum sylkie_header_type type;
+struct sylkie_proto {
+    enum sylkie_proto_type type;
     void* data;
     size_t len;
-    struct sylkie_header_node* next;
 };
 
-struct sylkie_header_node* sylkie_header_node_init(enum sylkie_header_type type,
-                                                   void* data, size_t len);
-
-struct sylkie_header_list {
-    struct sylkie_header_node* head;
-    struct sylkie_header_node* tail;
+struct sylkie_proto_node {
+    struct sylkie_proto hdr;
+    struct sylkie_proto_node* next;
+    struct sylkie_proto_node* prev;
 };
 
-void sylkie_header_list_init(struct sylkie_header_list* lst,
-                             struct sylkie_header_node* header);
+struct sylkie_proto_list {
+    struct sylkie_proto_node* head;
+    struct sylkie_proto_node* tail;
+};
 
-enum sylkie_error sylkie_header_list_add(struct sylkie_header_list* lst,
-                                         struct sylkie_header_node* header);
+int sylkie_proto_init(struct sylkie_proto* hdr, enum sylkie_proto_type type,
+                      void* data, size_t len);
 
-enum sylkie_error sylkie_header_list_rm_node(struct sylkie_header_list* lst,
-                                             struct sylkie_header_node* node);
+void sylkie_proto_node_free(struct sylkie_proto_node* node);
 
-enum sylkie_error sylkie_header_list_rm_type(struct sylkie_header_list* lst,
-                                             enum sylkie_header_type type);
+struct sylkie_proto_list* sylkie_proto_list_init();
 
-void sylkie_header_free(struct sylkie_header_list* lst);
+enum sylkie_error sylkie_proto_list_add(struct sylkie_proto_list* lst,
+                                        enum sylkie_proto_type type, void* data,
+                                        size_t len);
 
-#define HEADER_LIST_FOREACH(lst, node)                                         \
-    for (node = lst->head; node != NULL; node = node->next)
+enum sylkie_error sylkie_proto_list_add_node(struct sylkie_proto_list* lst,
+                                             struct sylkie_proto_node* node);
+
+enum sylkie_error sylkie_proto_list_rm_node(struct sylkie_proto_list* lst,
+                                            struct sylkie_proto_node* node);
+
+enum sylkie_error sylkie_proto_list_rm(struct sylkie_proto_list* lst,
+                                       enum sylkie_proto_type type);
+
+void sylkie_proto_list_free(struct sylkie_proto_list* lst);
+
+#define SYLKIE_HEADER_LIST_FOREACH(lst, node)                                  \
+    for (node = lst->head; node; node = node->next)
 
 #endif

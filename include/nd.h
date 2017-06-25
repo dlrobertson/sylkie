@@ -27,19 +27,8 @@
 
 #include "buffer.h"
 #include "packet.h"
+#include "proto_list.h"
 #include "sender.h"
-
-struct sylkie_nd_packet {
-    struct ethhdr eth;
-    struct ip6_hdr ipv6;
-    struct icmp6_hdr icmp6;
-    struct sylkie_buffer* buf;
-};
-
-struct sylkie_packet* sylkie_nd_packet_create(
-    const u_int8_t eth_src[ETH_ALEN], const u_int8_t eth_dst[ETH_ALEN],
-    struct in6_addr* ip_src, struct in6_addr* ip_dst, struct icmp6_hdr* icmp6,
-    struct sylkie_buffer* buf, enum sylkie_error* err);
 
 struct sylkie_packet* sylkie_neighbor_advert_create(
     const u_int8_t eth_src[ETH_ALEN], const u_int8_t eth_dst[ETH_ALEN],
@@ -51,9 +40,8 @@ struct sylkie_packet* sylkie_router_advert_create(
     struct in6_addr* ip_src, struct in6_addr* ip_dst, struct in6_addr* tgt_ip,
     u_int8_t prefix, const u_int8_t tgt_hw[ETH_ALEN], enum sylkie_error* err);
 
-struct sylkie_buffer* sylkie_nd_packet_to_buffer(struct sylkie_nd_packet* ndpkt,
-                                                 enum sylkie_error* err);
-
-void sylkie_nd_packet_free(struct sylkie_nd_packet* ndpkt);
+enum sylkie_error sylkie_icmpv6_to_buffer(struct sylkie_buffer* buf,
+                                          const struct sylkie_packet* pkt,
+                                          const struct sylkie_proto_node* node);
 
 #endif

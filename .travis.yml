@@ -4,6 +4,9 @@ sudo: require
 compiler:
   - clang
   - gcc
+env:
+  - GEN="Unix Makefiles" BUILD_TYPE=Release
+  - GEN="Unix Makefiles" BUILD_TYPE=Debug
 addons:
   apt:
     packages:
@@ -12,8 +15,6 @@ addons:
       - libjson-c-dev
       - clang-tidy-3.9
       - ninja
+      - libgtest-dev
 script:
-    - mkdir build
-    - cd build
-    - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=ASAN ..
-    - make
+    - ./.travis.sh

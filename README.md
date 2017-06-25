@@ -8,6 +8,10 @@ Discovery Protocol.
 
 ## Getting Started
 
+**Note:** This project is still in the early phases of development. If you run into any problems,
+please consider submitting an [issue](https://github.com/dlrobertson/sylkie/issues). It currently
+will only compile on Linux.
+
 ### Dependencies
 
  - [libseccomp](https://github.com/seccomp/libseccomp) (Optional, but highly recommended)
