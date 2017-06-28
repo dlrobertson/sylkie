@@ -49,7 +49,7 @@ or the all nodes multicast addres causing the targeted nodes to remove
 `<router-ip>/<prefix>` from their list of default routes.
 
 ```
-sylkie ra -interface <interface> \
+sylkie ra -i <interface> \
     --target-mac <mac of router> \
     --router-ip <ip of router> \
     --prefix <router prefix> \
