@@ -66,7 +66,7 @@ u_int8_t hex_char_to_byte(char ch) {
     }
 }
 
-int parse_hwaddr(const char* arg, u_int8_t addr[ETH_ALEN]) {
+int parse_hwaddr(const char* arg, u_int8_t* addr) {
     int len = strlen(arg);
     int i = 0, j = 0;
     u_int8_t tmp = 0;
