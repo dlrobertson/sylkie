@@ -7,7 +7,7 @@ extern "C" {
 static char eight_nulls[] = "\x00\x00\x00\x00\x00\x00\x00\x00";
 
 TEST(buffer, zero_size_init) {
-    int i;
+    size_t i;
     int res = 0;
     struct sylkie_buffer* buf = sylkie_buffer_init(0);
 

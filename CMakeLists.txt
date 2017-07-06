@@ -111,17 +111,24 @@ file(GLOB EXE_SRCS ${EXE_DIR}/*.c)
 
 # CFLAGS
 
-set(DEFAULT_DEBUG "-std=c11 -g -ggdb -O0")
+set(DEFAULT_DEBUG "-g -ggdb -O0")
 set(DEV_WARNINGS "-Wall -Werror -Wshadow -Wstrict-overflow -fno-strict-aliasing")
 set(CMAKE_C_FLAGS_DEBUG
-    "${CMAKE_C_FLAGS_DEBUG} ${DEFAULT_DEBUG} ${DEV_WARNINGS}")
+    "${CMAKE_C_FLAGS_DEBUG} -std=c11 ${DEFAULT_DEBUG} ${DEV_WARNINGS}")
+set(CMAKE_CXX_FLAGS_DEBUG
+    "${CMAKE_CXX_FLAGS_DEBUG} -std=c++11 ${DEFAULT_DEBUG} ${DEV_WARNINGS}")
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -std=c11 -O2 -Wall")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -std=c++11 -O2 -Wall")
 
 # Add custom build type
 
 # Add new build types
 set(CMAKE_C_FLAGS_ASAN
-    "${DEFAULT_DEBUG} ${DEV_WARNINGS} -fsanitize=address -fno-omit-frame-pointer"
+    "${DEFAULT_DEBUG} ${DEV_WARNINGS} -std=c11 -fsanitize=address -fno-omit-frame-pointer"
+    CACHE STRING "Flags used by the C compiler during address sanitizer builds."
+    FORCE )
+set(CMAKE_CXX_FLAGS_ASAN
+    "${DEFAULT_DEBUG} ${DEV_WARNINGS} -std=c++11 -fsanitize=address -fno-omit-frame-pointer"
     CACHE STRING "Flags used by the C++ compiler during address sanitizer builds."
     FORCE )
 set(CMAKE_EXE_LINKER_FLAGS_ASAN

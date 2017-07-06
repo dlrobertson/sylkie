@@ -31,9 +31,4 @@ else
     make
 fi
 
-if [[ ${BUILD_TYPE} == "ASAN" ]]
-then
-    LD_PRELOAD=libasan.so ./test_runner
-else
-    ./test_runner
-fi
+./test_runner
