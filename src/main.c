@@ -34,6 +34,7 @@
 #include <json-c/json.h>
 #endif
 
+#include <cfg.h>
 #include <buffer.h>
 #include <cmds.h>
 
@@ -109,19 +110,15 @@ static const struct cmd {
             },
             {NULL}};
 
-void usage(FILE* fd) {
-    fprintf(fd, "Usage: sylkie [OPTIONS] OBJECT {COMMAND | help}\n"
-                "where OBJECT  = { na, ra }\n"
-                "where OPTIONS = { -v[ersion], -h[elp], -j[son]}\n");
-}
-
 void version(FILE* fd) { fprintf(fd, "sylkie version: " SYLKIE_VERSION "\n"); }
 
 const struct cmd* find_cmd(const char* input) {
     const struct cmd* cmd;
-    for (cmd = cmds; cmd && cmd->name; ++cmd) {
-        if (strcmp(input, cmd->name) == 0) {
-            return cmd;
+    if (input) {
+        for (cmd = cmds; cmd && cmd->name; ++cmd) {
+            if (strcmp(input, cmd->name) == 0) {
+                return cmd;
+            }
         }
     }
     return NULL;
@@ -157,7 +154,6 @@ pid_t run_json_cmd(int (*func)(struct json_object* jobj),
         type = json_object_get_type(tmp);
         if (type != json_type_object) {
             fprintf(stderr, "Unexpected type at index %d\n", i);
-            usage(stderr);
             return -1;
         }
         pid = func(tmp);
@@ -190,7 +186,6 @@ int run_from_json(const char* arg, struct pid_buf* pid_buf) {
 
     if (jerr != json_tokener_success) {
         fprintf(stderr, "Error: %s\n", json_tokener_error_desc(jerr));
-        usage(stderr);
         json_object_put(jobj);
         json_tokener_free(tok);
         sylkie_buffer_free(buf);
@@ -216,14 +211,12 @@ int run_from_json(const char* arg, struct pid_buf* pid_buf) {
                 break;
             default:
                 fprintf(stderr, "Expected array of objects for key %s\n", key);
-                usage(stderr);
                 retval = -1;
                 break;
             }
 
         } else {
             fprintf(stderr, "Unknown command: %s\n", arg);
-            usage(stderr);
             retval = -1;
         }
 
@@ -240,85 +233,88 @@ int run_from_json(const char* arg, struct pid_buf* pid_buf) {
 }
 #endif
 
+static struct cfg_parser parsers[] = {
+    {'h', "help", CFG_BOOL, "print helpful usage information"},
+    {'v', "version", CFG_BOOL, "print the version number of sylkie"},
+    {'j', "json", CFG_STRING, "parse input from the provided json file"}
+};
+static size_t parsers_sz = sizeof(parsers) / sizeof(struct cfg_parser);
+
 int main(int argc, const char** argv) {
-    const char* arg;
+    char* input_file;
     const struct cmd* cmd;
     int retval = 0, i = 0;
-    struct pid_buf* pid_buf = pid_buf_init(10);
-
-    if (!pid_buf) {
-        fprintf(stderr, "Could not allocate pid buffer\n");
-        _exit(-1);
-    }
+    struct cfg_set set = {
+        .usage = "sylkie [ OPTIONS | SUBCOMMAND ]",
+        .summary = "IPv6 address spoofing with the Neighbor Discovery Protocol",
+        .parsers = parsers,
+        .parsers_sz = parsers_sz
+    };
+    struct pid_buf* pid_buf = NULL;
 
     if (argc < 2) {
         fprintf(stderr, "Too few arguments\n");
-        usage(stderr);
-        pid_buf_free(pid_buf);
-        _exit(-1);
+        cfg_set_usage(&set, stderr);
+        return -1;
     }
 
-    ++argv;
+
     --argc;
-    arg = *argv;
-    while (arg && arg[0] == '-') {
-        // Option
-        while (arg[0]) {
-            switch (arg[0]) {
-            case 'h':
-                usage(stdout);
-                break;
-            case 'v':
-                version(stdout);
-                break;
-            case 'j':
-                if (!argv[1]) {
-                    usage(stderr);
-                    retval = -1;
-                } else {
-                    ++argv;
+    ++argv;
+    if (argv[0] && argv[0][0] == '-') {
+        retval = cfg_set_init_cmdline(&set, argc, argv);
+
+        if (retval) {
+            fprintf(stderr, "Failed to parse user input\n");
+            cfg_set_usage(&set, stderr);
+            retval = -1;
+        } else {
+
+            pid_buf = pid_buf_init(10);
+            if (!pid_buf) {
+                fprintf(stderr, "Could not allocate pid buffer\n");
+                retval = -1;
+            } else {
+
+                if (cfg_set_find(&set, "version")) {
+                    version(stdout);
+                }
+
+                if (cfg_set_find(&set, "help")) {
+                    cfg_set_usage(&set, stdout);
+                }
+
+                if (!cfg_set_find_type(&set, "json", CFG_STRING, &input_file)) {
 #ifdef BUILD_JSON
-                    retval = run_from_json(*argv, pid_buf);
+                    retval = run_from_json(input_file, pid_buf);
 #else
                     fprintf(stderr, "sylkie must be built with json support to "
                                     "use json functions\n");
                     retval = -1;
 #endif
                 }
-                break;
-            case '-':
-                break;
-            default:
-                fprintf(stderr, "Unknown option: %c\n", arg[0]);
+
+                for (i = 0; i < pid_buf->len; ++i) {
+                    waitpid(pid_buf->pids[i], &retval, 0);
+                }
+
                 pid_buf_free(pid_buf);
-                _exit(-1);
             }
-            ++arg;
         }
-        ++argv;
-        --argc;
-        arg = *argv;
-    }
+    } else {
+        // This is not an option. Forward to next cmd
+        cmd = find_cmd(*argv);
 
-    if (argv[0]) {
-        // Not an option. Forward to next cmd
-        cmd = find_cmd(arg);
         if (!cmd) {
-            fprintf(stderr, "Unknown command: %s\n", arg);
-            usage(stderr);
-            pid_buf_free(pid_buf);
-            _exit(-1);
+            fprintf(stderr, "Unknown command: %s\n", *argv);
+            cfg_set_usage(&set, stderr);
+            retval = -1;
         } else {
-            pid_buf_free(pid_buf);
-            return (*cmd->cmdline_func)(argc, argv);
+            retval = (*cmd->cmdline_func)(argc, argv);
         }
     }
 
-    for (i = 0; i < pid_buf->len; ++i) {
-        waitpid(pid_buf->pids[i], &retval, 0);
-    }
+    cfg_set_free(&set);
 
-    pid_buf_free(pid_buf);
-
-    return 0;
+    return retval;
 }
