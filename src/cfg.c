@@ -607,6 +607,9 @@ static int cfg_set_parse_short(struct cfg_map* map,
                 }
             }
             item = NULL;
+        } else {
+            fprintf(stderr, "ERROR: Unknown argument %c\n", arg[i]);
+            return -1;
         }
     }
     return 0;
