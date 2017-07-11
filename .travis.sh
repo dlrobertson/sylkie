@@ -31,4 +31,4 @@ else
     make
 fi
 
-./test_runner
+./sylkie_test

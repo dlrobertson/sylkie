@@ -108,6 +108,7 @@ file(GLOB INCLUDE_FILES ${INCLUDE_DIR}/*.h)
 file(GLOB LIB_SRCS ${LIB_DIR}/*.c)
 
 file(GLOB EXE_SRCS ${EXE_DIR}/*.c)
+list(REMOVE_ITEM EXE_SRCS "${EXE_DIR}/main.c")
 
 # CFLAGS
 
@@ -149,11 +150,6 @@ mark_as_advanced(
 
 # Outputs
 
-add_executable(${PROJECT_NAME}-bin ${EXE_SRCS} ${LIB_SRCS})
-set_target_properties(${PROJECT_NAME}-bin PROPERTIES
-    OUTPUT_NAME ${PROJECT_NAME})
-target_include_directories(${PROJECT_NAME}-bin PRIVATE ${EXE_DIR}/include)
-
 add_library(${PROJECT_NAME}-shared SHARED ${LIB_SRCS})
 set_target_properties(${PROJECT_NAME}-shared PROPERTIES
     OUTPUT_NAME ${PROJECT_NAME})
@@ -163,6 +159,12 @@ set_target_properties(${PROJECT_NAME}-shared PROPERTIES
 add_library(${PROJECT_NAME}-static STATIC ${LIB_SRCS})
 set_target_properties(${PROJECT_NAME}-static PROPERTIES
     OUTPUT_NAME ${PROJECT_NAME})
+
+add_executable(${PROJECT_NAME}-bin ${EXE_SRCS} ${EXE_DIR}/main.c)
+set_target_properties(${PROJECT_NAME}-bin PROPERTIES
+    OUTPUT_NAME ${PROJECT_NAME})
+target_include_directories(${PROJECT_NAME}-bin PRIVATE ${EXE_DIR}/include)
+target_link_libraries(${PROJECT_NAME}-bin PRIVATE ${PROJECT_NAME}-shared)
 
 # Dependencies
 
@@ -237,9 +239,16 @@ if(ENABLE_TESTS)
 
     file(GLOB TEST_SRCS ${TEST_DIR}/test_*.cpp)
 
-    add_executable(test_runner ${TEST_DIR}/runner.cpp ${TEST_SRCS})
-    set_target_properties(test_runner PROPERTIES LINKER_LANGUAGE CXX)
-    target_link_libraries(test_runner ${PROJECT_NAME}-shared)
+    add_executable(${PROJECT_NAME}_test ${TEST_DIR}/runner.cpp ${TEST_SRCS} ${EXE_SRCS}
+        ${LIB_SRCS})
+    set_target_properties(${PROJECT_NAME}_test PROPERTIES LINKER_LANGUAGE CXX)
+    target_include_directories(${PROJECT_NAME}_test PRIVATE ${EXE_DIR}/include)
+    if (JSON)
+        target_link_libraries(${PROJECT_NAME}_test json-c)
+    endif(JSON)
+    if(SECCOMP)
+        target_link_libraries(${PROJECT_NAME}_test seccomp)
+    endif(SECCOMP)
 
     if(GTEST_FOUND)
         include_directories(${GTEST_INCLUDE_DIRS})
@@ -251,11 +260,11 @@ if(ENABLE_TESTS)
                      "${CMAKE_BINARY_DIR}/libgtest.so")
     endif(GTEST_FOUND)
 
-    target_link_libraries(test_runner gtest)
+    target_link_libraries(${PROJECT_NAME}_test gtest)
 
     foreach(test ${TEST_SRCS})
         get_filename_component(TEST_NAME ${test} NAME_WE)
-        add_test(test_runner test_runner ${TEST_NAME})
+        add_test(${PROJECT_NAME}_test ${PROJECT_NAME}_test ${TEST_NAME})
     endforeach(test)
 
     add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})

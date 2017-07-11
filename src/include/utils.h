@@ -28,7 +28,7 @@
 
 u_int8_t hex_char_to_byte(char ch);
 
-int parse_hwaddr(const char* arg, u_int8_t addr[ETH_ALEN]);
+int parse_hwaddr(const char* arg, u_int8_t* addr);
 
 int lockdown(void);
 
