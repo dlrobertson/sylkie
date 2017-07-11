@@ -239,15 +239,15 @@ if(ENABLE_TESTS)
 
     file(GLOB TEST_SRCS ${TEST_DIR}/test_*.cpp)
 
-    add_executable(test_runner ${TEST_DIR}/runner.cpp ${TEST_SRCS} ${EXE_SRCS}
+    add_executable(${PROJECT_NAME}_test ${TEST_DIR}/runner.cpp ${TEST_SRCS} ${EXE_SRCS}
         ${LIB_SRCS})
-    set_target_properties(test_runner PROPERTIES LINKER_LANGUAGE CXX)
-    target_include_directories(test_runner PRIVATE ${EXE_DIR}/include)
+    set_target_properties(${PROJECT_NAME}_test PROPERTIES LINKER_LANGUAGE CXX)
+    target_include_directories(${PROJECT_NAME}_test PRIVATE ${EXE_DIR}/include)
     if (JSON)
-        target_link_libraries(test_runner json-c)
+        target_link_libraries(${PROJECT_NAME}_test json-c)
     endif(JSON)
     if(SECCOMP)
-        target_link_libraries(test_runner seccomp)
+        target_link_libraries(${PROJECT_NAME}_test seccomp)
     endif(SECCOMP)
 
     if(GTEST_FOUND)
@@ -260,11 +260,11 @@ if(ENABLE_TESTS)
                      "${CMAKE_BINARY_DIR}/libgtest.so")
     endif(GTEST_FOUND)
 
-    target_link_libraries(test_runner gtest)
+    target_link_libraries(${PROJECT_NAME}_test gtest)
 
     foreach(test ${TEST_SRCS})
         get_filename_component(TEST_NAME ${test} NAME_WE)
-        add_test(test_runner test_runner ${TEST_NAME})
+        add_test(${PROJECT_NAME}_test ${PROJECT_NAME}_test ${TEST_NAME})
     endforeach(test)
 
     add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})

@@ -37,20 +37,23 @@
 #include <cfg.h>
 #include <utils.h>
 
-
 static struct cfg_parser parsers[] = {
     {'h', "help", CFG_BOOL, "print helpful usage information"},
-    {'i', "interface", CFG_STRING, "network interface that will be used to send packets"},
+    {'i', "interface", CFG_STRING,
+     "network interface that will be used to send packets"},
     {'s', "src-mac", CFG_HW_ADDRESS, "source address for the ethernet frame"},
-    {'d', "dst-mac", CFG_HW_ADDRESS, "destination address for the ethernet frame"},
+    {'d', "dst-mac", CFG_HW_ADDRESS,
+     "destination address for the ethernet frame"},
     {'S', "src-ip", CFG_IPV6_ADDRESS, "source ipv6 address in IPv6 header"},
-    {'D', "dst-ip", CFG_IPV6_ADDRESS, "destination ipv6 address in IPv6 header"},
-    {'t', "target-mac", CFG_HW_ADDRESS, "link layer address used for the target address "
-                                        "option of the advertisement"},
+    {'D', "dst-ip", CFG_IPV6_ADDRESS,
+     "destination ipv6 address in IPv6 header"},
+    {'t', "target-mac", CFG_HW_ADDRESS,
+     "link layer address used for the target address "
+     "option of the advertisement"},
     {'R', "router-ip", CFG_IPV6_ADDRESS, "ipv6 address of the router to spoof"},
     {'r', "repeat", CFG_INT, "send the packet <num> times"},
-    {'z', "timeout", CFG_INT, "wait <seconds> before sending the packet agein"}
-};
+    {'z', "timeout", CFG_INT,
+     "wait <seconds> before sending the packet agein"}};
 static size_t parsers_sz = sizeof(parsers) / sizeof(struct cfg_parser);
 
 int inner_do_ra(const struct cfg_set* set) {
@@ -58,15 +61,11 @@ int inner_do_ra(const struct cfg_set* set) {
     enum sylkie_error err = SYLKIE_INVALID_ERR;
     struct sylkie_sender* sender = NULL;
     struct sylkie_packet* pkt = NULL;
-    static const u_int8_t all_nodes_eth[] = {
-        0x33, 0x33, 0x00, 0x00, 0x00, 0x01
-    };
+    static const u_int8_t all_nodes_eth[] = {0x33, 0x33, 0x00,
+                                             0x00, 0x00, 0x01};
     static struct in6_addr all_nodes_ip = {
-        .s6_addr = {
-            0xff, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01
-        }
-    };
+        .s6_addr = {0xff, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00, 0x00, 0x01}};
     char* iface_name = NULL;
     const u_int8_t* dst_mac = NULL;
     const u_int8_t* src_mac = NULL;
@@ -75,7 +74,7 @@ int inner_do_ra(const struct cfg_set* set) {
     struct in6_addr* router_addr = NULL;
     struct in6_addr* src_addr = NULL;
 
-    if(cfg_set_find_type(set, "interface", CFG_STRING, &iface_name)) {
+    if (cfg_set_find_type(set, "interface", CFG_STRING, &iface_name)) {
         fprintf(stderr, "Must provide an interface to use.\n");
         cfg_set_usage(set, stderr);
         _exit(-1);
@@ -179,10 +178,10 @@ pid_t ra_json(struct json_object* jobj) {
     pid_t pid = -1;
     struct cfg_set set = {
         .usage = "sylkie ra [OPTIONS]",
-        .summary = "Send ICMPv6 Router Advertisement messages to the given address",
+        .summary =
+            "Send ICMPv6 Router Advertisement messages to the given address",
         .parsers = parsers,
-        .parsers_sz = parsers_sz
-    };
+        .parsers_sz = parsers_sz};
 
     res = cfg_set_init_json(&set, jobj);
 
@@ -190,7 +189,8 @@ pid_t ra_json(struct json_object* jobj) {
         fprintf(stderr, "Failed to initialize parsers\n");
         return -1;
     } else if (cfg_set_find(&set, "help")) {
-        fprintf(stderr, "\"help\" is an invalid option for running sylkie from json\n");
+        fprintf(stderr,
+                "\"help\" is an invalid option for running sylkie from json\n");
         cfg_set_free(&set);
         return -1;
     }
@@ -216,10 +216,10 @@ int ra_cmdline(int argc, const char** argv) {
     int res = -1;
     struct cfg_set set = {
         .usage = "sylkie ra [OPTIONS]",
-        .summary = "Send ICMPv6 Router Advertisement messages to the given address",
+        .summary =
+            "Send ICMPv6 Router Advertisement messages to the given address",
         .parsers = parsers,
-        .parsers_sz = parsers_sz
-    };
+        .parsers_sz = parsers_sz};
 
     if (argc < 1) {
         fprintf(stderr, "Too few arguments\n");
@@ -237,6 +237,7 @@ int ra_cmdline(int argc, const char** argv) {
         cfg_set_free(&set);
         return 0;
     } else {
+        lockdown();
         res = inner_do_ra(&set);
     }
 

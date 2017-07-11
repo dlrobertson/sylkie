@@ -34,8 +34,8 @@
 #include <json-c/json.h>
 #endif
 
-#include <cfg.h>
 #include <buffer.h>
+#include <cfg.h>
 #include <cmds.h>
 
 struct pid_buf {
@@ -236,8 +236,7 @@ int run_from_json(const char* arg, struct pid_buf* pid_buf) {
 static struct cfg_parser parsers[] = {
     {'h', "help", CFG_BOOL, "print helpful usage information"},
     {'v', "version", CFG_BOOL, "print the version number of sylkie"},
-    {'j', "json", CFG_STRING, "parse input from the provided json file"}
-};
+    {'j', "json", CFG_STRING, "parse input from the provided json file"}};
 static size_t parsers_sz = sizeof(parsers) / sizeof(struct cfg_parser);
 
 int main(int argc, const char** argv) {
@@ -248,8 +247,7 @@ int main(int argc, const char** argv) {
         .usage = "sylkie [ OPTIONS | SUBCOMMAND ]",
         .summary = "IPv6 address spoofing with the Neighbor Discovery Protocol",
         .parsers = parsers,
-        .parsers_sz = parsers_sz
-    };
+        .parsers_sz = parsers_sz};
     struct pid_buf* pid_buf = NULL;
 
     if (argc < 2) {
@@ -257,7 +255,6 @@ int main(int argc, const char** argv) {
         cfg_set_usage(&set, stderr);
         return -1;
     }
-
 
     --argc;
     ++argv;

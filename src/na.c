@@ -39,17 +39,22 @@
 
 static struct cfg_parser parsers[] = {
     {'h', "help", CFG_BOOL, "print helpful usage information"},
-    {'i', "interface", CFG_STRING, "network interface that will be used to send packets"},
+    {'i', "interface", CFG_STRING,
+     "network interface that will be used to send packets"},
     {'s', "src-mac", CFG_HW_ADDRESS, "source address for the ethernet frame"},
-    {'d', "dst-mac", CFG_HW_ADDRESS, "destination address for the ethernet frame"},
-    {'t', "target-mac", CFG_HW_ADDRESS, "link layer address used for the target address "
-                                        "option of the advertisement"},
+    {'d', "dst-mac", CFG_HW_ADDRESS,
+     "destination address for the ethernet frame"},
+    {'t', "target-mac", CFG_HW_ADDRESS,
+     "link layer address used for the target address "
+     "option of the advertisement"},
     {'S', "src-ip", CFG_IPV6_ADDRESS, "source ipv6 address in IPv6 header"},
-    {'D', "dst-ip", CFG_IPV6_ADDRESS, "destination ipv6 address in IPv6 header"},
-    {'T', "target-ip", CFG_IPV6_ADDRESS, "target address of the Neighbor Advertisement"},
+    {'D', "dst-ip", CFG_IPV6_ADDRESS,
+     "destination ipv6 address in IPv6 header"},
+    {'T', "target-ip", CFG_IPV6_ADDRESS,
+     "target address of the Neighbor Advertisement"},
     {'r', "repeat", CFG_INT, "send the packet <num> times"},
-    {'z', "timeout", CFG_INT, "wait <seconds> before sending the packet agein"}
-};
+    {'z', "timeout", CFG_INT,
+     "wait <seconds> before sending the packet agein"}};
 static size_t parsers_sz = sizeof(parsers) / sizeof(struct cfg_parser);
 
 int inner_do_na(const struct cfg_set* set) {
@@ -66,7 +71,7 @@ int inner_do_na(const struct cfg_set* set) {
     struct sylkie_packet* pkt = NULL;
 
     // Required input
-    if(cfg_set_find_type(set, "interface", CFG_STRING, &iface_name)) {
+    if (cfg_set_find_type(set, "interface", CFG_STRING, &iface_name)) {
         fprintf(stderr, "Must provide an interface to use.\n");
         cfg_set_usage(set, stderr);
         _exit(-1);
@@ -157,10 +162,10 @@ pid_t na_json(struct json_object* jobj) {
     pid_t pid = -1;
     struct cfg_set set = {
         .usage = "sylkie na [OPTIONS]",
-        .summary = "Send ICMPv6 Neighbor Advertisement messages to the given address",
+        .summary =
+            "Send ICMPv6 Neighbor Advertisement messages to the given address",
         .parsers = parsers,
-        .parsers_sz = parsers_sz
-    };
+        .parsers_sz = parsers_sz};
 
     res = cfg_set_init_json(&set, jobj);
 
@@ -168,7 +173,8 @@ pid_t na_json(struct json_object* jobj) {
         fprintf(stderr, "Failed to initialize parsers\n");
         return -1;
     } else if (cfg_set_find(&set, "help")) {
-        fprintf(stderr, "\"help\" is an invalid option for running sylkie from json\n");
+        fprintf(stderr,
+                "\"help\" is an invalid option for running sylkie from json\n");
         cfg_set_free(&set);
         return -1;
     }
@@ -194,10 +200,10 @@ int na_cmdline(int argc, const char** argv) {
     int res = -1;
     struct cfg_set set = {
         .usage = "sylkie na [OPTIONS]",
-        .summary = "Send ICMPv6 Neighbor Advertisement messages to the given address",
+        .summary =
+            "Send ICMPv6 Neighbor Advertisement messages to the given address",
         .parsers = parsers,
-        .parsers_sz = parsers_sz
-    };
+        .parsers_sz = parsers_sz};
 
     if (argc < 1) {
         fprintf(stderr, "Too few arguments\n");
@@ -215,6 +221,7 @@ int na_cmdline(int argc, const char** argv) {
         cfg_set_free(&set);
         return 0;
     } else {
+        lockdown();
         res = inner_do_na(&set);
     }
 

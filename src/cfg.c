@@ -18,22 +18,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <stdlib.h>
 #include <stdio.h>
-#include <strings.h>
+#include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
+#include <arpa/inet.h>
 #include <netinet/ether.h>
 #include <netinet/in.h>
-#include <arpa/inet.h>
 
 #include <cfg.h>
 #include <utils.h>
 
-
 // Integer parsers
+//
+// NB: Currently integer parsers only accept a positive value or -1
 
-static struct cfg_set_item* parse_int_cmdline(const struct cfg_parser* parser, const char* arg) {
+static struct cfg_set_item* parse_int_cmdline(const struct cfg_parser* parser,
+                                              const char* arg) {
     int value = strtol(arg, NULL, 10);
     if (value < 0) {
         if (strcmp(arg, "-1") == 0) {
@@ -46,11 +48,15 @@ static struct cfg_set_item* parse_int_cmdline(const struct cfg_parser* parser, c
 }
 
 #ifdef BUILD_JSON
-static struct cfg_set_item* parse_int_json(const struct cfg_parser* parser, struct json_object* jobj) {
+static struct cfg_set_item* parse_int_json(const struct cfg_parser* parser,
+                                           struct json_object* jobj) {
     int value = 0;
     enum json_type type = json_object_get_type(jobj);
     if (type == json_type_int) {
         value = json_object_get_int(jobj);
+        if (value < -1) {
+            return NULL;
+        }
         return cfg_set_item_create(parser, &value);
     } else {
         return NULL;
@@ -59,8 +65,11 @@ static struct cfg_set_item* parse_int_json(const struct cfg_parser* parser, stru
 #endif
 
 // Word parsers
+//
+// Parser used to parse a 16 bit unsigned integer
 
-static struct cfg_set_item* parse_word_cmdline(const struct cfg_parser* parser, const char* arg) {
+static struct cfg_set_item* parse_word_cmdline(const struct cfg_parser* parser,
+                                               const char* arg) {
     int value = strtol(arg, NULL, 10);
     if (value > 0xffff || value < 0) {
         return NULL;
@@ -70,7 +79,8 @@ static struct cfg_set_item* parse_word_cmdline(const struct cfg_parser* parser, 
 }
 
 #ifdef BUILD_JSON
-static struct cfg_set_item* parse_word_json(const struct cfg_parser* parser, struct json_object* jobj) {
+static struct cfg_set_item* parse_word_json(const struct cfg_parser* parser,
+                                            struct json_object* jobj) {
     int value = 0;
     enum json_type type = json_object_get_type(jobj);
     if (type == json_type_int) {
@@ -87,8 +97,11 @@ static struct cfg_set_item* parse_word_json(const struct cfg_parser* parser, str
 #endif
 
 // Byte parsers
+//
+// Parser used to parse a 8 bit unsigned integer
 
-static struct cfg_set_item* parse_byte_cmdline(const struct cfg_parser* parser, const char* arg) {
+static struct cfg_set_item* parse_byte_cmdline(const struct cfg_parser* parser,
+                                               const char* arg) {
     int value = strtol(arg, NULL, 10);
     if (value > 0xff || value < 0) {
         return NULL;
@@ -98,7 +111,8 @@ static struct cfg_set_item* parse_byte_cmdline(const struct cfg_parser* parser, 
 }
 
 #ifdef BUILD_JSON
-static struct cfg_set_item* parse_byte_json(const struct cfg_parser* parser, struct json_object* jobj) {
+static struct cfg_set_item* parse_byte_json(const struct cfg_parser* parser,
+                                            struct json_object* jobj) {
     int value = 0;
     enum json_type type = json_object_get_type(jobj);
     if (type == json_type_int) {
@@ -115,7 +129,14 @@ static struct cfg_set_item* parse_byte_json(const struct cfg_parser* parser, str
 #endif
 
 // String parsers
+//
+// Parser used to convert a user provided string to a cfg_set_item
 
+// Helper function used to copy the given string.
+//
+// TODO(dlrobertson): This seems rediculous. strdup probably does this
+// better. clang-tidy throws a fit when strdup is used. Find a way to
+// use strdup instead or prove that this is better.
 static char* copy_str(const char* arg) {
     int len;
     char* value;
@@ -139,12 +160,13 @@ static char* copy_str(const char* arg) {
     }
 }
 
-static struct cfg_set_item* parse_string_cmdline(const struct cfg_parser* parser, const char* arg) {
+static struct cfg_set_item*
+parse_string_cmdline(const struct cfg_parser* parser, const char* arg) {
     char* value = copy_str(arg);
     struct cfg_set_item* item = NULL;
     if (value) {
-        // TODO(dlrobertson): linters complain about using cfg_set_item_create here.
-        // Figure out why that is the case. There is probably a bug here
+        // TODO(dlrobertson): linters complain about using cfg_set_item_create
+        // here. Figure out why that is the case. There is probably a bug here
         item = malloc(sizeof(struct cfg_set_item));
         item->value.type = parser->type;
         item->name = parser->long_name;
@@ -164,8 +186,9 @@ static struct cfg_set_item* parse_string_json(const struct cfg_parser* parser,
     if (type == json_type_string) {
         value = copy_str(json_object_get_string(jobj));
         if (value) {
-            // TODO(dlrobertson): linters complain about using cfg_set_item_create here.
-            // Figure out why that is the case. There is probably a bug here
+            // TODO(dlrobertson): linters complain about using
+            // cfg_set_item_create here. Figure out why that is
+            // the case. There is probably a bug here
             item = malloc(sizeof(struct cfg_set_item));
             item->value.type = parser->type;
             item->name = parser->long_name;
@@ -181,9 +204,11 @@ static struct cfg_set_item* parse_string_json(const struct cfg_parser* parser,
 #endif
 
 // IPv6 address parsers
+//
+// Parse a ipv6 address from a user provided string.
 
-static struct cfg_set_item* parse_ipv6_addr_cmdline(const struct cfg_parser* parser,
-                                                    const char* arg) {
+static struct cfg_set_item*
+parse_ipv6_addr_cmdline(const struct cfg_parser* parser, const char* arg) {
     int res = 0;
     struct in6_addr* value = malloc(sizeof(struct in6_addr));
 
@@ -200,8 +225,9 @@ static struct cfg_set_item* parse_ipv6_addr_cmdline(const struct cfg_parser* par
 }
 
 #ifdef BUILD_JSON
-static struct cfg_set_item* parse_ipv6_addr_json(const struct cfg_parser* parser,
-                                                 struct json_object* jobj) {
+static struct cfg_set_item*
+parse_ipv6_addr_json(const struct cfg_parser* parser,
+                     struct json_object* jobj) {
     int res = 0;
     const char* tmp = NULL;
     struct in6_addr* value = malloc(sizeof(struct in6_addr));
@@ -228,8 +254,11 @@ static struct cfg_set_item* parse_ipv6_addr_json(const struct cfg_parser* parser
 #endif
 
 // Mac parsers
+//
+// Parse a mac address from a user provided string.
 
-static struct cfg_set_item* parse_mac_cmdline(const struct cfg_parser* parser, const char* arg) {
+static struct cfg_set_item* parse_mac_cmdline(const struct cfg_parser* parser,
+                                              const char* arg) {
     int res = 0;
     u_int8_t* value = malloc(ETH_ALEN);
 
@@ -247,7 +276,8 @@ static struct cfg_set_item* parse_mac_cmdline(const struct cfg_parser* parser, c
 }
 
 #ifdef BUILD_JSON
-static struct cfg_set_item* parse_mac_json(const struct cfg_parser* parser, struct json_object* jobj) {
+static struct cfg_set_item* parse_mac_json(const struct cfg_parser* parser,
+                                           struct json_object* jobj) {
     int res = 0;
     u_int8_t* value = malloc(ETH_ALEN);
     const char* tmp = NULL;
@@ -275,11 +305,12 @@ static struct cfg_set_item* parse_mac_json(const struct cfg_parser* parser, stru
 
 // Boolean parsers
 //
-// Note: The command line version does not need a parser. The value is assumed by the presence
-// of the option.
+// NB: The command line version does not need a parser. The value is assumed by
+// the presence of the option.
 
 #ifdef BUILD_JSON
-static struct cfg_set_item* parse_bool_json(const struct cfg_parser* parser, struct json_object* jobj) {
+static struct cfg_set_item* parse_bool_json(const struct cfg_parser* parser,
+                                            struct json_object* jobj) {
     bool value;
     enum json_type type = json_object_get_type(jobj);
     if (type == json_type_boolean) {
@@ -291,9 +322,10 @@ static struct cfg_set_item* parse_bool_json(const struct cfg_parser* parser, str
 }
 #endif
 
-// Helper function used to choose the correct parsing function based on the argument type
-// for command line input
-static struct cfg_set_item* parse_cmdline_arg(const struct cfg_parser* parser, const char* arg) {
+// Helper function used to choose the correct parsing function based on the
+// argument type for command line input
+static struct cfg_set_item* parse_cmdline_arg(const struct cfg_parser* parser,
+                                              const char* arg) {
     switch (parser->type) {
     case CFG_INT:
         return parse_int_cmdline(parser, arg);
@@ -313,9 +345,10 @@ static struct cfg_set_item* parse_cmdline_arg(const struct cfg_parser* parser, c
 }
 
 #ifdef BUILD_JSON
-// Helper function used to choose the correct parsing function based on the argument type
-// for json input
-static struct cfg_set_item* parse_json_arg(const struct cfg_parser* parser, struct json_object* jobj) {
+// Helper function used to choose the correct parsing function based on the
+// argument type for json input
+static struct cfg_set_item* parse_json_arg(const struct cfg_parser* parser,
+                                           struct json_object* jobj) {
     switch (parser->type) {
     case CFG_INT:
         return parse_int_json(parser, jobj);
@@ -337,13 +370,25 @@ static struct cfg_set_item* parse_json_arg(const struct cfg_parser* parser, stru
 }
 #endif
 
-// Generic function used to create a set item
-struct cfg_set_item* cfg_set_item_create(const struct cfg_parser* parser, void* data) {
-    struct cfg_set_item* item = malloc(sizeof(struct cfg_set_item));
+// Generic function used to create a set item given a parser and a pointer to
+// the raw value.
+struct cfg_set_item* cfg_set_item_create(const struct cfg_parser* parser,
+                                         void* data) {
+    struct cfg_set_item* item = NULL;
+
+    // If data is NULL there is no need to continue
+    if (!data) {
+        return NULL;
+    }
+
+    item = malloc(sizeof(struct cfg_set_item));
+
     if (item) {
         item->value.type = parser->type;
         item->name = parser->long_name;
         switch (item->value.type) {
+        // If the values type is CFG_STRING, CFG_IPV6_ADDRESS, or CFG_HW_ADDRESS
+        // the process is the same.
         case CFG_STRING:
         case CFG_IPV6_ADDRESS:
         case CFG_HW_ADDRESS:
@@ -371,7 +416,10 @@ struct cfg_set_item* cfg_set_item_create(const struct cfg_parser* parser, void* 
 
 void cfg_set_item_free(struct cfg_set_item* item) {
     if (item) {
-        if (item->value.type & (CFG_STRING | CFG_IPV6_ADDRESS | CFG_HW_ADDRESS)) {
+        // Remember to free the memory allocated to value.data if (and only if)
+        // the value is of type CFG_STRING, CFG_IPV6_ADDRESS, or CFG_HW_ADDRESS
+        if (item->value.type &
+            (CFG_STRING | CFG_IPV6_ADDRESS | CFG_HW_ADDRESS)) {
             free(item->value.data);
             item->value.data = NULL;
         }
@@ -388,8 +436,8 @@ static int cfg_set_cmp(const void* elem1, const void* elem2) {
 }
 
 // Find the correct parser for input given the short hand version
-static const struct cfg_parser* find_parser_char(const char arg, size_t sz,
-                                                 const struct cfg_parser* parsers) {
+static const struct cfg_parser*
+find_parser_char(const char arg, size_t sz, const struct cfg_parser* parsers) {
     const struct cfg_parser* iter;
     const struct cfg_parser* end = parsers + sz;
     for (iter = parsers; iter < end; ++iter) {
@@ -401,8 +449,9 @@ static const struct cfg_parser* find_parser_char(const char arg, size_t sz,
 }
 
 // Find the correct parser for input given the long hand version
-static const struct cfg_parser* find_parser_str(const char* arg, size_t len, size_t sz,
-                                                const struct cfg_parser* parsers) {
+static const struct cfg_parser*
+find_parser_str(const char* arg, size_t len, size_t sz,
+                const struct cfg_parser* parsers) {
     const struct cfg_parser* iter;
     const struct cfg_parser* end = parsers + sz;
     if (!len) {
@@ -418,6 +467,8 @@ static const struct cfg_parser* find_parser_str(const char* arg, size_t len, siz
 
 int cfg_set_add(struct cfg_map* set, struct cfg_set_item* item) {
     struct cfg_set_item** tmp;
+    // Ensure the memory allocated to the cfg_set map is big enough for the
+    // old data and the new item.
     if (set->len + 1 > set->cap) {
         tmp = malloc(sizeof(struct cfg_set_item*) * (set->cap + 10));
         if (tmp) {
@@ -434,14 +485,16 @@ int cfg_set_add(struct cfg_map* set, struct cfg_set_item* item) {
     return 0;
 }
 
-// Helper function used to parse longhand arguments. This is a bit more complicated than it
-// needs to be, due to the initial implementation of sylkie. The initial implementation did
-// not require that argments to longhang options be of the form --option=argument, but
-// instead --option argument. As a result, we also need to pass the next string in argv to
-// this function
-static int cfg_set_parse_long(struct cfg_map* map, const struct cfg_parser* parsers,
-                               size_t sz, const char* arg, const char* next,
-                               bool *next_consumed) {
+// Helper function used to parse longhand arguments. This is a bit more
+// complicated than it needs to be, due to the initial implementation
+// of sylkie. The initial implementation did not require that argments
+// to longhang options be of the form --option=argument, but instead
+// --option argument. As a result, we also need to pass the next string
+// in argv to this function
+static int cfg_set_parse_long(struct cfg_map* map,
+                              const struct cfg_parser* parsers, size_t sz,
+                              const char* arg, const char* next,
+                              bool* next_consumed) {
     char* iter = NULL;
     const struct cfg_parser* parser = NULL;
     struct cfg_set_item* item = NULL;
@@ -465,8 +518,8 @@ static int cfg_set_parse_long(struct cfg_map* map, const struct cfg_parser* pars
                         return -1;
                     }
                 } else {
-                    fprintf(stderr, "ERROR: %s invalid argument for %s\n",
-                            next, parser->long_name);
+                    fprintf(stderr, "ERROR: %s invalid argument for %s\n", next,
+                            parser->long_name);
                     return -1;
                 }
             } else {
@@ -497,30 +550,33 @@ static int cfg_set_parse_long(struct cfg_map* map, const struct cfg_parser* pars
     return 0;
 }
 
-// Helper function used to parse shorthand arguments. This is a bit more complicated, as
-// combinations (e.g -vh, -ip) should be expected. -vh would be a legal combination, as
-// neither of them requires an argument. However -ip would be invalid, as both of them require
-// an argument and it is therefore unclear who owns the given argument.
-static int cfg_set_parse_short(struct cfg_map* map, const struct cfg_parser* parsers,
-                               size_t sz, const char* arg, size_t len,
-                               const char* next, bool* next_consumed) {
+// Helper function used to parse shorthand arguments. This is a bit more
+// complicated, as combinations (e.g -vh, -ip) should be expected. -vh
+// would be a legal combination, as neither of them requires an argument.
+// However -ip would be invalid, as both of them require an argument and
+// it is therefore unclear who owns the given argument.
+static int cfg_set_parse_short(struct cfg_map* map,
+                               const struct cfg_parser* parsers, size_t sz,
+                               const char* arg, size_t len, const char* next,
+                               bool* next_consumed) {
     int i;
     const struct cfg_parser* parser = NULL;
     struct cfg_set_item* item = NULL;
     static bool true_value = true;
-    // Flag value indicating the argument has been consumed by one of the options
+    // Flag value indicating the argument has been consumed by one of the
+    // options
     for (i = 0; i < len; ++i) {
         if ((parser = find_parser_char(arg[i], sz, parsers))) {
             // We don't need to parse an argument for boolean options
             if (parser->type != CFG_BOOL) {
                 if (*next_consumed) {
-                    fprintf(stderr,
-                            "ERROR: Invalid combination \"-%s\". -%c"
-                            "requires an argument\n",
+                    fprintf(stderr, "ERROR: Invalid combination \"-%s\". -%c"
+                                    "requires an argument\n",
                             arg, arg[i]);
                     return -1;
                 } else if (!next) {
-                    fprintf(stderr, "ERROR: -%c requires an argument\n", arg[i]);
+                    fprintf(stderr, "ERROR: -%c requires an argument\n",
+                            arg[i]);
                     return -1;
                 }
                 *next_consumed = true;
@@ -532,8 +588,8 @@ static int cfg_set_parse_short(struct cfg_map* map, const struct cfg_parser* par
                         return -1;
                     }
                 } else {
-                    fprintf(stderr, "ERROR: %s invalid argument for %s\n",
-                            next, parser->long_name);
+                    fprintf(stderr, "ERROR: %s invalid argument for %s\n", next,
+                            parser->long_name);
                     return -1;
                 }
             } else {
@@ -545,8 +601,8 @@ static int cfg_set_parse_short(struct cfg_map* map, const struct cfg_parser* par
                         return -1;
                     }
                 } else {
-                    fprintf(stderr, "ERROR: %s invalid argument for %s\n",
-                            next, parser->long_name);
+                    fprintf(stderr, "ERROR: %s invalid argument for %s\n", next,
+                            parser->long_name);
                     return -1;
                 }
             }
@@ -556,19 +612,25 @@ static int cfg_set_parse_short(struct cfg_map* map, const struct cfg_parser* par
     return 0;
 }
 
-
 // Initialize a cfg_set for json parsing
 #ifdef BUILD_JSON
 int cfg_set_init_json(struct cfg_set* set, struct json_object* jobj) {
     const struct cfg_parser* parser = NULL;
     struct cfg_set_item* item = NULL;
-    set->options.map = malloc(sizeof(struct cfg_set_item*) * 5);
+
+    // TODO(dlrobertson): This is an entirely random number. Find a
+    // more clever way of doing this or prove this is a good value.
+    set->options.map = malloc(sizeof(struct cfg_set_item*) * 10);
     if (!set->options.map) {
         return -1;
     }
+
+    // Ensure to actually set the length and capacity values
     set->options.len = 0;
     set->options.cap = 5;
     bzero(set->options.map, 5);
+
+    // Loop through the json object and parse the associated value.
     json_object_object_foreach(jobj, key, val) {
         if ((parser = find_parser_str(key, 0, set->parsers_sz, set->parsers))) {
             item = parse_json_arg(parser, val);
@@ -581,7 +643,13 @@ int cfg_set_init_json(struct cfg_set* set, struct json_object* jobj) {
             }
         }
     }
-    qsort(set->options.map, set->options.len, sizeof(struct cfg_set_item*), cfg_set_cmp);
+
+    // The options.map is a btree. Remember to sort the map by the arguments
+    // associated name before we finish
+    //
+    // TODO(dlrobertson): Look into using a merge sort here
+    qsort(set->options.map, set->options.len, sizeof(struct cfg_set_item*),
+          cfg_set_cmp);
     return 0;
 }
 #endif
@@ -593,29 +661,41 @@ int cfg_set_init_cmdline(struct cfg_set* set, size_t argc, const char** argv) {
     const char** end = argv + argc;
     const char* arg;
     size_t len = (argc) ? (argc / 2) : 1;
+
+    // It is likely the user is using --arg <value> or -a <value>. As aresult,
+    // it is likely we need half of argc * the size of an item
     set->options.map = malloc(sizeof(struct cfg_set_item*) * len);
     if (!set->options.map) {
         return -1;
     }
+
+    // Remember to actually set the length and capacity
     set->options.len = 0;
     set->options.cap = len;
     bzero(set->options.map, len);
+
+    // Loop through each argument and parse the input. This gets a bit tricke
+    // because each iteration could either result in iter += 1 or iter += 2.
+    // This allows us to have a nice user interface with a flexible syntax,
+    // but comes at the cost of more dificult parsing
     while (iter < end) {
         arg = *iter;
         len = strlen(arg);
         if (len > 1 && arg[0] == '-') {
             if (arg[1] != '-') {
                 ++iter;
-                if (cfg_set_parse_short(&set->options, set->parsers, set->parsers_sz,
-                                        ++arg, --len, *iter, &next_consumed)) {
+                if (cfg_set_parse_short(&set->options, set->parsers,
+                                        set->parsers_sz, ++arg, --len, *iter,
+                                        &next_consumed)) {
                     cfg_set_free(set);
                     return -1;
                 }
             } else if (len > 2) {
                 ++iter;
                 arg += 2;
-                if (cfg_set_parse_long(&set->options, set->parsers, set->parsers_sz,
-                                       arg, *iter, &next_consumed)) {
+                if (cfg_set_parse_long(&set->options, set->parsers,
+                                       set->parsers_sz, arg, *iter,
+                                       &next_consumed)) {
                     cfg_set_free(set);
                     return -1;
                 }
@@ -634,51 +714,71 @@ int cfg_set_init_cmdline(struct cfg_set* set, size_t argc, const char** argv) {
             next_consumed = false;
         }
     }
-    qsort(set->options.map, set->options.len, sizeof(struct cfg_set_item*), cfg_set_cmp);
+
+    // The options.map is a btree. Remember to sort the map by the arguments
+    // associated name before we finish
+    //
+    // TODO(dlrobertson): Look into using a merge sort here
+    qsort(set->options.map, set->options.len, sizeof(struct cfg_set_item*),
+          cfg_set_cmp);
     return 0;
 }
 
-static const struct cfg_set_item* cfg_set_find_inner(struct cfg_set_item** begin,
-                                                     struct cfg_set_item** end,
-                                                     struct cfg_set_item** cur,
-                                                     const char* name) {
+// Core function used to conduct the binary search
+static const struct cfg_set_item*
+cfg_set_find_inner(struct cfg_set_item** begin, struct cfg_set_item** end,
+                   struct cfg_set_item** cur, const char* name) {
     int res = 0;
     int diff = 0;
+
+    // Check if we have exhaused the map
     if (cur < end && cur >= begin) {
         res = strcmp((*cur)->name, name);
         if (!res) {
+            // We found the item
             return *cur;
         } else if (res < 0 && cur > begin) {
+            // We guessed high. cur is now the end and begin is still the
+            // beginning
             diff = ((cur - begin) / 2) + 1;
             return cfg_set_find_inner(begin, cur, cur - diff, name);
         } else if (res > 0 && cur < end) {
+            // We guessed low. cur is not the beginning and end is still the
+            // end
             diff = (end - cur) / 2;
             if (!diff) {
                 diff = 1;
             }
             return cfg_set_find_inner(cur, end, cur + diff, name);
         } else {
+            // We guessed high and we cannot go lower, or we guessed
+            // low and we cannot go higher.
             return NULL;
         }
     } else {
+        // These aren't the droids you're looking for
         return NULL;
     }
 }
 
-const struct cfg_set_item* cfg_set_find(const struct cfg_set* set, const char* name) {
+const struct cfg_set_item* cfg_set_find(const struct cfg_set* set,
+                                        const char* name) {
     size_t mid;
     if (set->options.len) {
         // We already know there is at least one item, so it is okay if mid is 0
         mid = set->options.len / 2;
-        return cfg_set_find_inner(set->options.map, set->options.map + set->options.len,
+        return cfg_set_find_inner(set->options.map,
+                                  set->options.map + set->options.len,
                                   set->options.map + mid, name);
     } else {
         return NULL;
     }
 }
 
-int cfg_set_find_type(const struct cfg_set* set, const char* name, enum cfg_value_type type,
-                      void* data) {
+// Essentially the same thing as cfg_set_find, just with a bit of iceing on top
+// of it
+int cfg_set_find_type(const struct cfg_set* set, const char* name,
+                      enum cfg_value_type type, void* data) {
     const struct cfg_set_item* item = cfg_set_find(set, name);
     if (item) {
         if (item->value.type == type) {
@@ -712,6 +812,16 @@ int cfg_set_find_type(const struct cfg_set* set, const char* name, enum cfg_valu
     }
 }
 
+// Convert a cfg_set into nice help text. General format is
+//
+// Usage: <usage string>
+//
+// <summary string>
+//
+// Avalable options:
+//
+// -<c> | --<string>    <Helpful parser text>
+//
 void cfg_set_usage(const struct cfg_set* set, FILE* output) {
     int i, longest = 0, tmp = 0;
     if (set->usage) {
@@ -728,6 +838,9 @@ void cfg_set_usage(const struct cfg_set* set, FILE* output) {
         }
         fprintf(output, "Available options:\n");
         for (i = 0; i < set->parsers_sz; ++i) {
+            // TODO(dlrobertson): If a given parser has a super long string
+            // this looks wierd. Find a way to handle long parser usage strings
+            // better.
             fprintf(output, " -%c | --%-*s  %s\n", set->parsers[i].short_name,
                     longest, set->parsers[i].long_name, set->parsers[i].usage);
         }

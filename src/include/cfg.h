@@ -32,9 +32,10 @@
 #endif
 
 //
-// cfg structures and methods
+// cfg_set structures and methods
 //
 
+// Valid types allowed for arguments
 enum cfg_value_type {
     CFG_INT = 0x0,
     CFG_WORD = 0x1,
@@ -46,24 +47,14 @@ enum cfg_value_type {
     CFG_INVALID = 0x40,
 };
 
-struct cfg_value {
-    union {
-        void*     data;
-        int       integer;
-        u_int16_t word;
-        u_int8_t  byte;
-        bool      boolean;
-    };
-    enum cfg_value_type type;
-};
-
-struct cfg_set_item {
-    const char* name;
-    struct cfg_value value;
-};
-
-struct cfg_set;
-
+// Structure used to define the interface for providing a given argument to a
+// command.
+//
+// Members:
+//   short_name - the single character version of the option
+//   long_name  - the string version of the option
+//   type       - the type of the value expected
+//   usage      - helpful text describing how to use the argument
 struct cfg_parser {
     char short_name;
     const char* long_name;
@@ -71,12 +62,39 @@ struct cfg_parser {
     const char* usage;
 };
 
+// Structure used to represent the value of an argument provided to a command.
+// A value may be any one of cfg_value_type.
+struct cfg_value {
+    union {
+        void* data;
+        int integer;
+        u_int16_t word;
+        u_int8_t byte;
+        bool boolean;
+    };
+    enum cfg_value_type type;
+};
+
+// An argument provided to a command. This structure includes the name of the
+// argument and the arguments value.
+//
+// NB: The items are keyed by the long_name member of the cfg_parser struct
+// __not__ the short_name.
+struct cfg_set_item {
+    const char* name;
+    struct cfg_value value;
+};
+
+// A container structure for B-Tree containing a given number of arguments and
+// their associated values.
 struct cfg_map {
     struct cfg_set_item** map;
     size_t len;
     size_t cap;
 };
 
+// The main structure a user uses to maintain state while using the cfg_set
+// argument parsing framework
 struct cfg_set {
     const char* usage;
     const char* summary;
@@ -85,28 +103,42 @@ struct cfg_set {
     struct cfg_map options;
 };
 
-struct cfg_set_item* cfg_set_item_create(const struct cfg_parser* parser, void* data);
+// Create a new cfg_set_item from a parser and a pointer to the value
+struct cfg_set_item* cfg_set_item_create(const struct cfg_parser* parser,
+                                         void* data);
 
+// Free any allocated resources associated with an item. This is at a minumum
+// sizeof(struct cfg_set_item), but may also be the size of the data contained
+// depending on the value type.
 void cfg_set_item_free(struct cfg_set_item* item);
 
+// Populate the cfg_set map with the user provided arguments and values from
+// argv/argc
 int cfg_set_init_cmdline(struct cfg_set* set, size_t argc, const char** argv);
 
 #ifdef BUILD_JSON
+// Populate the cfg_set map with the user provided arguments and values from
+// the given json_object
 int cfg_set_init_json(struct cfg_set* set, struct json_object* jobj);
 #endif
 
-const struct cfg_set_item* cfg_set_find(const struct cfg_set* set, const char* name);
+// Search the cfg_sets btree by name and return a pointer to the entire item.
+// When a lookup fails, the returned value is NULL
+const struct cfg_set_item* cfg_set_find(const struct cfg_set* set,
+                                        const char* name);
 
-int cfg_set_find_type(const struct cfg_set* set, const char* name, enum cfg_value_type type,
-                      void* data);
+// Search the cfg_sets btree by name and type. If a match is found, set the
+// memory pointed to by the data argument to the given value. If no match
+// is found, do not mutate the data argument, but rather return -1
+int cfg_set_find_type(const struct cfg_set* set, const char* name,
+                      enum cfg_value_type type, void* data);
 
-// Function used to pring the help text given the parsers provided to cfg_set_init
+// Function used to pring the help text given the parsers provided to
+// cfg_set_init
 void cfg_set_usage(const struct cfg_set* set, FILE* output);
 
 // Free a given cfg_set item. The stored object only
 // needs to be freed if the type is a CFG_DATA
 void cfg_set_free(struct cfg_set* set);
-
-// Specific parsers frequently used by sylkie
 
 #endif
