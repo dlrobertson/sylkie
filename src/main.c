@@ -264,7 +264,7 @@ int main(int argc, const char** argv) {
         if (retval) {
             fprintf(stderr, "Failed to parse user input\n");
             cfg_set_usage(&set, stderr);
-            retval = -1;
+            return -1;
         } else {
 
             pid_buf = pid_buf_init(10);
