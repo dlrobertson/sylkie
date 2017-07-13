@@ -1,0 +1,47 @@
+---
+layout: default
+---
+<h2>Using <em>Sylkie</em></h2>
+
+ <p><em>A command line tool and library for testing networks for common address spoofing security vulnerabilities in IPv6 networks using the Neighbor Discovery Protocol.</em></p>
+
+<h2>Get the code</h2>
+
+<p>Use on of the links provided on this page to download the code or use the following</p>
+
+<pre><code>git clone https://github.com/dlrobertson/sylkie
+cd ./sylkie</code></pre>
+
+<h2>Compile sylkie</h2>
+
+<pre><code>mkdir -p ./build
+cd ./build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make
+make install</code></pre>
+
+<h2>Test your network</h2>
+
+<h3>Router Advert command</h3>
+
+This command attempts to DoS all the nodes on the link local scope or a targeted
+host by removing the targetted router from the list of default routes.
+
+<pre><code>sudo sylkie ra -i &lt;interface&gt; \
+    --router-ip=&lt;some ip&gt; \
+    --target-mac=&lt;mac of router&gt; \
+    --prefix=&lt;your prefix&gt; \
+    --timeout=&lt;time between spoof adverts&gt; \
+    --repeat=-1</code></pre>
+
+<h3>Neighbor Advert command</h3>
+
+<pre><code>sudo sylkie na -i &lt;interface&gt; \
+    --dst-mac &lt;dest hw addr&gt; \
+    --src-ip &lt;source ip&gt; \
+    --dst-ip &lt;dest ip address&gt; \
+    --target-ip &lt;target ip address&gt; \
+    --target-mac &lt;target mac address&gt; \
+    --timeout &lt;time betweeen adverts&gt; \
+    --repeat &lt;number of times to send the request&gt;</code></pre>
+            
