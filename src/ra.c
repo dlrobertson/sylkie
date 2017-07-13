@@ -51,6 +51,7 @@ static struct cfg_parser parsers[] = {
      "link layer address used for the target address "
      "option of the advertisement"},
     {'R', "router-ip", CFG_IPV6_ADDRESS, "ipv6 address of the router to spoof"},
+    {'p', "prefix", CFG_INT, "send the packet <num> times"},
     {'r', "repeat", CFG_INT, "send the packet <num> times"},
     {'z', "timeout", CFG_INT,
      "wait <seconds> before sending the packet agein"}};
