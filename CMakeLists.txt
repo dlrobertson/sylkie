@@ -34,10 +34,33 @@ set(CMAKE_EXTRA "${PROJECT_SOURCE_DIR}/CMake")
 include(CheckIncludeFile)
 
 # Additional options
-option(JSON "JSON" ON)
-option(SECCOMP "SECCOMP" ON)
-option(BUILD_DOCS "BUILD_DOCS" OFF)
+
+set(ENABLE_JSON AUTO CACHE STRING "Enable json support")
+set_property(CACHE ENABLE_JSON PROPERTY STRINGS AUTO ON OFF)
+set(ENABLE_SECCOMP AUTO CACHE STRING "Enable seccomp support")
+set_property(CACHE ENABLE_SECCOMP PROPERTY STRINGS AUTO ON OFF)
+set(BUILD_TESTS OFF CACHE STRING "Build tests")
+set_property(CACHE BUILD_TESTS PROPERTY STRINGS ON OFF)
+set(BUILD_DOCS OFF CACHE STRING "Build documentation")
+set_property(CACHE BUILD_DOCS PROPERTY STRINGS ON OFF)
+
+# Deprecated options
+option(JSON "JSON" OFF)
+option(SECCOMP "SECCOMP" OFF)
 option(ENABLE_TESTS "ENABLE_TESTS" OFF)
+
+if(JSON)
+    set(ENABLE_JSON "ON")
+    message(WARNING "JSON option has been deprecated. Use ENABLE_JSON.")
+endif(JSON)
+if(SECCOMP)
+    set(ENABLE_SECCOMP "ON")
+    message(WARNING "SECCOMP option has been deprecated. Use ENABLE_SECCOMP.")
+endif(SECCOMP)
+if(ENABLE_TESTS)
+    set(BUILD_TESTS "ON")
+    message(WARNING "ENABLE_TESTS option has been deprecated. Use BUILD_TESTS.")
+endif(ENABLE_TESTS)
 
 # Check OS
 
@@ -168,7 +191,7 @@ target_link_libraries(${PROJECT_NAME}-bin PRIVATE ${PROJECT_NAME}-shared)
 
 # Dependencies
 
-if(JSON)
+if(ENABLE_JSON OR ENABLE_JSON STREQUAL "AUTO")
     check_include_file(json-c/json.h JSON_HEADER_FOUND)
     find_library(JSON_LIB json-c)
     if(JSON_LIB AND JSON_HEADER_FOUND)
@@ -178,9 +201,9 @@ if(JSON)
             "json-c or run with -DJSON=OFF to build without json support")
     endif(JSON_LIB AND JSON_HEADER_FOUND)
     set(BUILD_JSON 1)
-endif(JSON)
+endif(ENABLE_JSON OR ENABLE_JSON STREQUAL "AUTO")
 
-if(SECCOMP)
+if(ENABLE_SECCOMP OR ENABLE_SECCOMP STREQUAL "AUTO")
     check_include_file(seccomp.h SECCOMP_HEADER_FOUND)
     check_include_file(sys/prctl.h PRCTL_HEADER_FOUND)
     find_library(SECCOMP_LIB seccomp)
@@ -191,7 +214,7 @@ if(SECCOMP)
             "libseccomp or run with -DSECCOMP=OFF to build without seccomp support")
     endif(SECCOMP_LIB AND SECCOMP_HEADER_FOUND AND PRCTL_HEADER_FOUND)
     set(BUILD_SECCOMP 1)
-endif(SECCOMP)
+endif(ENABLE_SECCOMP OR ENABLE_SECCOMP STREQUAL "AUTO")
 
 # Configure sylkie_config.h
 
@@ -232,7 +255,7 @@ endif(BUILD_DOCS)
 
 # Tests
 
-if(ENABLE_TESTS)
+if(BUILD_TESTS)
     enable_testing()
 
     include(CTest)
@@ -245,12 +268,12 @@ if(ENABLE_TESTS)
         ${LIB_SRCS})
     set_target_properties(${PROJECT_NAME}_test PROPERTIES LINKER_LANGUAGE CXX)
     target_include_directories(${PROJECT_NAME}_test PRIVATE ${EXE_DIR}/include)
-    if (JSON)
+    if (ENABLE_JSON)
         target_link_libraries(${PROJECT_NAME}_test json-c)
-    endif(JSON)
-    if(SECCOMP)
+    endif(ENABLE_JSON)
+    if(ENABLE_SECCOMP)
         target_link_libraries(${PROJECT_NAME}_test seccomp)
-    endif(SECCOMP)
+    endif(ENABLE_SECCOMP)
 
     if(GTEST_FOUND)
         include_directories(${GTEST_INCLUDE_DIRS})
@@ -270,7 +293,7 @@ if(ENABLE_TESTS)
     endforeach(test)
 
     add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
-endif(ENABLE_TESTS)
+endif(BUILD_TESTS)
 
 # Install
 
