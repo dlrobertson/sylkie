@@ -134,6 +134,9 @@ struct sylkie_buffer* read_file(const char* arg) {
     int fd, res;
     u_int8_t tmp_buffer[1025];
     struct sylkie_buffer* buf = sylkie_buffer_init(1024);
+    if (!buf) {
+        return NULL;
+    }
     if ((fd = open(arg, O_RDONLY)) < 0) {
         fprintf(stderr, "%s cannot be opened\n", arg);
         return NULL;
@@ -145,6 +148,7 @@ struct sylkie_buffer* read_file(const char* arg) {
         }
         sylkie_buffer_add(buf, tmp_buffer, res);
     }
+    // Note: buf->len will be 0 if the file is empty
     return buf;
 }
 
@@ -177,11 +181,20 @@ int run_from_json(const char* arg, struct pid_buf* pid_buf) {
     struct sylkie_buffer* buf = read_file(arg);
     const struct cmd* cmd;
 
-    if (!buf || !tok) {
+    if (!buf) {
+        json_tokener_free(tok);
+        return -1;
+    }
+
+    if (!tok) {
         sylkie_buffer_free(buf);
-        if (tok) {
-            json_tokener_free(tok);
-        }
+        return -1;
+    }
+
+    if (buf->len <= 0) {
+        sylkie_buffer_free(buf);
+        json_tokener_free(tok);
+        fprintf(stderr, "Error: Attempted to read from empty file %s\n", arg);
         return -1;
     }
 
