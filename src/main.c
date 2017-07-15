@@ -36,7 +36,21 @@
 
 #include <buffer.h>
 #include <cfg.h>
-#include <cmds.h>
+#include <utils.h>
+
+// various subcommands to the sylkie command that are defined elsewhere
+
+// neighbor advert subcommand functions
+extern int na_cmdline(int argc, const char** argv);
+#ifdef BUILD_JSON
+extern pid_t na_json(struct json_object* jobj);
+#endif
+
+// router advert subcommand functions
+extern int ra_cmdline(int argc, const char** argv);
+#ifdef BUILD_JSON
+extern pid_t ra_json(struct json_object* jobj);
+#endif
 
 /**
  * \brief Growable buffer of pids
@@ -99,17 +113,18 @@ void pid_buf_free(struct pid_buf* buf) {
 }
 
 static const struct cmd {
-    const char* name;
+    const char* short_name;
+    const char* long_name;
     int (*cmdline_func)(int argc, const char** argv);
 #ifdef BUILD_JSON
     pid_t (*json_func)(struct json_object* jobj);
 #endif
-} cmds[] = {{"na", na_cmdline,
+} cmds[] = {{"na", "neighbor-advert", na_cmdline,
 #ifdef BUILD_JSON
              na_json
 #endif
             },
-            {"ra", ra_cmdline,
+            {"ra", "router-advert", ra_cmdline,
 #ifdef BUILD_JSON
              ra_json
 #endif
@@ -121,8 +136,9 @@ void version(FILE* fd) { fprintf(fd, "sylkie version: " SYLKIE_VERSION "\n"); }
 const struct cmd* find_cmd(const char* input) {
     const struct cmd* cmd;
     if (input) {
-        for (cmd = cmds; cmd && cmd->name; ++cmd) {
-            if (strcmp(input, cmd->name) == 0) {
+        for (cmd = cmds; cmd && cmd->short_name && cmd->long_name; ++cmd) {
+            if (strcmp(input, cmd->short_name) == 0 ||
+                strcmp(input, cmd->long_name) == 0) {
                 return cmd;
             }
         }
@@ -169,6 +185,88 @@ pid_t run_json_cmd(int (*func)(struct json_object* jobj),
         pid = func(tmp);
     }
     return pid;
+}
+
+pid_t run_from_string(char* line) {
+    const struct cmd* cmd;
+    char* p = strtok(line, " ");
+    static char* args[1024];
+    pid_t pid;
+    int i = 0, retval = 0;
+    while (p != NULL) {
+        if (i < 1023) {
+            args[i] = p;
+            p = strtok(NULL, " ");
+        } else {
+            fprintf(stderr, "ERROR: Too many arguments provided to command\n");
+            return -1;
+        }
+        ++i;
+    }
+    args[i] = NULL;
+    if (i > 0 && (cmd = find_cmd(args[0])) != NULL) {
+        pid = fork();
+        if (pid < 0) {
+            return -1;
+        } else if (pid == 0) {
+            retval = (*cmd->cmdline_func)(i, (const char**)args);
+            exit(retval);
+        } else {
+            return pid;
+        }
+    } else {
+        fprintf(stderr, "ERROR: could not parse line: \n\t%s\n", line);
+    }
+    return -1;
+}
+
+int run_from_plaintext(const char* arg, struct pid_buf* pid_buf) {
+    int retval = 0;
+    struct sylkie_buffer* buf = read_file(arg);
+    const u_int8_t* iter = NULL;
+    const u_int8_t* end = NULL;
+    const u_int8_t* pos = NULL;
+    pid_t pid;
+    size_t len;
+    char* cpy = NULL;
+    if (!buf) {
+        return -1;
+    }
+
+    if (buf->len <= 0) {
+        sylkie_buffer_free(buf);
+        fprintf(stderr, "Error: Attempted to read from empty file %s\n", arg);
+        return -1;
+    }
+
+    iter = buf->data;
+    end = buf->data + buf->len;
+    while (iter < end && !retval) {
+        pos = (const u_int8_t*)strchr((const char*)iter, '\n');
+        if (pos < end && pos > iter) {
+            len = pos - iter;
+            cpy = malloc(len + 1);
+            if (cpy) {
+                memcpy(cpy, iter, len);
+                cpy[len] = '\0';
+                pid = run_from_string(cpy);
+                if (pid < 0) {
+                    retval = -1;
+                } else {
+                    pid_buf_add(pid_buf, pid);
+                }
+                free(cpy);
+                iter = ++pos;
+            } else {
+                fprintf(stderr, "Error: No memory!\n");
+                retval = -1;
+            }
+        } else {
+            break;
+        }
+    }
+    sylkie_buffer_free(buf);
+    return retval;
 }
 
 int run_from_json(const char* arg, struct pid_buf* pid_buf) {
@@ -255,8 +353,13 @@ int run_from_json(const char* arg, struct pid_buf* pid_buf) {
 static struct cfg_parser parsers[] = {
     {'h', "help", CFG_BOOL, "print helpful usage information"},
     {'v', "version", CFG_BOOL, "print the version number of sylkie"},
-    {'j', "json", CFG_STRING, "parse input from the provided json file"}};
+    {'j', "json", CFG_STRING, "parse input from the provided json file"},
+    {'x', "execute", CFG_STRING, "parse input from the provided text file"}};
 static size_t parsers_sz = sizeof(parsers) / sizeof(struct cfg_parser);
+
+static struct cfg_subcmd subcmds[] = {{"na", "neighbor-advert"},
+                                      {"ra", "router-advert"}};
+static size_t subcmds_sz = sizeof(subcmds) / sizeof(struct cfg_subcmd);
 
 int main(int argc, const char** argv) {
     char* input_file;
@@ -266,7 +369,9 @@ int main(int argc, const char** argv) {
         .usage = "sylkie [ OPTIONS | SUBCOMMAND ]",
         .summary = "IPv6 address spoofing with the Neighbor Discovery Protocol",
         .parsers = parsers,
-        .parsers_sz = parsers_sz};
+        .parsers_sz = parsers_sz,
+        .subcmds = subcmds,
+        .subcmds_sz = subcmds_sz};
     struct pid_buf* pid_buf = NULL;
 
     if (argc < 2) {
@@ -308,6 +413,11 @@ int main(int argc, const char** argv) {
                                     "use json functions\n");
                     retval = -1;
 #endif
+                }
+
+                if (!cfg_set_find_type(&set, "execute", CFG_STRING,
+                                       &input_file)) {
+                    run_from_plaintext(input_file, pid_buf);
                 }
 
                 for (i = 0; i < pid_buf->len; ++i) {
