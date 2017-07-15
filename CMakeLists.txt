@@ -218,6 +218,8 @@ if(BUILD_DOCS)
         foreach(str ${INCLUDE_FILES})
             set(DOC_FILES "${DOC_FILES} ${str}")
         endforeach(str)
+        configure_file(${PROJECT_SOURCE_DIR}/Doxyfile.in
+            ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
         add_custom_target(doc
             ${DOXYGEN_EXECUTABLE}
             ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile

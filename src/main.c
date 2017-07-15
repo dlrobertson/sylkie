@@ -38,6 +38,12 @@
 #include <cfg.h>
 #include <cmds.h>
 
+/**
+ * \brief Growable buffer of pids
+ * \ingroup sylkie
+ *
+ * Used to track pids of forked child processes.
+ */
 struct pid_buf {
     pid_t* pids;
     size_t len;
