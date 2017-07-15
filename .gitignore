@@ -1,2 +1,8 @@
-_site/
+*.o
+*.so
+build
+sylkie_config.h
+
+# Caryover from gh-pages branch
+_site
 Gemfile.lock
