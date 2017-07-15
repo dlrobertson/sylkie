@@ -30,6 +30,25 @@
 #include "proto_list.h"
 #include "sender.h"
 
+/*! \mainpage sylkie index page
+ *
+ * \section intro_sec Introduction
+ *
+ * This is the inner workings of the <a href="http://sylkie.io">sylkie</a>
+ * command line tool.
+ *
+ * \section purpose_sec Purpose
+ *
+ * The documentation here is targeted at developers that are either
+ * contributing to the tool, or are looking to do something more complex.
+ * Most use cases can be covered by command line programs, but sometimes it
+ * is necessary to directly use the shared lib.
+ *
+ * \defgroup libsylkie Core public functions and structures
+ * \defgroup sylkie Private structures and functions used by the sylkie main function
+ */
+
+
 struct sylkie_packet* sylkie_neighbor_advert_create(
     const u_int8_t eth_src[ETH_ALEN], const u_int8_t eth_dst[ETH_ALEN],
     struct in6_addr* ip_src, struct in6_addr* ip_dst, struct in6_addr* tgt_ip,
