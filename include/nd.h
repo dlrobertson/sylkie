@@ -45,9 +45,8 @@
  * is necessary to directly use the shared lib.
  *
  * \defgroup libsylkie Core public functions and structures
- * \defgroup sylkie Private structures and functions used by the sylkie main function
+ * \defgroup sylkie Private structures and functions used by main
  */
-
 
 struct sylkie_packet* sylkie_neighbor_advert_create(
     const u_int8_t eth_src[ETH_ALEN], const u_int8_t eth_dst[ETH_ALEN],

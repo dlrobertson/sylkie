@@ -36,6 +36,7 @@ struct sylkie_buffer* sylkie_buffer_init(size_t sz) {
             free(buf);
             return NULL;
         } else {
+            memset(buf->data, 0, buf->cap);
             return buf;
         }
     } else {

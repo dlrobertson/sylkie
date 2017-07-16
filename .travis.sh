@@ -22,7 +22,7 @@ else
     exit 1
 fi
 
-cmake -G "${GEN}" -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DENABLE_TESTS=ON ..
+cmake -G "${GEN}" -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DBUILD_TESTS=ON ..
 
 if [[ "${GEN}" == "Ninja" ]]
 then

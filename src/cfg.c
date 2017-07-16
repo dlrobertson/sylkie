@@ -621,6 +621,10 @@ int cfg_set_init_json(struct cfg_set* set, struct json_object* jobj) {
     const struct cfg_parser* parser = NULL;
     struct cfg_set_item* item = NULL;
 
+    // TODO(dlrobertson): Allow this to work
+    set->subcmds = NULL;
+    set->subcmds_sz = 0;
+
     // TODO(dlrobertson): This is an entirely random number. Find a
     // more clever way of doing this or prove this is a good value.
     set->options.map = malloc(sizeof(struct cfg_set_item*) * 10);
@@ -833,8 +837,22 @@ void cfg_set_usage(const struct cfg_set* set, FILE* output) {
     if (set->summary) {
         fprintf(output, "%s\n\n", set->summary);
     }
+    if (set->subcmds_sz) {
+        fprintf(output, "Available subcommands:\n");
+        for (i = 0, longest = 0; i < set->subcmds_sz; ++i) {
+            if ((tmp = strlen(set->subcmds[i].long_name)) > longest) {
+                longest = tmp;
+            }
+        }
+        // TODO(dlrobertson): Snag the subcommands set summary and print here
+        for (i = 0; i < set->subcmds_sz; ++i) {
+            fprintf(output, " %s | %-*s\n", set->subcmds[i].short_name, longest,
+                    set->subcmds[i].long_name);
+        }
+        fprintf(output, "\n");
+    }
     if (set->parsers_sz) {
-        for (i = 0; i < set->parsers_sz; ++i) {
+        for (i = 0, longest = 0; i < set->parsers_sz; ++i) {
             if ((tmp = strlen(set->parsers[i].long_name)) > longest) {
                 longest = tmp;
             }

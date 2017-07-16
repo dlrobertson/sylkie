@@ -65,6 +65,21 @@ struct cfg_parser {
     const char* usage;
 };
 
+// TODO(dlrobertson): Make this useful. Currently this is only used to
+// ensure everything is documented in the usage fn
+/**
+ * \brief Define the interface for a given subcommand
+ *
+ * NB: This feature is currently under development and is currently only
+ * used to ensure the usage function prints correctly
+ */
+struct cfg_subcmd {
+    /// the shorthand version of a subcommand
+    const char* short_name;
+    /// the longhandhand version of a subcommand
+    const char* long_name;
+};
+
 /**
  * \brief Represent the value of an argument provided to a command
  *
@@ -118,6 +133,8 @@ struct cfg_set {
     const struct cfg_parser* parsers;
     size_t parsers_sz;
     struct cfg_map options;
+    struct cfg_subcmd* subcmds;
+    size_t subcmds_sz;
 };
 
 /**
