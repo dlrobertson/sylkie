@@ -131,7 +131,8 @@ struct sylkie_packet* sylkie_neighbor_advert_create(
 struct sylkie_packet* sylkie_router_advert_create(
     const u_int8_t eth_src[ETH_ALEN], const u_int8_t eth_dst[ETH_ALEN],
     struct in6_addr* ip_src, struct in6_addr* ip_dst, struct in6_addr* tgt_ip,
-    u_int8_t prefix, const u_int8_t tgt_hw[ETH_ALEN], enum sylkie_error* err) {
+    u_int8_t prefix, u_int16_t lifetime, const u_int8_t tgt_hw[ETH_ALEN],
+    enum sylkie_error* err) {
     struct icmp6_hdr icmpv6;
     enum sylkie_error local_err;
     struct sylkie_buffer* buf = sylkie_buffer_init(2 + ETH_ALEN + 8);
@@ -142,10 +143,18 @@ struct sylkie_packet* sylkie_router_advert_create(
     bzero(&icmpv6, sizeof(struct icmp6_hdr));
 
     icmpv6.icmp6_type = ND_ROUTER_ADVERT;
+    icmpv6.icmp6_data8[0] = 0xff;
+    icmpv6.icmp6_data16[1] = lifetime;
     sylkie_buffer_add_value(buf, 0x00, 8);
     sylkie_buffer_add(buf, prefix_options, sizeof(prefix_options));
     sylkie_buffer_add_value(buf, prefix, 1);
-    sylkie_buffer_add_value(buf, 0x00, 13);
+    sylkie_buffer_add_value(buf, 0x00, 1);
+    if (lifetime) {
+        sylkie_buffer_add_value(buf, 0xff, 8);
+    } else {
+        sylkie_buffer_add_value(buf, 0x00, 8);
+    }
+    sylkie_buffer_add_value(buf, 0x00, 4);
     sylkie_buffer_add(buf, tgt_ip, sizeof(struct in6_addr));
     sylkie_buffer_add(buf, source_options, sizeof(source_options));
     sylkie_buffer_add(buf, tgt_hw, ETH_ALEN);
