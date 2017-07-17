@@ -18,6 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -54,44 +55,28 @@ int lockdown(void) {
 #endif
 }
 
-u_int8_t hex_char_to_byte(char ch) {
-    if (ch > 0x29 && ch < 0x3a) {
-        return ch % 0x30;
-    } else if (ch > 0x40 && ch < 0x47) {
-        return (ch % 0x41) + 10;
-    } else if (ch > 0x60 && ch < 0x66) {
-        return (ch % 0x61) + 10;
-    } else {
-        return -1;
-    }
-}
-
 int parse_hwaddr(const char* arg, u_int8_t* addr) {
     int len = strlen(arg);
-    int i = 0, j = 0;
-    u_int8_t tmp = 0;
-    u_int8_t colon_next = 0;
-    while (i < len && j < ETH_ALEN) {
-        if (arg[i] == ':' && colon_next) {
+    bool colon_next = false;
+    const char* end = arg + len;
+    char* num_end = NULL;
+    int i = 0;
+    if (len != 17) {
+        return -1;
+    }
+    while(arg < end && i < ETH_ALEN) {
+        if (*arg == ':' && colon_next) {
+            ++arg;
+            colon_next = false;
+        } else if (!colon_next && (arg + 1) < end) {
+            addr[i] = (u_int8_t)strtol(arg, &num_end, 16);
+            colon_next = true;
             ++i;
-            colon_next = 0;
-        } else if (!colon_next) {
-            tmp = hex_char_to_byte(arg[i]);
-            if (tmp < 0) {
+            if (num_end) {
+                arg = num_end;
+            } else {
                 return -1;
             }
-            addr[j] = tmp << 4;
-
-            ++i;
-
-            tmp = hex_char_to_byte(arg[i]);
-            if (tmp < 0) {
-                return -1;
-            }
-            addr[j] |= tmp;
-            ++j;
-            ++i;
-            colon_next = 1;
         } else {
             return -1;
         }

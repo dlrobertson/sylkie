@@ -155,11 +155,13 @@ struct sylkie_buffer* read_file(const char* arg) {
     }
     if ((fd = open(arg, O_RDONLY)) < 0) {
         fprintf(stderr, "%s cannot be opened\n", arg);
+        sylkie_buffer_free(buf);
         return NULL;
     }
     while ((res = read(fd, tmp_buffer, 1024)) != 0) {
         if (res < 0) {
             fprintf(stderr, "Failed to read from file %s\n", arg);
+            sylkie_buffer_free(buf);
             return NULL;
         }
         sylkie_buffer_add(buf, tmp_buffer, res);
