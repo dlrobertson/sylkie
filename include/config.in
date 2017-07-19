@@ -18,6 +18,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+/*! \mainpage sylkie index page
+ *
+ * \section intro_sec Introduction
+ *
+ * This is the inner workings of the <a href="http://sylkie.io">sylkie</a>
+ * command line tool.
+ *
+ * \section purpose_sec Purpose
+ *
+ * The documentation here is targeted at developers that are either
+ * contributing to the tool, or are looking to do something more complex.
+ * Most use cases can be covered by command line programs, but sometimes it
+ * is necessary to directly use the shared lib.
+ *
+ * \defgroup libsylkie Core public functions and structures
+ * \defgroup sylkie Private structures and functions used by main
+ */
+
 #define SYLKIE_VERSION "@PROJECT_VERSION@-@BUILD_OS@"
 #define SYLKIE_MAJOR_VERSION @PROJECT_VERSION_MAJOR@
 #define SYLKIE_MINOR_VERSION @PROJECT_VERSION_MINOR@

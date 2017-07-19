@@ -53,8 +53,8 @@ static struct cfg_parser parsers[] = {
     {'R', "router-ip", CFG_IPV6_ADDRESS, "ipv6 address of the router to spoof"},
     {'p', "prefix", CFG_INT, "send the packet <num> times"},
     {'r', "repeat", CFG_INT, "send the packet <num> times"},
-    {'z', "timeout", CFG_INT,
-     "wait <seconds> before sending the packet agein"}};
+    {'l', "lifetime", CFG_WORD, "valid and preferred lifetime of router"},
+    {'z', "timeout", CFG_INT, "wait <n> seconds before sending agein"}};
 static size_t parsers_sz = sizeof(parsers) / sizeof(struct cfg_parser);
 
 int inner_do_ra(const struct cfg_set* set) {
@@ -71,6 +71,7 @@ int inner_do_ra(const struct cfg_set* set) {
     const u_int8_t* dst_mac = NULL;
     const u_int8_t* src_mac = NULL;
     const u_int8_t* tgt_mac = NULL;
+    u_int16_t lifetime = 0;
     struct in6_addr* dst_addr = NULL;
     struct in6_addr* router_addr = NULL;
     struct in6_addr* src_addr = NULL;
@@ -85,6 +86,7 @@ int inner_do_ra(const struct cfg_set* set) {
     cfg_set_find_type(set, "dst-ip", CFG_IPV6_ADDRESS, &dst_addr);
     cfg_set_find_type(set, "src-ip", CFG_IPV6_ADDRESS, &src_addr);
     cfg_set_find_type(set, "router-ip", CFG_IPV6_ADDRESS, &router_addr);
+    cfg_set_find_type(set, "lifetime", CFG_WORD, &lifetime);
 
     if (!dst_mac && !dst_addr) {
         dst_mac = all_nodes_eth;
@@ -120,7 +122,8 @@ int inner_do_ra(const struct cfg_set* set) {
     }
 
     pkt = sylkie_router_advert_create(src_mac, dst_mac, src_addr, dst_addr,
-                                      router_addr, prefix, tgt_mac, &err);
+                                      router_addr, prefix, lifetime, tgt_mac,
+                                      &err);
 
     if (!pkt) {
         fprintf(stderr, "%s\n", "Could not allocate packet");
