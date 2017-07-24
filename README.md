@@ -77,17 +77,6 @@ all-nodes address `ff02::1` causing all of the nodes to remove
 `fe80::b95b:ee1:cafe:9720/64` (link-layer address `52:54:00:e3:f4:06`)
 from their list of default routes.
 
-#### How it works
-
-The `router-advert` (`ra`) command attempts to DoS a network by sending
-"forged" Router Advertisement messages to either a targeted address
-(if one is provided) or the link local scope all-nodes address `ff02::1`.
-The "forged" Router Advertisement contains [Prefix Information](https://tools.ietf.org/html/rfc4861#section-4.6.2)
-with the lifetimes set to 0. The message also contains the
-[Source Link-Layer Address](https://tools.ietf.org/html/rfc4861#section-4.6.1).
-This should cause the targeted address or all link local nodes to
-remove the targetted router from the list of default routes.
-
 ### Address spoofing (Neighbor Advert)
 
 The basic usage of the sylkie neighbor advert command is listed below.
@@ -104,18 +93,6 @@ sylkie na -i <interface> \
     --timeout <time betweeen adverts> \
     --repeat <number of times to send the request>
 ```
-
-#### How it works
-
-The `neighbor-advert` (`na`) command attempts to spoof a given address
-by sending "forged" Neighbor Advertisement message to the targeted address.
-The "forged" Neighbor Advertisement has the [Override Flag](https://tools.ietf.org/html/rfc4861#section-4.4)
-set. This advertisement also contains the necessary
-[Target Link-layer Address](https://tools.ietf.org/html/rfc4861#section-4.6.1)
-information set so that the targeted host does not have to query the
-targeted host for more information before updating the neighbor cache.
-This should cause the targeted host to update the neighbor cache entry
-for the given ip address with the given link-layer address.
 
 #### Neighbor Advert examples
 
@@ -137,20 +114,20 @@ This would send a "forged" Neighbor Advertisement message to `dst-ip`
 cache for the `target-ip` (`fe80::61ad:fda3:3032:f6f4`) to be updated to
 the `target-mac` (`52:54:00:c2:a7:7c`).
 
-# Saving your work
+## Saving your work
 
 The commands above require quite a bit of info. To make life easier `sylkie`
 also accepts json and plaintext files containing the necessary info to start
 sending the forged advertisments.
 
-## JSON
+### JSON
 
 The subcommand (`router-advert`, `neighbor-advert`) is a key whos
 value is an array of objects with the keys and values being the
 corresponding option and value. To run the command, pass the
 path to the json file as the argument to the `-j` option.
 
-### Example
+#### Example
 
 To run the `router-advert` example provided above from json, first create
 a file with the following.
@@ -176,12 +153,12 @@ After creating the file, start sending adverts with the following.
 sylkie -j /path/to/json
 ```
 
-## Plaintext
+### Plaintext
 
 Each line of the file must be exactly what you would provide via
 the command line minus the `sylkie` command.
 
-### Example
+#### Example
 
 To run the `neighbor-advert` example provided above from json, first create
 a file with the following.
