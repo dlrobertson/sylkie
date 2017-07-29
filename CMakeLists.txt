@@ -32,6 +32,7 @@ set(TEST_DIR "${PROJECT_SOURCE_DIR}/tests")
 set(CMAKE_EXTRA "${PROJECT_SOURCE_DIR}/CMake")
 
 include(CheckIncludeFile)
+include(ExternalProject)
 
 # Additional options
 
@@ -143,7 +144,7 @@ list(REMOVE_ITEM EXE_SRCS "${EXE_DIR}/main.c")
 # CFLAGS
 
 set(DEFAULT_DEBUG "-g -ggdb -O0")
-set(DEV_WARNINGS "-Wall -Werror -Wshadow -Wstrict-overflow -fno-strict-aliasing")
+set(DEV_WARNINGS "-Wall -Wshadow -Wstrict-overflow -fno-strict-aliasing")
 set(CMAKE_C_FLAGS_DEBUG
     "${CMAKE_C_FLAGS_DEBUG} -std=c11 ${DEFAULT_DEBUG} ${DEV_WARNINGS}")
 set(CMAKE_CXX_FLAGS_DEBUG
@@ -290,15 +291,39 @@ if(BUILD_TESTS)
 
     if(GTEST_FOUND)
         include_directories(${GTEST_INCLUDE_DIRS})
+        target_link_libraries(${PROJECT_NAME}_test gtest)
     else(GTEST_FOUND)
-        message(WARNING "Could not find gtest library. Assuming"
-                " ${CMAKE_BINARY_DIR}/libgtest.so will be provided")
-        add_library(gtest SHARED IMPORTED)
-        set_property(TARGET gtest PROPERTY IMPORTED_LOCATION
-                     "${CMAKE_BINARY_DIR}/libgtest.so")
+        # From the gtest README.md
+
+        # Download and unpack googletest at configure time
+        set(GTEST_VERSION "1.8.0")
+        configure_file(CMake/GTest.txt.in googletest-download/CMakeLists.txt)
+        execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+          RESULT_VARIABLE result
+          WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download )
+        if(result)
+          message(FATAL_ERROR "CMake step for googletest failed: ${result}")
+        endif()
+        execute_process(COMMAND ${CMAKE_COMMAND} --build .
+          RESULT_VARIABLE result
+          WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download )
+        if(result)
+          message(FATAL_ERROR "Build step for googletest failed: ${result}")
+        endif()
+
+        # Prevent overriding the parent project's compiler/linker
+        # settings on Windows
+        set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+        # Add googletest directly to our build. This defines
+        # the gtest and gtest_main targets.
+        add_subdirectory(${CMAKE_BINARY_DIR}/googletest-src
+                         ${CMAKE_BINARY_DIR}/googletest-build)
+
+        # Link against gtest
+        target_link_libraries(${PROJECT_NAME}_test gtest_main)
     endif(GTEST_FOUND)
 
-    target_link_libraries(${PROJECT_NAME}_test gtest)
 
     foreach(test ${TEST_SRCS})
         get_filename_component(TEST_NAME ${test} NAME_WE)

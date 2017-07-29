@@ -48,6 +48,7 @@ int lockdown(void) {
     seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(ioctl), 0);
     seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(sendto), 0);
     seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(exit), 0);
+    seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(exit_group), 0);
 
     return seccomp_load(ctx);
 #else
@@ -64,7 +65,7 @@ int parse_hwaddr(const char* arg, u_int8_t* addr) {
     if (len != 17) {
         return -1;
     }
-    while(arg < end && i < ETH_ALEN) {
+    while (arg < end && i < ETH_ALEN) {
         if (*arg == ':' && colon_next) {
             ++arg;
             colon_next = false;

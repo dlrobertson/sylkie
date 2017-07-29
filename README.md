@@ -43,6 +43,10 @@ The following describes the basic usage of `sylkie`. Run `sylkie -h` or
 [Advanced Usage](https://github.com/dlrobertson/sylkie/wiki#advanced-usage)
 for more examples.
 
+**Note:** `sylkie` uses [raw sockets](http://man7.org/linux/man-pages/man7/packet.7.html)
+to send the forged advertisements. As a result, the executable must
+either have the setuid bit set, or it must be run as root.
+
 ### DoS (Router Advert)
 
 The basic usage of the `router-advert` command is listed below. This

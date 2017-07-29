@@ -71,7 +71,9 @@ void sylkie_proto_node_free(struct sylkie_proto_node* node) {
 
 struct sylkie_proto_list* sylkie_proto_list_init() {
     struct sylkie_proto_list* lst = malloc(sizeof(struct sylkie_proto_list));
-    bzero(lst, sizeof(struct sylkie_proto_list));
+    if (lst) {
+        bzero(lst, sizeof(struct sylkie_proto_list));
+    }
     return lst;
 }
 
@@ -91,7 +93,7 @@ enum sylkie_error sylkie_proto_list_add(struct sylkie_proto_list* lst,
             return SYLKIE_NO_MEM;
         }
     } else {
-        return SYLKIE_NO_MEM;
+        return SYLKIE_NULL_INPUT;
     }
 }
 
@@ -105,14 +107,17 @@ enum sylkie_error sylkie_proto_list_add_node(struct sylkie_proto_list* lst,
         node->next = NULL;
         node->prev = tmp;
         tmp->next = node;
-    } else {
+        return SYLKIE_SUCCESS;
+    } else if (lst && node) {
         // We are the first node to be added
         lst->head = node;
         lst->tail = node;
         node->next = NULL;
         node->prev = NULL;
+        return SYLKIE_SUCCESS;
+    } else {
+        return SYLKIE_NULL_INPUT;
     }
-    return SYLKIE_SUCCESS;
 }
 
 enum sylkie_error sylkie_proto_list_rm_node(struct sylkie_proto_list* lst,

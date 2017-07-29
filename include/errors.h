@@ -23,16 +23,23 @@
 
 enum sylkie_error {
     SYLKIE_SUCCESS = 0,
-    SYLKIE_ERR_FATAL,
+    SYLKIE_FATAL,
     SYLKIE_NULL_INPUT,
     SYLKIE_NO_DEVICE,
     SYLKIE_NOT_FOUND,
     SYLKIE_SYSCALL_FAILED,
     SYLKIE_NO_MEM,
     SYLKIE_TOO_LARGE,
+    SYLKIE_EPERM,
+    SYLKIE_EAGAIN,
+    SYLKIE_EINVAL,
     SYLKIE_INVALID_ERR,
 };
 
 const char* sylkie_strerror(const enum sylkie_error err);
+
+void sylkie_error_set(enum sylkie_error* err, enum sylkie_error new_err);
+
+void sylkie_error_from_errno(enum sylkie_error* err);
 
 #endif

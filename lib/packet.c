@@ -26,6 +26,16 @@
 #include <packet.h>
 #include <proto_list.h>
 
+struct sylkie_packet_cache {
+    struct sylkie_buffer* buf;
+    bool dirty;
+};
+
+struct sylkie_packet {
+    struct sylkie_proto_list* lst;
+    struct sylkie_packet_cache cache;
+};
+
 static enum sylkie_error
 sylkie_generic_to_buffer(struct sylkie_buffer* buf,
                          const struct sylkie_packet* pkt,
@@ -33,7 +43,7 @@ sylkie_generic_to_buffer(struct sylkie_buffer* buf,
     if (node && !sylkie_buffer_add(buf, node->hdr.data, node->hdr.len)) {
         return SYLKIE_SUCCESS;
     } else {
-        return SYLKIE_ERR_FATAL;
+        return SYLKIE_NO_MEM;
     }
 }
 
@@ -62,9 +72,16 @@ sylkie_packet_cache_refresh(struct sylkie_packet_cache* cache,
 
 struct sylkie_packet* sylkie_packet_init() {
     struct sylkie_packet* pkt = malloc(sizeof(struct sylkie_packet));
-    pkt->lst = sylkie_proto_list_init();
-    pkt->cache.buf = NULL;
-    pkt->cache.dirty = true;
+    if (pkt) {
+        pkt->lst = sylkie_proto_list_init();
+        if (pkt->lst) {
+            pkt->cache.buf = NULL;
+            pkt->cache.dirty = true;
+        } else {
+            free(pkt);
+            return NULL;
+        }
+    }
     return pkt;
 }
 
@@ -81,17 +98,13 @@ struct sylkie_buffer* sylkie_packet_to_buffer(struct sylkie_packet* pkt,
     struct sylkie_proto_node* node = NULL;
 
     if (!pkt->cache.dirty) {
-        if (err) {
-            *err = SYLKIE_SUCCESS;
-        }
+        sylkie_error_set(err, SYLKIE_SUCCESS);
         return sylkie_buffer_clone(pkt->cache.buf);
     }
 
     buf = sylkie_buffer_init(0);
     if (!buf) {
-        if (err) {
-            *err = SYLKIE_NO_MEM;
-        }
+        sylkie_error_set(err, SYLKIE_NO_MEM);
     }
 
     SYLKIE_HEADER_LIST_FOREACH(pkt->lst, node) {
@@ -102,11 +115,10 @@ struct sylkie_buffer* sylkie_packet_to_buffer(struct sylkie_packet* pkt,
     }
 
     if (!sylkie_packet_cache_refresh(&pkt->cache, buf)) {
-        if (err) {
-            *err = SYLKIE_NO_MEM;
-        }
+        sylkie_error_set(err, SYLKIE_NO_MEM);
     }
 
+    sylkie_error_set(err, SYLKIE_SUCCESS);
     return buf;
 }
 

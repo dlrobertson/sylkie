@@ -18,20 +18,59 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <errno.h>
 #include <errors.h>
 
 static struct {
     enum sylkie_error code;
     const char* string;
-} sylkie_error_strings[] = {{SYLKIE_SUCCESS, "Success."},
-                            {SYLKIE_ERR_FATAL, "Fatal error."},
-                            {SYLKIE_NULL_INPUT, "Null input."},
-                            {SYLKIE_NO_DEVICE, "No such device."},
-                            {SYLKIE_NOT_FOUND, "Not found."},
-                            {SYLKIE_SYSCALL_FAILED, "Syscall failed."},
-                            {SYLKIE_NO_MEM, "No memory."},
-                            {SYLKIE_TOO_LARGE, "Input too large."},
-                            {SYLKIE_INVALID_ERR, "Invalid."}};
+} sylkie_error_strings[] = {
+    {SYLKIE_SUCCESS, "Success."},
+    {SYLKIE_FATAL, "Fatal error."},
+    {SYLKIE_NULL_INPUT, "Null input."},
+    {SYLKIE_NO_DEVICE, "No such device."},
+    {SYLKIE_NOT_FOUND, "Not found."},
+    {SYLKIE_SYSCALL_FAILED, "Syscall failed."},
+    {SYLKIE_NO_MEM, "No memory."},
+    {SYLKIE_TOO_LARGE, "Input too large."},
+    {SYLKIE_EPERM, "Operation not permitted."},
+    {SYLKIE_EAGAIN, "Resource temporarily unavailable."},
+    {SYLKIE_EAGAIN, "Invalid input."},
+    {SYLKIE_INVALID_ERR, "Invalid error."}};
+
+void sylkie_error_set(enum sylkie_error* err, enum sylkie_error new_err) {
+    if (err && *err != new_err) {
+        *err = new_err;
+    }
+}
+
+void sylkie_error_from_errno(enum sylkie_error* err) {
+    if (err) {
+        switch (errno) {
+        case EACCES:
+        case EPERM:
+            *err = SYLKIE_EPERM;
+            break;
+        case EAGAIN:
+            *err = SYLKIE_EAGAIN;
+            break;
+        case EINVAL:
+            *err = SYLKIE_EINVAL;
+            break;
+        case ENXIO:
+        case ENODEV:
+        case ENOENT:
+            *err = SYLKIE_NO_DEVICE;
+            break;
+        case ENOMEM:
+            *err = SYLKIE_NO_MEM;
+            break;
+        default:
+            *err = SYLKIE_SYSCALL_FAILED;
+            break;
+        }
+    }
+}
 
 const char* sylkie_strerror(const enum sylkie_error err) {
     if (err < SYLKIE_INVALID_ERR) {

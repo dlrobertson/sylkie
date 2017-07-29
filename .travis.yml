@@ -16,6 +16,5 @@ addons:
       - libjson-c-dev
       - clang-tidy-3.9
       - ninja
-      - libgtest-dev
 script:
     - ./.travis.sh

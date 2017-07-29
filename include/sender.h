@@ -21,6 +21,8 @@
 #ifndef SYLKIE_INCLUDE_SENDER_H
 #define SYLKIE_INCLUDE_SENDER_H
 
+#include <stdio.h>
+
 #include <linux/if_packet.h>
 #include <sys/types.h>
 
@@ -50,6 +52,6 @@ int sylkie_sender_send(struct sylkie_sender* sender, const u_int8_t* data,
 
 void sylkie_sender_free(struct sylkie_sender* sender);
 
-void sylkie_print_sender(struct sylkie_sender* sender);
+void sylkie_print_sender(struct sylkie_sender* sender, FILE* output);
 
 #endif

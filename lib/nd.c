@@ -35,9 +35,7 @@ sylkie_base_packet_create(const u_int8_t eth_src[ETH_ALEN],
     enum sylkie_error local_err;
     struct sylkie_packet* pkt = sylkie_packet_init();
     if (!pkt) {
-        if (err) {
-            *err = SYLKIE_NULL_INPUT;
-        }
+        sylkie_error_set(err, SYLKIE_NULL_INPUT);
         return NULL;
     }
 
@@ -47,9 +45,7 @@ sylkie_base_packet_create(const u_int8_t eth_src[ETH_ALEN],
 
     local_err = sylkie_packet_add(pkt, SYLKIE_ETH, &eth, sizeof(struct ethhdr));
     if (local_err) {
-        if (err) {
-            *err = local_err;
-        }
+        sylkie_error_set(err, local_err);
         return NULL;
     }
 
@@ -66,15 +62,11 @@ sylkie_base_packet_create(const u_int8_t eth_src[ETH_ALEN],
     local_err =
         sylkie_packet_add(pkt, SYLKIE_IPv6, &ipv6, sizeof(struct ip6_hdr));
     if (local_err) {
-        if (err) {
-            *err = local_err;
-        }
+        sylkie_error_set(err, local_err);
         return NULL;
     }
 
-    if (err) {
-        *err = SYLKIE_SUCCESS;
-    }
+    sylkie_error_set(err, SYLKIE_SUCCESS);
     return pkt;
 }
 
@@ -109,20 +101,17 @@ struct sylkie_packet* sylkie_neighbor_advert_create(
     local_err = sylkie_packet_add(pkt, SYLKIE_ICMPv6, &icmpv6,
                                   sizeof(struct icmp6_hdr));
     if (local_err) {
-        if (err) {
-            *err = local_err;
-        }
+        sylkie_error_set(err, local_err);
         return NULL;
     }
 
     local_err = sylkie_packet_add(pkt, SYLKIE_DATA, buf->data, buf->len);
     if (local_err) {
-        if (err) {
-            *err = local_err;
-        }
+        sylkie_error_set(err, local_err);
         return NULL;
     }
 
+    sylkie_error_set(err, SYLKIE_SUCCESS);
     sylkie_buffer_free(buf);
 
     return pkt;
@@ -168,20 +157,17 @@ struct sylkie_packet* sylkie_router_advert_create(
     local_err = sylkie_packet_add(pkt, SYLKIE_ICMPv6, &icmpv6,
                                   sizeof(struct icmp6_hdr));
     if (local_err) {
-        if (err) {
-            *err = local_err;
-        }
+        sylkie_error_set(err, local_err);
         return NULL;
     }
 
     local_err = sylkie_packet_add(pkt, SYLKIE_DATA, buf->data, buf->len);
     if (local_err) {
-        if (err) {
-            *err = local_err;
-        }
+        sylkie_error_set(err, local_err);
         return NULL;
     }
 
+    sylkie_error_set(err, SYLKIE_SUCCESS);
     sylkie_buffer_free(buf);
 
     return pkt;
@@ -252,9 +238,9 @@ sylkie_icmpv6_to_buffer(struct sylkie_buffer* buf,
         if (!sylkie_buffer_add(buf, node->hdr.data, node->hdr.len)) {
             return SYLKIE_SUCCESS;
         } else {
-            return SYLKIE_ERR_FATAL;
+            return SYLKIE_FATAL;
         }
     } else {
-        return SYLKIE_ERR_FATAL;
+        return SYLKIE_FATAL;
     }
 }
