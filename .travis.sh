@@ -9,19 +9,6 @@ fi
 mkdir ./build
 cd build
 
-if [ -d /usr/src/gtest ]
-then
-    cp -r /usr/src/gtest ./gtest
-    cd ./gtest
-    cmake -DBUILD_SHARED_LIBS=ON .
-    make
-    cd ..
-    ln -svf ./gtest/libgtest.so ./libgtest.so
-else
-    echo "libgtest-dev must be installed to use this script"
-    exit 1
-fi
-
 cmake -G "${GEN}" -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DBUILD_TESTS=ON ..
 
 if [[ "${GEN}" == "Ninja" ]]

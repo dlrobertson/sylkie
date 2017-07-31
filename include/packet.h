@@ -26,15 +26,9 @@
 
 #include "proto_list.h"
 
-struct sylkie_packet_cache {
-    struct sylkie_buffer* buf;
-    bool dirty;
-};
+struct sylkie_packet_cache;
 
-struct sylkie_packet {
-    struct sylkie_proto_list* lst;
-    struct sylkie_packet_cache cache;
-};
+struct sylkie_packet;
 
 struct sylkie_packet* sylkie_packet_init();
 

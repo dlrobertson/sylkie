@@ -212,7 +212,7 @@ pid_t run_from_string(char* line) {
             return -1;
         } else if (pid == 0) {
             retval = (*cmd->cmdline_func)(i, (const char**)args);
-            exit(retval);
+            _exit(retval);
         } else {
             return pid;
         }
@@ -444,5 +444,5 @@ int main(int argc, const char** argv) {
 
     cfg_set_free(&set);
 
-    return retval;
+    _exit(retval);
 }

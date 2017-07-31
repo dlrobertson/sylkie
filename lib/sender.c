@@ -18,6 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <errno.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -28,7 +29,6 @@
 
 #include <arpa/inet.h>
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -42,16 +42,12 @@ struct sylkie_sender* sylkie_sender_init(const char* iface,
     struct sylkie_sender* sender = malloc(sizeof(struct sylkie_sender));
 
     if (!sender) {
-        if (err) {
-            *err = SYLKIE_NO_MEM;
-        }
+        sylkie_error_set(err, SYLKIE_NO_MEM);
         return NULL;
     }
 
     if ((sender->fd = socket(AF_PACKET, SOCK_RAW, ETH_P_ALL)) < 0) {
-        if (err) {
-            *err = SYLKIE_SYSCALL_FAILED;
-        }
+        sylkie_error_from_errno(err);
         free(sender);
         return NULL;
     }
@@ -60,9 +56,7 @@ struct sylkie_sender* sylkie_sender_init(const char* iface,
     memset(&ifr, 0, sizeof(ifr));
     strncpy(ifr.ifr_name, iface, name_len);
     if (ioctl(sender->fd, SIOCGIFHWADDR, &ifr)) {
-        if (err) {
-            *err = SYLKIE_SYSCALL_FAILED;
-        }
+        sylkie_error_from_errno(err);
         close(sender->fd);
         free(sender);
         return NULL;
@@ -71,9 +65,7 @@ struct sylkie_sender* sylkie_sender_init(const char* iface,
     memcpy(&sender->addr.sll_addr, ifr.ifr_hwaddr.sa_data, ETH_ALEN);
 
     if (ioctl(sender->fd, SIOCGIFMTU, &ifr)) {
-        if (err) {
-            *err = SYLKIE_SYSCALL_FAILED;
-        }
+        sylkie_error_from_errno(err);
         close(sender->fd);
         free(sender);
         return NULL;
@@ -81,18 +73,14 @@ struct sylkie_sender* sylkie_sender_init(const char* iface,
     sender->mtu = ifr.ifr_mtu;
 
     if (ioctl(sender->fd, SIOCGIFINDEX, &ifr)) {
-        if (err) {
-            *err = SYLKIE_SYSCALL_FAILED;
-        }
+        sylkie_error_from_errno(err);
         close(sender->fd);
         free(sender);
         return NULL;
     }
     sender->addr.sll_ifindex = ifr.ifr_ifindex;
 
-    if (err) {
-        *err = SYLKIE_SUCCESS;
-    }
+    sylkie_error_set(err, SYLKIE_SUCCESS);
     return sender;
 }
 
@@ -100,19 +88,15 @@ int sylkie_sender_send(struct sylkie_sender* sender, const u_int8_t* data,
                        size_t len, int flags, enum sylkie_error* err) {
     int res;
     if (!sender) {
-        if (err) {
-            *err = SYLKIE_NULL_INPUT;
-        }
+        sylkie_error_set(err, SYLKIE_NULL_INPUT);
         return 0;
     }
     if ((res = sendto(sender->fd, data, len, flags,
                       (struct sockaddr*)&sender->addr,
                       sizeof(struct sockaddr_ll))) < 0) {
-        if (err) {
-            *err = SYLKIE_SYSCALL_FAILED;
-        }
+        sylkie_error_from_errno(err);
     } else if (err) {
-        *err = SYLKIE_SUCCESS;
+        sylkie_error_set(err, SYLKIE_SUCCESS);
     }
     return res;
 }
@@ -129,9 +113,7 @@ int sylkie_sender_send_packet(struct sylkie_sender* sender,
     int res = 0;
     struct sylkie_buffer* buf = NULL;
     if (!pkt) {
-        if (err) {
-            *err = SYLKIE_NULL_INPUT;
-        }
+        sylkie_error_set(err, SYLKIE_NULL_INPUT);
         return -1;
     }
 
@@ -139,9 +121,7 @@ int sylkie_sender_send_packet(struct sylkie_sender* sender,
 
     if (buf) {
         if (buf->len > sender->mtu) {
-            if (err) {
-                *err = SYLKIE_TOO_LARGE;
-            }
+            sylkie_error_set(err, SYLKIE_TOO_LARGE);
             return -1;
         } else {
             res = sylkie_sender_send_buffer(sender, buf, flags, err);
@@ -149,28 +129,26 @@ int sylkie_sender_send_packet(struct sylkie_sender* sender,
             return res;
         }
     } else {
-        if (err) {
-            *err = SYLKIE_NOT_FOUND;
-        }
+        sylkie_error_set(err, SYLKIE_EINVAL);
         return -1;
     }
 }
 
 // Helpful for debugging
-void sylkie_print_sender(struct sylkie_sender* sender) {
+void sylkie_print_sender(struct sylkie_sender* sender, FILE* output) {
     if (!sender) {
         return;
     }
     int i;
     struct sockaddr_ll* dev = &sender->addr;
-    printf("sender (%p)\nfd: %d\nmtu: %d\naddr:\n", sender, sender->fd,
-           sender->mtu);
-    printf("\tindex: %d\n\thalen: %d\n\tmac: ", dev->sll_ifindex,
-           dev->sll_halen);
+    fprintf(output, "sender (%p)\nfd: %d\nmtu: %d\naddr:\n", sender, sender->fd,
+            sender->mtu);
+    fprintf(output, "\tindex: %d\n\thalen: %d\n\tmac: ", dev->sll_ifindex,
+            dev->sll_halen);
     for (i = 0; i < dev->sll_halen - 1; ++i) {
-        printf("%02x:", dev->sll_addr[i]);
+        fprintf(output, "%02x:", dev->sll_addr[i]);
     }
-    printf("%02x\n", dev->sll_addr[i]);
+    fprintf(output, "%02x\n", dev->sll_addr[i]);
 }
 
 void sylkie_sender_free(struct sylkie_sender* sender) {
