@@ -21,6 +21,17 @@
 #ifndef SYLKIE_INCLUDE_ERRORS_H
 #define SYLKIE_INCLUDE_ERRORS_H
 
+#include <errno.h>
+
+/**
+ * \defgroup errors sylkie_error structures and methods
+ * \ingroup libsylkie
+ * @{
+ */
+
+/**
+ * \brief Error types
+ */
 enum sylkie_error {
     SYLKIE_SUCCESS = 0,
     SYLKIE_FATAL,
@@ -36,10 +47,27 @@ enum sylkie_error {
     SYLKIE_INVALID_ERR,
 };
 
+/**
+ * \brief Return the human readable string for the given error
+ * \param err error to convert to string
+ */
 const char* sylkie_strerror(const enum sylkie_error err);
 
+/**
+ * \brief Set err to new_err
+ * \param err Pointer to error that will be set
+ * \param new_err Value err will be set to
+ *
+ * Note: This also checks if the type is different and err is not null
+ */
 void sylkie_error_set(enum sylkie_error* err, enum sylkie_error new_err);
 
+/**
+ * \brief Attempt to convert errno into a sylkie_error
+ * \param err Pointer to error that will be set to the converted error
+ */
 void sylkie_error_from_errno(enum sylkie_error* err);
+
+// @} end of doxygen errors group
 
 #endif
