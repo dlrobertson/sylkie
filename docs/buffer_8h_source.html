@@ -9,6 +9,13 @@
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript">
+  $(document).ready(initResizable);
+</script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
@@ -22,7 +29,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sylkie
-   &#160;<span id="projectnumber">0.0.1</span>
+   &#160;<span id="projectnumber">0.0.2</span>
    </div>
    <div id="projectbrief">IPv6 Address Spoofing with the NDP</div>
   </td>
@@ -44,6 +51,21 @@ $(function() {
 });
 </script>
 <div id="main-nav"></div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){initNavTree('buffer_8h_source.html','');});
+</script>
+<div id="doc-content">
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -58,32 +80,31 @@ $(function() {
 </iframe>
 </div>
 
-<div id="nav-path" class="navpath">
-  <ul>
-<li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li>  </ul>
-</div>
-</div><!-- top -->
 <div class="header">
   <div class="headertitle">
 <div class="title">buffer.h</div>  </div>
 </div><!--header-->
 <div class="contents">
 <div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Copyright (c) 2017 Daniel L. Robertson</span></div><div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">//</span></div><div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="comment">// Permission is hereby granted, free of charge, to any person obtaining a copy</span></div><div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="comment">// of this software and associated documentation files (the &quot;Software&quot;), to deal</span></div><div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="comment">// in the Software without restriction, including without limitation the rights</span></div><div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="comment">// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span></div><div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="comment">// copies of the Software, and to permit persons to whom the Software is</span></div><div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="comment">// furnished to do so, subject to the following conditions:</span></div><div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="comment">//</span></div><div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="comment">// The above copyright notice and this permission notice shall be included in</span></div><div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="comment">// all copies or substantial portions of the Software.</span></div><div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="comment">//</span></div><div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="comment">// THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span></div><div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="comment">// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span></div><div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="comment">// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span></div><div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="comment">// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span></div><div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="comment">// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span></div><div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="comment">// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</span></div><div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="comment">// SOFTWARE.</span></div><div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;</div><div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor">#ifndef SYLKIE_INCLUDE_BUFFER_H</span></div><div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#define SYLKIE_INCLUDE_BUFFER_H</span></div><div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;</div><div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#include &lt;sys/types.h&gt;</span></div><div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;</div><div class="line"><a name="l00035"></a><span class="lineno"><a class="line" href="structsylkie__buffer.html">   35</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structsylkie__buffer.html">sylkie_buffer</a> {</div><div class="line"><a name="l00037"></a><span class="lineno"><a class="line" href="structsylkie__buffer.html#a3ccfd5e8f34b9c94ea1240234f1841c4">   37</a></span>&#160;    <span class="keywordtype">size_t</span> <a class="code" href="structsylkie__buffer.html#a3ccfd5e8f34b9c94ea1240234f1841c4">len</a>;</div><div class="line"><a name="l00039"></a><span class="lineno"><a class="line" href="structsylkie__buffer.html#a2f92a549f224800a04a7b9294557e344">   39</a></span>&#160;    <span class="keywordtype">size_t</span> <a class="code" href="structsylkie__buffer.html#a2f92a549f224800a04a7b9294557e344">cap</a>;</div><div class="line"><a name="l00041"></a><span class="lineno"><a class="line" href="structsylkie__buffer.html#ae8b185e771b7df770c0b761bf92cd525">   41</a></span>&#160;    u_int8_t* <a class="code" href="structsylkie__buffer.html#ae8b185e771b7df770c0b761bf92cd525">data</a>;</div><div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;};</div><div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;</div><div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="keyword">struct </span><a class="code" href="structsylkie__buffer.html">sylkie_buffer</a>* <a class="code" href="group__buffer.html#gae9f31f869c488da6eec968ab62942231">sylkie_buffer_init</a>(<span class="keywordtype">size_t</span> sz);</div><div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;</div><div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="keywordtype">int</span> <a class="code" href="group__buffer.html#ga624eb986a54ad3c86c7d29f2626080a6">sylkie_buffer_add</a>(<span class="keyword">struct</span> <a class="code" href="structsylkie__buffer.html">sylkie_buffer</a>* buf, <span class="keyword">const</span> <span class="keywordtype">void</span>* ptr, <span class="keywordtype">size_t</span> sz);</div><div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;</div><div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="keywordtype">int</span> <a class="code" href="group__buffer.html#ga9944e8e9f331271e2b5a0a1fc9f38e15">sylkie_buffer_add_value</a>(<span class="keyword">struct</span> <a class="code" href="structsylkie__buffer.html">sylkie_buffer</a>* buf, <span class="keyword">const</span> u_int8_t value,</div><div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;                            <span class="keywordtype">size_t</span> sz);</div><div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;</div><div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="keyword">struct </span><a class="code" href="structsylkie__buffer.html">sylkie_buffer</a>* <a class="code" href="group__buffer.html#gad1bb5aafed22389e18c92bc0125dea43">sylkie_buffer_clone</a>(<span class="keyword">const</span> <span class="keyword">struct</span> <a class="code" href="structsylkie__buffer.html">sylkie_buffer</a>* buf);</div><div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;</div><div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__buffer.html#gaa3f280a2763404982ac7db27b345d518">sylkie_buffer_print</a>(<span class="keyword">const</span> <span class="keyword">struct</span> <a class="code" href="structsylkie__buffer.html">sylkie_buffer</a>* buf);</div><div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;</div><div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__buffer.html#ga3090c0aeb31f1f61f79d479cb94906b5">sylkie_buffer_free</a>(<span class="keyword">struct</span> <a class="code" href="structsylkie__buffer.html">sylkie_buffer</a>* buf);</div><div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;</div><div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;<span class="comment">// @} end of doxygen buffer group</span></div><div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;</div><div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;<span class="preprocessor">#endif</span></div><div class="ttc" id="structsylkie__buffer_html"><div class="ttname"><a href="structsylkie__buffer.html">sylkie_buffer</a></div><div class="ttdoc">Generic growable buffer structure. </div><div class="ttdef"><b>Definition:</b> buffer.h:35</div></div>
-<div class="ttc" id="group__buffer_html_gad1bb5aafed22389e18c92bc0125dea43"><div class="ttname"><a href="group__buffer.html#gad1bb5aafed22389e18c92bc0125dea43">sylkie_buffer::sylkie_buffer_clone</a></div><div class="ttdeci">struct sylkie_buffer * sylkie_buffer_clone(const struct sylkie_buffer *buf)</div><div class="ttdoc">Copy the given buffer. </div><div class="ttdef"><b>Definition:</b> buffer.c:96</div></div>
+<div class="ttc" id="group__buffer_html_gad1bb5aafed22389e18c92bc0125dea43"><div class="ttname"><a href="group__buffer.html#gad1bb5aafed22389e18c92bc0125dea43">sylkie_buffer::sylkie_buffer_clone</a></div><div class="ttdeci">struct sylkie_buffer * sylkie_buffer_clone(const struct sylkie_buffer *buf)</div><div class="ttdoc">Copy the given buffer. </div><div class="ttdef"><b>Definition:</b> buffer.c:97</div></div>
 <div class="ttc" id="structsylkie__buffer_html_ae8b185e771b7df770c0b761bf92cd525"><div class="ttname"><a href="structsylkie__buffer.html#ae8b185e771b7df770c0b761bf92cd525">sylkie_buffer::data</a></div><div class="ttdeci">u_int8_t * data</div><div class="ttdoc">Raw pointer to the buffer. </div><div class="ttdef"><b>Definition:</b> buffer.h:41</div></div>
 <div class="ttc" id="structsylkie__buffer_html_a3ccfd5e8f34b9c94ea1240234f1841c4"><div class="ttname"><a href="structsylkie__buffer.html#a3ccfd5e8f34b9c94ea1240234f1841c4">sylkie_buffer::len</a></div><div class="ttdeci">size_t len</div><div class="ttdoc">Length of the buffer. </div><div class="ttdef"><b>Definition:</b> buffer.h:37</div></div>
-<div class="ttc" id="group__buffer_html_ga9944e8e9f331271e2b5a0a1fc9f38e15"><div class="ttname"><a href="group__buffer.html#ga9944e8e9f331271e2b5a0a1fc9f38e15">sylkie_buffer::sylkie_buffer_add_value</a></div><div class="ttdeci">int sylkie_buffer_add_value(struct sylkie_buffer *buf, const u_int8_t value, size_t sz)</div><div class="ttdoc">Apend data to the buffer. </div><div class="ttdef"><b>Definition:</b> buffer.c:85</div></div>
+<div class="ttc" id="group__buffer_html_ga9944e8e9f331271e2b5a0a1fc9f38e15"><div class="ttname"><a href="group__buffer.html#ga9944e8e9f331271e2b5a0a1fc9f38e15">sylkie_buffer::sylkie_buffer_add_value</a></div><div class="ttdeci">int sylkie_buffer_add_value(struct sylkie_buffer *buf, const u_int8_t value, size_t sz)</div><div class="ttdoc">Apend data to the buffer. </div><div class="ttdef"><b>Definition:</b> buffer.c:86</div></div>
 <div class="ttc" id="structsylkie__buffer_html_a2f92a549f224800a04a7b9294557e344"><div class="ttname"><a href="structsylkie__buffer.html#a2f92a549f224800a04a7b9294557e344">sylkie_buffer::cap</a></div><div class="ttdeci">size_t cap</div><div class="ttdoc">Capactity of the buffer. </div><div class="ttdef"><b>Definition:</b> buffer.h:39</div></div>
 <div class="ttc" id="group__buffer_html_gae9f31f869c488da6eec968ab62942231"><div class="ttname"><a href="group__buffer.html#gae9f31f869c488da6eec968ab62942231">sylkie_buffer::sylkie_buffer_init</a></div><div class="ttdeci">struct sylkie_buffer * sylkie_buffer_init(size_t sz)</div><div class="ttdoc">Initialize a sylkie_buffer to size sz </div><div class="ttdef"><b>Definition:</b> buffer.c:27</div></div>
-<div class="ttc" id="group__buffer_html_ga624eb986a54ad3c86c7d29f2626080a6"><div class="ttname"><a href="group__buffer.html#ga624eb986a54ad3c86c7d29f2626080a6">sylkie_buffer::sylkie_buffer_add</a></div><div class="ttdeci">int sylkie_buffer_add(struct sylkie_buffer *buf, const void *ptr, size_t sz)</div><div class="ttdoc">Append data to the buffer. </div><div class="ttdef"><b>Definition:</b> buffer.c:75</div></div>
-<div class="ttc" id="group__buffer_html_gaa3f280a2763404982ac7db27b345d518"><div class="ttname"><a href="group__buffer.html#gaa3f280a2763404982ac7db27b345d518">sylkie_buffer::sylkie_buffer_print</a></div><div class="ttdeci">void sylkie_buffer_print(const struct sylkie_buffer *buf)</div><div class="ttdoc">Print the contents of the buffer in hexadecimal to stdout. </div><div class="ttdef"><b>Definition:</b> buffer.c:106</div></div>
-<div class="ttc" id="group__buffer_html_ga3090c0aeb31f1f61f79d479cb94906b5"><div class="ttname"><a href="group__buffer.html#ga3090c0aeb31f1f61f79d479cb94906b5">sylkie_buffer::sylkie_buffer_free</a></div><div class="ttdeci">void sylkie_buffer_free(struct sylkie_buffer *buf)</div><div class="ttdoc">Free the memory allocated to this buffer. </div><div class="ttdef"><b>Definition:</b> buffer.c:121</div></div>
+<div class="ttc" id="group__buffer_html_ga624eb986a54ad3c86c7d29f2626080a6"><div class="ttname"><a href="group__buffer.html#ga624eb986a54ad3c86c7d29f2626080a6">sylkie_buffer::sylkie_buffer_add</a></div><div class="ttdeci">int sylkie_buffer_add(struct sylkie_buffer *buf, const void *ptr, size_t sz)</div><div class="ttdoc">Append data to the buffer. </div><div class="ttdef"><b>Definition:</b> buffer.c:76</div></div>
+<div class="ttc" id="group__buffer_html_gaa3f280a2763404982ac7db27b345d518"><div class="ttname"><a href="group__buffer.html#gaa3f280a2763404982ac7db27b345d518">sylkie_buffer::sylkie_buffer_print</a></div><div class="ttdeci">void sylkie_buffer_print(const struct sylkie_buffer *buf)</div><div class="ttdoc">Print the contents of the buffer in hexadecimal to stdout. </div><div class="ttdef"><b>Definition:</b> buffer.c:107</div></div>
+<div class="ttc" id="group__buffer_html_ga3090c0aeb31f1f61f79d479cb94906b5"><div class="ttname"><a href="group__buffer.html#ga3090c0aeb31f1f61f79d479cb94906b5">sylkie_buffer::sylkie_buffer_free</a></div><div class="ttdeci">void sylkie_buffer_free(struct sylkie_buffer *buf)</div><div class="ttdoc">Free the memory allocated to this buffer. </div><div class="ttdef"><b>Definition:</b> buffer.c:122</div></div>
 </div><!-- fragment --></div><!-- contents -->
+</div><!-- doc-content -->
 <!-- start footer part -->
-<hr class="footer"/><address class="footer"><small>
-Generated by &#160;<a href="http://www.doxygen.org/index.html">
-<img class="footer" src="doxygen.png" alt="doxygen"/>
-</a> 1.8.13
-</small></address>
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><b>buffer.h</b></li>
+    <li class="footer">Generated by
+    <a href="http://www.doxygen.org/index.html">
+    <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.13 </li>
+  </ul>
+</div>
 </body>
 </html>

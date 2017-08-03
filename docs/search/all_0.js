@@ -13,6 +13,7 @@ var searchData=
   ['cfg_5fset_5fitem_5fcreate',['cfg_set_item_create',['../group__cfg.html#gac0078c9cf372e1f6cd109dda304191ae',1,'cfg_set_item_create(const struct cfg_parser *parser, void *data):&#160;cfg.c'],['../group__cfg.html#gac0078c9cf372e1f6cd109dda304191ae',1,'cfg_set_item_create(const struct cfg_parser *parser, void *data):&#160;cfg.c']]],
   ['cfg_5fset_5fitem_5ffree',['cfg_set_item_free',['../group__cfg.html#gac2dba26ca482b1cf7cbee2d9f2cd0973',1,'cfg_set_item_free(struct cfg_set_item *item):&#160;cfg.c'],['../group__cfg.html#gac2dba26ca482b1cf7cbee2d9f2cd0973',1,'cfg_set_item_free(struct cfg_set_item *item):&#160;cfg.c']]],
   ['cfg_5fset_5fusage',['cfg_set_usage',['../group__cfg.html#ga56d0e6cdf7e0dced563ef7c5fd7d9699',1,'cfg_set_usage(const struct cfg_set *set, FILE *output):&#160;cfg.c'],['../group__cfg.html#ga56d0e6cdf7e0dced563ef7c5fd7d9699',1,'cfg_set_usage(const struct cfg_set *set, FILE *output):&#160;cfg.c']]],
+  ['cfg_5fsubcmd',['cfg_subcmd',['../structcfg__subcmd.html',1,'']]],
   ['cfg_5fvalue',['cfg_value',['../structcfg__value.html',1,'']]],
   ['cfg_5fvalue_5ftype',['cfg_value_type',['../group__cfg.html#ga572de49adfa0924547335ceb84893f3f',1,'cfg.h']]],
   ['core_20public_20functions_20and_20structures',['Core public functions and structures',['../group__libsylkie.html',1,'']]]
