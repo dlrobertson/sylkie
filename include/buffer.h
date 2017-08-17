@@ -101,6 +101,6 @@ void sylkie_buffer_print(const struct sylkie_buffer* buf);
  */
 void sylkie_buffer_free(struct sylkie_buffer* buf);
 
-// @} end of doxygen buffer group
+/// @} end of doxygen buffer group
 
 #endif
