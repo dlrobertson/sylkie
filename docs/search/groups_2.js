@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['sylkie_5fbuffer_20structures_20and_20methods',['sylkie_buffer structures and methods',['../group__buffer.html',1,'']]],
-  ['sylkie_5ferror_20structures_20and_20methods',['sylkie_error structures and methods',['../group__errors.html',1,'']]]
+  ['protocol_20list_20structures_20and_20methods',['protocol list structures and methods',['../group__protocol.html',1,'']]],
+  ['private_20structures_20and_20functions_20used_20by_20main',['Private structures and functions used by main',['../group__sylkie.html',1,'']]]
 ];

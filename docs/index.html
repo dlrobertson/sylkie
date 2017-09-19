@@ -90,7 +90,18 @@ Introduction</h1>
 <p>This is the inner workings of the <a href="http://sylkie.io">sylkie</a> command line tool.</p>
 <h1><a class="anchor" id="purpose_sec"></a>
 Purpose</h1>
-<p>The documentation here is targeted at developers that are either contributing to the tool, or are looking to do something more complex. Most use cases can be covered by command line programs, but sometimes it is necessary to directly use the shared lib. </p>
+<p>The documentation here is targeted at developers that are either contributing to the tool, or are looking to do something more complex. Most use cases can be covered by command line programs, but sometimes it is necessary to directly use the shared lib.</p>
+<h1><a class="anchor" id="get_started"></a>
+Getting Started</h1>
+<h2><a class="anchor" id="get_code"></a>
+Get the code</h2>
+<div class="fragment"><div class="line">git clone https:<span class="comment">//github.com/dlrobertson/sylkie</span></div><div class="line">cd ./sylkie</div><div class="line"></div><div class="line"><span class="preprocessor"># Compile the code</span></div><div class="line">mkdir -p ./build</div><div class="line">cd ./build</div><div class="line">cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON ..</div><div class="line">make</div><div class="line">make install</div></div><!-- fragment --><h2><a class="anchor" id="run_tests"></a>
+Run the tests</h2>
+<p>Ensure that you ran cmake with the additional argument <code>-DBUILD_TESTS=ON</code>.</p>
+<div class="fragment"><div class="line">make test</div></div><!-- fragment --><p>or</p>
+<div class="fragment"><div class="line">./sylkie_test</div></div><!-- fragment --><h2><a class="anchor" id="build_docs"></a>
+Build the docs</h2>
+<p>Ensure that you ran cmake with the additional argument <code>-DBUILD_DOCS=ON</code>, and make sure <code>doxygen</code> is installed on your local system. If everything has been set up correctly <code>make doc</code> should compile the documentation. </p>
 </div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

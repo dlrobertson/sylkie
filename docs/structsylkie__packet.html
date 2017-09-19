@@ -82,12 +82,29 @@ $(document).ready(function(){initNavTree('structsylkie__packet.html','');});
 
 <div class="header">
   <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-attribs">Data Fields</a>  </div>
   <div class="headertitle">
 <div class="title">sylkie_packet Struct Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:gab4d768a71543474dcefa430cfd57ee0a"><td class="memItemLeft" align="right" valign="top">
+struct <a class="el" href="structsylkie__packet.html">sylkie_packet</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__packet.html#gab4d768a71543474dcefa430cfd57ee0a">sylkie_packet_init</a> ()</td></tr>
+<tr class="memdesc:gab4d768a71543474dcefa430cfd57ee0a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize a <a class="el" href="structsylkie__buffer.html" title="Generic growable buffer structure. ">sylkie_buffer</a>. <br /></td></tr>
+<tr class="separator:gab4d768a71543474dcefa430cfd57ee0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaeb26430be09062a4da922d7a2e770c15"><td class="memItemLeft" align="right" valign="top">enum <a class="el" href="group__errors.html#gaa49039a04eb836e3f41cb48345448ec9">sylkie_error</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__packet.html#gaeb26430be09062a4da922d7a2e770c15">sylkie_packet_add</a> (struct <a class="el" href="structsylkie__packet.html">sylkie_packet</a> *pkt, enum <a class="el" href="group__protocol.html#gac5bc77fae99c0e3e5ac27b080edcfbbc">sylkie_proto_type</a> type, void *data, size_t sz)</td></tr>
+<tr class="memdesc:gaeb26430be09062a4da922d7a2e770c15"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a protocol header to the packet.  <a href="group__packet.html#gaeb26430be09062a4da922d7a2e770c15">More...</a><br /></td></tr>
+<tr class="separator:gaeb26430be09062a4da922d7a2e770c15"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf7892109aa73b067bda3dda140e1bed6"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="structsylkie__buffer.html">sylkie_buffer</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__packet.html#gaf7892109aa73b067bda3dda140e1bed6">sylkie_packet_to_buffer</a> (struct <a class="el" href="structsylkie__packet.html">sylkie_packet</a> *pkt, enum <a class="el" href="group__errors.html#gaa49039a04eb836e3f41cb48345448ec9">sylkie_error</a> *err)</td></tr>
+<tr class="memdesc:gaf7892109aa73b067bda3dda140e1bed6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert a <a class="el" href="structsylkie__packet.html">sylkie_packet</a> to a <a class="el" href="structsylkie__buffer.html" title="Generic growable buffer structure. ">sylkie_buffer</a>.  <a href="group__packet.html#gaf7892109aa73b067bda3dda140e1bed6">More...</a><br /></td></tr>
+<tr class="separator:gaf7892109aa73b067bda3dda140e1bed6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac36e1f6a06036a995c946dbbea2995f0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__packet.html#gac36e1f6a06036a995c946dbbea2995f0">sylkie_packet_free</a> (struct <a class="el" href="structsylkie__packet.html">sylkie_packet</a> *pkt)</td></tr>
+<tr class="memdesc:gac36e1f6a06036a995c946dbbea2995f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free the memory allocated to this packet.  <a href="group__packet.html#gac36e1f6a06036a995c946dbbea2995f0">More...</a><br /></td></tr>
+<tr class="separator:gac36e1f6a06036a995c946dbbea2995f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Data Fields</h2></td></tr>
 <tr class="memitem:a9de1b34e19a27a86b183910167326029"><td class="memItemLeft" align="right" valign="top"><a id="a9de1b34e19a27a86b183910167326029"></a>
@@ -97,8 +114,9 @@ struct <a class="el" href="structsylkie__proto__list.html">sylkie_proto_list</a>
 struct <a class="el" href="structsylkie__packet__cache.html">sylkie_packet_cache</a>&#160;</td><td class="memItemRight" valign="bottom"><b>cache</b></td></tr>
 <tr class="separator:a8b7b28b80ab9cda2434f5e62e2e7796f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<hr/>The documentation for this struct was generated from the following files:<ul>
 <li>/home/drobertson/git/sylkie/lib/packet.c</li>
+<li>/home/drobertson/git/sylkie/include/<a class="el" href="packet_8h_source.html">packet.h</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->

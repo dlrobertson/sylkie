@@ -82,12 +82,41 @@ $(document).ready(function(){initNavTree('structsylkie__proto__list.html','');})
 
 <div class="header">
   <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-attribs">Data Fields</a>  </div>
   <div class="headertitle">
 <div class="title">sylkie_proto_list Struct Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:gae9e49939b32c06d25be09d5113f8de37"><td class="memItemLeft" align="right" valign="top">
+struct <a class="el" href="structsylkie__proto__list.html">sylkie_proto_list</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__protocol.html#gae9e49939b32c06d25be09d5113f8de37">sylkie_proto_list_init</a> ()</td></tr>
+<tr class="memdesc:gae9e49939b32c06d25be09d5113f8de37"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize a <a class="el" href="structsylkie__proto__list.html">sylkie_proto_list</a>. <br /></td></tr>
+<tr class="separator:gae9e49939b32c06d25be09d5113f8de37"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadd1e39ec24877a2185d3fd02959bbe96"><td class="memItemLeft" align="right" valign="top">enum <a class="el" href="group__errors.html#gaa49039a04eb836e3f41cb48345448ec9">sylkie_error</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__protocol.html#gadd1e39ec24877a2185d3fd02959bbe96">sylkie_proto_list_add</a> (struct <a class="el" href="structsylkie__proto__list.html">sylkie_proto_list</a> *lst, enum <a class="el" href="group__protocol.html#gac5bc77fae99c0e3e5ac27b080edcfbbc">sylkie_proto_type</a> type, void *data, size_t len)</td></tr>
+<tr class="memdesc:gadd1e39ec24877a2185d3fd02959bbe96"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a protocol header to the given list.  <a href="group__protocol.html#gadd1e39ec24877a2185d3fd02959bbe96">More...</a><br /></td></tr>
+<tr class="separator:gadd1e39ec24877a2185d3fd02959bbe96"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa0262777eb18f236fd61279387f6711d"><td class="memItemLeft" align="right" valign="top">enum <a class="el" href="group__errors.html#gaa49039a04eb836e3f41cb48345448ec9">sylkie_error</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__protocol.html#gaa0262777eb18f236fd61279387f6711d">sylkie_proto_list_add_node</a> (struct <a class="el" href="structsylkie__proto__list.html">sylkie_proto_list</a> *lst, struct <a class="el" href="structsylkie__proto__node.html">sylkie_proto_node</a> *node)</td></tr>
+<tr class="memdesc:gaa0262777eb18f236fd61279387f6711d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a <a class="el" href="structsylkie__proto__node.html" title="Node of the protocol header linked list. ">sylkie_proto_node</a> to a given protocol list.  <a href="group__protocol.html#gaa0262777eb18f236fd61279387f6711d">More...</a><br /></td></tr>
+<tr class="separator:gaa0262777eb18f236fd61279387f6711d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4897269277b3906e4161d4aff443f6b6"><td class="memItemLeft" align="right" valign="top">enum <a class="el" href="group__errors.html#gaa49039a04eb836e3f41cb48345448ec9">sylkie_error</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__protocol.html#ga4897269277b3906e4161d4aff443f6b6">sylkie_proto_list_rm_node</a> (struct <a class="el" href="structsylkie__proto__list.html">sylkie_proto_list</a> *lst, struct <a class="el" href="structsylkie__proto__node.html">sylkie_proto_node</a> *node)</td></tr>
+<tr class="memdesc:ga4897269277b3906e4161d4aff443f6b6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove a <a class="el" href="structsylkie__proto__node.html" title="Node of the protocol header linked list. ">sylkie_proto_node</a> from a given protocol list.  <a href="group__protocol.html#ga4897269277b3906e4161d4aff443f6b6">More...</a><br /></td></tr>
+<tr class="separator:ga4897269277b3906e4161d4aff443f6b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga096030a1f1810583d0733a817f7dad26"><td class="memItemLeft" align="right" valign="top">enum <a class="el" href="group__errors.html#gaa49039a04eb836e3f41cb48345448ec9">sylkie_error</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__protocol.html#ga096030a1f1810583d0733a817f7dad26">sylkie_proto_list_rm</a> (struct <a class="el" href="structsylkie__proto__list.html">sylkie_proto_list</a> *lst, enum <a class="el" href="group__protocol.html#gac5bc77fae99c0e3e5ac27b080edcfbbc">sylkie_proto_type</a> type)</td></tr>
+<tr class="memdesc:ga096030a1f1810583d0733a817f7dad26"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove all protocol nodes from a given list of the given type.  <a href="group__protocol.html#ga096030a1f1810583d0733a817f7dad26">More...</a><br /></td></tr>
+<tr class="separator:ga096030a1f1810583d0733a817f7dad26"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga54c0091e75241316105644565c9efa46"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="structsylkie__proto__node.html">sylkie_proto_node</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__protocol.html#ga54c0091e75241316105644565c9efa46">sylkie_proto_list_head</a> (struct <a class="el" href="structsylkie__proto__list.html">sylkie_proto_list</a> *lst)</td></tr>
+<tr class="memdesc:ga54c0091e75241316105644565c9efa46"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the head of a given protocol list.  <a href="group__protocol.html#ga54c0091e75241316105644565c9efa46">More...</a><br /></td></tr>
+<tr class="separator:ga54c0091e75241316105644565c9efa46"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2ecd8620fd8d9c435f1a7b5e6352a66a"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="structsylkie__proto__node.html">sylkie_proto_node</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__protocol.html#ga2ecd8620fd8d9c435f1a7b5e6352a66a">sylkie_proto_list_tail</a> (struct <a class="el" href="structsylkie__proto__list.html">sylkie_proto_list</a> *lst)</td></tr>
+<tr class="memdesc:ga2ecd8620fd8d9c435f1a7b5e6352a66a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the tail of a given protocol list.  <a href="group__protocol.html#ga2ecd8620fd8d9c435f1a7b5e6352a66a">More...</a><br /></td></tr>
+<tr class="separator:ga2ecd8620fd8d9c435f1a7b5e6352a66a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga628b0123de31a04af14a0afd3a56faf2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__protocol.html#ga628b0123de31a04af14a0afd3a56faf2">sylkie_proto_list_free</a> (struct <a class="el" href="structsylkie__proto__list.html">sylkie_proto_list</a> *lst)</td></tr>
+<tr class="memdesc:ga628b0123de31a04af14a0afd3a56faf2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free all allocated resources associated with the list.  <a href="group__protocol.html#ga628b0123de31a04af14a0afd3a56faf2">More...</a><br /></td></tr>
+<tr class="separator:ga628b0123de31a04af14a0afd3a56faf2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Data Fields</h2></td></tr>
 <tr class="memitem:ad261256ecf3605b08bcadf6fedf1d274"><td class="memItemLeft" align="right" valign="top"><a id="ad261256ecf3605b08bcadf6fedf1d274"></a>
@@ -97,7 +126,8 @@ struct <a class="el" href="structsylkie__proto__node.html">sylkie_proto_node</a>
 struct <a class="el" href="structsylkie__proto__node.html">sylkie_proto_node</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>tail</b></td></tr>
 <tr class="separator:a8b8818b0c1dbde7a36db5c3769789142"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<hr/>The documentation for this struct was generated from the following files:<ul>
+<li>/home/drobertson/git/sylkie/lib/proto_list.c</li>
 <li>/home/drobertson/git/sylkie/include/<a class="el" href="proto__list_8h_source.html">proto_list.h</a></li>
 </ul>
 </div><!-- contents -->

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['usage',['usage',['../structcfg__parser.html#a9f29c22abcd507ca90a20f803a563684',1,'cfg_parser']]]
+  ['prev',['prev',['../structsylkie__proto__node.html#a4d7e8724df75997d14278503851036a9',1,'sylkie_proto_node']]]
 ];

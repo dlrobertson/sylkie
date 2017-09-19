@@ -82,12 +82,37 @@ $(document).ready(function(){initNavTree('structsylkie__sender.html','');});
 
 <div class="header">
   <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-attribs">Data Fields</a>  </div>
   <div class="headertitle">
 <div class="title">sylkie_sender Struct Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:ga50e39e96e518edb0d1e7b0b80f2e6272"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="structsylkie__sender.html">sylkie_sender</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sender.html#ga50e39e96e518edb0d1e7b0b80f2e6272">sylkie_sender_init</a> (const char *iface, enum <a class="el" href="group__errors.html#gaa49039a04eb836e3f41cb48345448ec9">sylkie_error</a> *err)</td></tr>
+<tr class="memdesc:ga50e39e96e518edb0d1e7b0b80f2e6272"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize a sender for a given interface.  <a href="group__sender.html#ga50e39e96e518edb0d1e7b0b80f2e6272">More...</a><br /></td></tr>
+<tr class="separator:ga50e39e96e518edb0d1e7b0b80f2e6272"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf6ee0a4c38218f580a0b38dc2a21366c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sender.html#gaf6ee0a4c38218f580a0b38dc2a21366c">sylkie_sender_send_buffer</a> (struct <a class="el" href="structsylkie__sender.html">sylkie_sender</a> *sender, const struct <a class="el" href="structsylkie__buffer.html">sylkie_buffer</a> *buf, int flags, enum <a class="el" href="group__errors.html#gaa49039a04eb836e3f41cb48345448ec9">sylkie_error</a> *err)</td></tr>
+<tr class="memdesc:gaf6ee0a4c38218f580a0b38dc2a21366c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send a <a class="el" href="structsylkie__buffer.html" title="Generic growable buffer structure. ">sylkie_buffer</a>.  <a href="group__sender.html#gaf6ee0a4c38218f580a0b38dc2a21366c">More...</a><br /></td></tr>
+<tr class="separator:gaf6ee0a4c38218f580a0b38dc2a21366c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5c8a29ea0d3a5c0866d97579fd5b4964"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sender.html#ga5c8a29ea0d3a5c0866d97579fd5b4964">sylkie_sender_send_packet</a> (struct <a class="el" href="structsylkie__sender.html">sylkie_sender</a> *sender, struct <a class="el" href="structsylkie__packet.html">sylkie_packet</a> *pkt, int flags, enum <a class="el" href="group__errors.html#gaa49039a04eb836e3f41cb48345448ec9">sylkie_error</a> *err)</td></tr>
+<tr class="memdesc:ga5c8a29ea0d3a5c0866d97579fd5b4964"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send a <a class="el" href="structsylkie__packet.html">sylkie_packet</a>.  <a href="group__sender.html#ga5c8a29ea0d3a5c0866d97579fd5b4964">More...</a><br /></td></tr>
+<tr class="separator:ga5c8a29ea0d3a5c0866d97579fd5b4964"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga19aa3965ab717b474688e3fb27010ca5"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sender.html#ga19aa3965ab717b474688e3fb27010ca5">sylkie_sender_send</a> (struct <a class="el" href="structsylkie__sender.html">sylkie_sender</a> *sender, const u_int8_t *data, size_t len, int flags, enum <a class="el" href="group__errors.html#gaa49039a04eb836e3f41cb48345448ec9">sylkie_error</a> *err)</td></tr>
+<tr class="memdesc:ga19aa3965ab717b474688e3fb27010ca5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send raw data given a the length of the data.  <a href="group__sender.html#ga19aa3965ab717b474688e3fb27010ca5">More...</a><br /></td></tr>
+<tr class="separator:ga19aa3965ab717b474688e3fb27010ca5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8dc6c3355b0ed397c45eb0298815b433"><td class="memItemLeft" align="right" valign="top">const u_int8_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sender.html#ga8dc6c3355b0ed397c45eb0298815b433">sylkie_sender_addr</a> (struct <a class="el" href="structsylkie__sender.html">sylkie_sender</a> *sender)</td></tr>
+<tr class="memdesc:ga8dc6c3355b0ed397c45eb0298815b433"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the link address associated with a given sender.  <a href="group__sender.html#ga8dc6c3355b0ed397c45eb0298815b433">More...</a><br /></td></tr>
+<tr class="separator:ga8dc6c3355b0ed397c45eb0298815b433"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga940e28686f536634fa3b98042c8bf93b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sender.html#ga940e28686f536634fa3b98042c8bf93b">sylkie_sender_free</a> (struct <a class="el" href="structsylkie__sender.html">sylkie_sender</a> *sender)</td></tr>
+<tr class="memdesc:ga940e28686f536634fa3b98042c8bf93b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deallocate all associated resources.  <a href="group__sender.html#ga940e28686f536634fa3b98042c8bf93b">More...</a><br /></td></tr>
+<tr class="separator:ga940e28686f536634fa3b98042c8bf93b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga12efe6d407dce4f690456edfa4aaf84c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sender.html#ga12efe6d407dce4f690456edfa4aaf84c">sylkie_print_sender</a> (struct <a class="el" href="structsylkie__sender.html">sylkie_sender</a> *sender, FILE *output)</td></tr>
+<tr class="memdesc:ga12efe6d407dce4f690456edfa4aaf84c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pretty print the metadata associated with the sender.  <a href="group__sender.html#ga12efe6d407dce4f690456edfa4aaf84c">More...</a><br /></td></tr>
+<tr class="separator:ga12efe6d407dce4f690456edfa4aaf84c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Data Fields</h2></td></tr>
 <tr class="memitem:a3062c33ac113ca605034bf4d4e16141c"><td class="memItemLeft" align="right" valign="top"><a id="a3062c33ac113ca605034bf4d4e16141c"></a>
@@ -100,7 +125,8 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>mtu</b></td></tr>
 struct sockaddr_ll&#160;</td><td class="memItemRight" valign="bottom"><b>addr</b></td></tr>
 <tr class="separator:aaff1561fa2e8a1dbfd36a3df08b57ed2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<hr/>The documentation for this struct was generated from the following files:<ul>
+<li>/home/drobertson/git/sylkie/lib/sender.c</li>
 <li>/home/drobertson/git/sylkie/include/<a class="el" href="sender_8h_source.html">sender.h</a></li>
 </ul>
 </div><!-- contents -->
