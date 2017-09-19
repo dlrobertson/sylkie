@@ -30,28 +30,92 @@
 #include "errors.h"
 #include "packet.h"
 
-struct sylkie_sender {
-    int fd;
-    int mtu;
-    struct sockaddr_ll addr;
-};
+/**
+ * \defgroup sender sylkie_sender structures and methods
+ * \ingroup libsylkie
+ * @{
+ */
 
+/**
+ * \brief Generic structure used to send packets
+ *
+ * NB: sylkie_sender make heavy use of raw sockets.
+ */
+struct sylkie_sender;
+
+/**
+ * \memberof sylkie_sender
+ *
+ * \brief Initialize a sender for a given interface
+ * \param iface Name of the interface to be used
+ * \param err Pointer to sylkie_error to be set on error
+ */
 struct sylkie_sender* sylkie_sender_init(const char* iface,
                                          enum sylkie_error* err);
 
+/**
+ * \memberof sylkie_sender
+ *
+ * \brief Send a sylkie_buffer
+ * \param sender sylkie_sender to be used to send the buffer
+ * \param buf sylkie_buffer to be sent
+ * \param flags Flags to be set on send
+ * \param err Pointer to sylkie_error to be set on error
+ */
 int sylkie_sender_send_buffer(struct sylkie_sender* sender,
                               const struct sylkie_buffer* buf, int flags,
                               enum sylkie_error* err);
 
+/**
+ * \memberof sylkie_sender
+ *
+ * \brief Send a sylkie_packet
+ * \param sender sylkie_sender to be used to send the packet
+ * \param pkt sylkie_packet to be sent
+ * \param flags Flags to be set on send
+ * \param err Pointer to sylkie_error to be set on error
+ */
 int sylkie_sender_send_packet(struct sylkie_sender* sender,
                               struct sylkie_packet* pkt, int flags,
                               enum sylkie_error* err);
 
+/**
+ * \memberof sylkie_sender
+ *
+ * \brief Send raw data given a the length of the data
+ * \param sender sylkie_sender to be used to send the data
+ * \param data Raw data to be sent
+ * \param len Size of the raw data to be sent
+ * \param flags Flags to be set on send
+ * \param err Pointer to sylkie_error to be set on error
+ */
 int sylkie_sender_send(struct sylkie_sender* sender, const u_int8_t* data,
                        size_t len, int flags, enum sylkie_error* err);
 
+/**
+ * \memberof sylkie_sender
+ *
+ * \brief Return the link address associated with a given sender
+ * \param sender sylkie_sender to return the address for
+ */
+const u_int8_t* sylkie_sender_addr(struct sylkie_sender* sender);
+
+/**
+ * \memberof sylkie_sender
+ *
+ * \brief Deallocate all associated resources
+ * \param sender sylkie_sender to be deallocated
+ */
 void sylkie_sender_free(struct sylkie_sender* sender);
 
+/**
+ * \memberof sylkie_sender
+ *
+ * \brief Pretty print the metadata associated with the sender
+ * \param sender sylkie_sender to print
+ */
 void sylkie_print_sender(struct sylkie_sender* sender, FILE* output);
+
+/// @} end of doxygen sender group
 
 #endif

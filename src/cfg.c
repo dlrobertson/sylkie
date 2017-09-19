@@ -303,11 +303,6 @@ static struct cfg_set_item* parse_mac_json(const struct cfg_parser* parser,
 }
 #endif
 
-// Boolean parsers
-//
-// NB: The command line version does not need a parser. The value is assumed by
-// the presence of the option.
-
 #ifdef BUILD_JSON
 static struct cfg_set_item* parse_bool_json(const struct cfg_parser* parser,
                                             struct json_object* jobj) {
@@ -570,8 +565,9 @@ static int cfg_set_parse_short(struct cfg_map* map,
             // We don't need to parse an argument for boolean options
             if (parser->type != CFG_BOOL) {
                 if (*next_consumed) {
-                    fprintf(stderr, "ERROR: Invalid combination \"-%s\". -%c"
-                                    "requires an argument\n",
+                    fprintf(stderr,
+                            "ERROR: Invalid combination \"-%s\". -%c"
+                            "requires an argument\n",
                             arg, arg[i]);
                     return -1;
                 } else if (!next) {

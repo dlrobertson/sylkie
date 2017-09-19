@@ -38,7 +38,6 @@ struct sylkie_packet {
 
 static enum sylkie_error
 sylkie_generic_to_buffer(struct sylkie_buffer* buf,
-                         const struct sylkie_packet* pkt,
                          const struct sylkie_proto_node* node) {
     if (node && !sylkie_buffer_add(buf, node->hdr.data, node->hdr.len)) {
         return SYLKIE_SUCCESS;
@@ -50,7 +49,6 @@ sylkie_generic_to_buffer(struct sylkie_buffer* buf,
 static struct {
     enum sylkie_proto_type type;
     enum sylkie_error (*fn)(struct sylkie_buffer* buf,
-                            const struct sylkie_packet* pkt,
                             const struct sylkie_proto_node* node);
 } s_to_buffer_cmds[] = {
     {SYLKIE_ETH, sylkie_generic_to_buffer},
@@ -110,7 +108,7 @@ struct sylkie_buffer* sylkie_packet_to_buffer(struct sylkie_packet* pkt,
     SYLKIE_HEADER_LIST_FOREACH(pkt->lst, node) {
         if (node->hdr.type < SYLKIE_INVALID_HDR_TYPE &&
             s_to_buffer_cmds[node->hdr.type].fn) {
-            (s_to_buffer_cmds[node->hdr.type].fn)(buf, pkt, node);
+            (s_to_buffer_cmds[node->hdr.type].fn)(buf, node);
         }
     }
 

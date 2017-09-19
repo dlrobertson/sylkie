@@ -136,7 +136,7 @@ int inner_do_ra(const struct cfg_set* set) {
     }
 
     if (cfg_set_find_type(set, "src-mac", CFG_HW_ADDRESS, &src_mac)) {
-        src_mac = sender->addr.sll_addr;
+        src_mac = sylkie_sender_addr(sender);
     }
 
     if (cfg_set_find_type(set, "target-mac", CFG_HW_ADDRESS, &tgt_mac)) {
