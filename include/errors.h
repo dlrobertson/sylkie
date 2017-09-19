@@ -68,6 +68,6 @@ void sylkie_error_set(enum sylkie_error* err, enum sylkie_error new_err);
  */
 void sylkie_error_from_errno(enum sylkie_error* err);
 
-// @} end of doxygen errors group
+/// @} end of doxygen errors group
 
 #endif
