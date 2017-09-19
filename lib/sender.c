@@ -35,6 +35,16 @@
 #include <packet.h>
 #include <sender.h>
 
+// Complete definition of sylkie_sender
+struct sylkie_sender {
+    // File descriptor of the socket to be used
+    int fd;
+    // MTU of the link
+    int mtu;
+    // Sockaddr of the device to be used
+    struct sockaddr_ll addr;
+};
+
 struct sylkie_sender* sylkie_sender_init(const char* iface,
                                          enum sylkie_error* err) {
     struct ifreq ifr;
@@ -159,4 +169,8 @@ void sylkie_sender_free(struct sylkie_sender* sender) {
         free(sender);
         sender = NULL;
     }
+}
+
+const u_int8_t* sylkie_sender_addr(struct sylkie_sender* sender) {
+    return (sender) ? sender->addr.sll_addr : NULL;
 }

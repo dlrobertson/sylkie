@@ -231,7 +231,6 @@ static void icmp_set_checksum(const struct sylkie_proto_node* node) {
 
 enum sylkie_error
 sylkie_icmpv6_to_buffer(struct sylkie_buffer* buf,
-                        const struct sylkie_packet* pkt,
                         const struct sylkie_proto_node* node) {
     if (node) {
         icmp_set_checksum(node);

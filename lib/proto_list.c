@@ -24,6 +24,14 @@
 
 #include <proto_list.h>
 
+// Complete definition of a protocol list
+struct sylkie_proto_list {
+    // The first protocol header in the list
+    struct sylkie_proto_node* head;
+    // The last protocol header in the list
+    struct sylkie_proto_node* tail;
+};
+
 // sylkie_proto_node methods
 
 static void rm_proto_node(struct sylkie_proto_list* lst,
@@ -152,6 +160,16 @@ enum sylkie_error sylkie_proto_list_rm(struct sylkie_proto_list* lst,
         }
         return SYLKIE_NOT_FOUND;
     }
+}
+
+struct sylkie_proto_node*
+sylkie_proto_list_head(struct sylkie_proto_list* lst) {
+    return (lst) ? lst->head : NULL;
+}
+
+struct sylkie_proto_node*
+sylkie_proto_list_tail(struct sylkie_proto_list* lst) {
+    return (lst) ? lst->tail : NULL;
 }
 
 void sylkie_proto_list_free(struct sylkie_proto_list* lst) {

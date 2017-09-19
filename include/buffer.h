@@ -45,7 +45,7 @@ struct sylkie_buffer {
  * \memberof sylkie_buffer
  *
  * \brief Initialize a sylkie_buffer to size `sz`
- * \param sz size of the buffer to be created
+ * \param sz Size of the buffer to be created
  *
  * Note: A size of zero will not allocate any memory. No memory
  * will be allocated untill the first add function is used in
@@ -60,9 +60,9 @@ struct sylkie_buffer* sylkie_buffer_init(size_t sz);
  * \memberof sylkie_buffer
  *
  * \brief Append data to the buffer
- * \param buf buffer structure to which the data will be added
- * \param ptr pointer to the data to be added
- * \param sz size of the data pointer
+ * \param buf Buffer structure to which the data will be added
+ * \param ptr Pointer to the data to be added
+ * \param sz Size of the data pointer
  */
 int sylkie_buffer_add(struct sylkie_buffer* buf, const void* ptr, size_t sz);
 
@@ -70,9 +70,9 @@ int sylkie_buffer_add(struct sylkie_buffer* buf, const void* ptr, size_t sz);
  * \memberof sylkie_buffer
  *
  * \brief Apend data to the buffer
- * \param buf buffer structure to which the data will be added
- * \param value value to be repeated
- * \param sz number of times to repeat the value in the buffer
+ * \param buf Buffer structure to which the data will be added
+ * \param value Value to be repeated
+ * \param sz Number of times to repeat the value in the buffer
  */
 int sylkie_buffer_add_value(struct sylkie_buffer* buf, const u_int8_t value,
                             size_t sz);
@@ -81,7 +81,7 @@ int sylkie_buffer_add_value(struct sylkie_buffer* buf, const u_int8_t value,
  * \memberof sylkie_buffer
  *
  * \brief Copy the given buffer
- * \param buf buffer that will be cloned
+ * \param buf Buffer that will be cloned
  */
 struct sylkie_buffer* sylkie_buffer_clone(const struct sylkie_buffer* buf);
 
@@ -89,7 +89,7 @@ struct sylkie_buffer* sylkie_buffer_clone(const struct sylkie_buffer* buf);
  * \memberof sylkie_buffer
  *
  * \brief Print the contents of the buffer in hexadecimal to stdout
- * \param buf buffer to be printed
+ * \param buf Buffer to be printed
  */
 void sylkie_buffer_print(const struct sylkie_buffer* buf);
 
@@ -97,7 +97,7 @@ void sylkie_buffer_print(const struct sylkie_buffer* buf);
  * \memberof sylkie_buffer
  *
  * \brief Free the memory allocated to this buffer
- * \param buf buffer to be freed
+ * \param buf Buffer to be freed
  */
 void sylkie_buffer_free(struct sylkie_buffer* buf);
 

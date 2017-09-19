@@ -53,9 +53,9 @@ struct sylkie_packet* sylkie_packet_init();
  * \memberof sylkie_packet
  *
  * \brief Add a protocol header to the packet
- * \param type The type of the protocol header added
- * \param data The header data to be added
- * \param sz The size of the header data
+ * \param type Type of the protocol header added
+ * \param data Header data to be added
+ * \param sz Size of the header data
  */
 enum sylkie_error sylkie_packet_add(struct sylkie_packet* pkt,
                                     enum sylkie_proto_type type, void* data,
