@@ -26,166 +26,165 @@
 
 // Complete definition of a protocol list
 struct sylkie_proto_list {
-    // The first protocol header in the list
-    struct sylkie_proto_node* head;
-    // The last protocol header in the list
-    struct sylkie_proto_node* tail;
+  // The first protocol header in the list
+  struct sylkie_proto_node *head;
+  // The last protocol header in the list
+  struct sylkie_proto_node *tail;
 };
 
 // sylkie_proto_node methods
 
-static void rm_proto_node(struct sylkie_proto_list* lst,
-                          struct sylkie_proto_node* node) {
-    if (node->next) {
-        if (node == lst->head) {
-            lst->head = node->next;
-        }
-        node->next->prev = node->prev;
+static void rm_proto_node(struct sylkie_proto_list *lst,
+                          struct sylkie_proto_node *node) {
+  if (node->next) {
+    if (node == lst->head) {
+      lst->head = node->next;
     }
-    if (node->prev) {
-        if (node == lst->tail) {
-            lst->tail = node->prev;
-        }
-        node->prev->next = node->next;
+    node->next->prev = node->prev;
+  }
+  if (node->prev) {
+    if (node == lst->tail) {
+      lst->tail = node->prev;
     }
+    node->prev->next = node->next;
+  }
 }
 
-int sylkie_proto_init(struct sylkie_proto* hdr, enum sylkie_proto_type type,
-                      void* data, size_t len) {
-    hdr->type = type;
-    if (len) {
-        hdr->len = len;
-        hdr->data = malloc(len);
-        if (!hdr->data) {
-            return -1;
-        }
-        memcpy(hdr->data, data, len);
-    } else {
-        hdr->len = 0;
-        hdr->data = NULL;
+int sylkie_proto_init(struct sylkie_proto *hdr, enum sylkie_proto_type type,
+                      void *data, size_t len) {
+  hdr->type = type;
+  if (len) {
+    hdr->len = len;
+    hdr->data = malloc(len);
+    if (!hdr->data) {
+      return -1;
     }
-    return 0;
+    memcpy(hdr->data, data, len);
+  } else {
+    hdr->len = 0;
+    hdr->data = NULL;
+  }
+  return 0;
 }
 
-void sylkie_proto_node_free(struct sylkie_proto_node* node) {
-    if (node) {
-        if (node->hdr.data) {
-            free(node->hdr.data);
-        }
-        free(node);
-        node = NULL;
+void sylkie_proto_node_free(struct sylkie_proto_node *node) {
+  if (node) {
+    if (node->hdr.data) {
+      free(node->hdr.data);
     }
+    free(node);
+    node = NULL;
+  }
 }
 
-struct sylkie_proto_list* sylkie_proto_list_init() {
-    struct sylkie_proto_list* lst = malloc(sizeof(struct sylkie_proto_list));
-    if (lst) {
-        bzero(lst, sizeof(struct sylkie_proto_list));
-    }
-    return lst;
+struct sylkie_proto_list *sylkie_proto_list_init() {
+  struct sylkie_proto_list *lst = malloc(sizeof(struct sylkie_proto_list));
+  if (lst) {
+    bzero(lst, sizeof(struct sylkie_proto_list));
+  }
+  return lst;
 }
 
-enum sylkie_error sylkie_proto_list_add(struct sylkie_proto_list* lst,
+enum sylkie_error sylkie_proto_list_add(struct sylkie_proto_list *lst,
                                         enum sylkie_proto_type hdr_type,
-                                        void* data, size_t len) {
-    if (lst) {
-        struct sylkie_proto_node* node =
-            malloc(sizeof(struct sylkie_proto_node));
-        if (node) {
-            if (sylkie_proto_init(&node->hdr, hdr_type, data, len)) {
-                free(node);
-                return SYLKIE_NO_MEM;
-            }
-            return sylkie_proto_list_add_node(lst, node);
-        } else {
-            return SYLKIE_NO_MEM;
-        }
+                                        void *data, size_t len) {
+  if (lst) {
+    struct sylkie_proto_node *node = malloc(sizeof(struct sylkie_proto_node));
+    if (node) {
+      if (sylkie_proto_init(&node->hdr, hdr_type, data, len)) {
+        free(node);
+        return SYLKIE_NO_MEM;
+      }
+      return sylkie_proto_list_add_node(lst, node);
     } else {
-        return SYLKIE_NULL_INPUT;
+      return SYLKIE_NO_MEM;
     }
+  } else {
+    return SYLKIE_NULL_INPUT;
+  }
 }
 
-enum sylkie_error sylkie_proto_list_add_node(struct sylkie_proto_list* lst,
-                                             struct sylkie_proto_node* node) {
-    struct sylkie_proto_node* tmp = NULL;
-    if (lst->head && lst->tail) {
-        // Other items have been added
-        tmp = lst->tail;
-        lst->tail = node;
-        node->next = NULL;
-        node->prev = tmp;
-        tmp->next = node;
+enum sylkie_error sylkie_proto_list_add_node(struct sylkie_proto_list *lst,
+                                             struct sylkie_proto_node *node) {
+  struct sylkie_proto_node *tmp = NULL;
+  if (lst->head && lst->tail) {
+    // Other items have been added
+    tmp = lst->tail;
+    lst->tail = node;
+    node->next = NULL;
+    node->prev = tmp;
+    tmp->next = node;
+    return SYLKIE_SUCCESS;
+  } else if (lst && node) {
+    // We are the first node to be added
+    lst->head = node;
+    lst->tail = node;
+    node->next = NULL;
+    node->prev = NULL;
+    return SYLKIE_SUCCESS;
+  } else {
+    return SYLKIE_NULL_INPUT;
+  }
+}
+
+enum sylkie_error sylkie_proto_list_rm_node(struct sylkie_proto_list *lst,
+                                            struct sylkie_proto_node *node) {
+  struct sylkie_proto_node *tmp = NULL;
+  if (!lst || !node) {
+    return SYLKIE_NULL_INPUT;
+  } else {
+    SYLKIE_HEADER_LIST_FOREACH (lst, node) {
+      if (node == tmp) {
+        rm_proto_node(lst, tmp);
+        sylkie_proto_node_free(tmp);
         return SYLKIE_SUCCESS;
-    } else if (lst && node) {
-        // We are the first node to be added
-        lst->head = node;
-        lst->tail = node;
-        node->next = NULL;
-        node->prev = NULL;
-        return SYLKIE_SUCCESS;
-    } else {
-        return SYLKIE_NULL_INPUT;
+      }
     }
+    return SYLKIE_NOT_FOUND;
+  }
 }
 
-enum sylkie_error sylkie_proto_list_rm_node(struct sylkie_proto_list* lst,
-                                            struct sylkie_proto_node* node) {
-    struct sylkie_proto_node* tmp = NULL;
-    if (!lst || !node) {
-        return SYLKIE_NULL_INPUT;
-    } else {
-        SYLKIE_HEADER_LIST_FOREACH(lst, node) {
-            if (node == tmp) {
-                rm_proto_node(lst, tmp);
-                sylkie_proto_node_free(tmp);
-                return SYLKIE_SUCCESS;
-            }
-        }
-        return SYLKIE_NOT_FOUND;
-    }
-}
-
-enum sylkie_error sylkie_proto_list_rm(struct sylkie_proto_list* lst,
+enum sylkie_error sylkie_proto_list_rm(struct sylkie_proto_list *lst,
                                        enum sylkie_proto_type type) {
-    struct sylkie_proto_node* node;
-    if (!lst || !lst->head || !lst->tail) {
-        return SYLKIE_NULL_INPUT;
-    } else {
-        SYLKIE_HEADER_LIST_FOREACH(lst, node) {
-            if (node->hdr.type == type) {
-                rm_proto_node(lst, node);
-                sylkie_proto_node_free(node);
-                return SYLKIE_SUCCESS;
-            }
-        }
-        return SYLKIE_NOT_FOUND;
+  struct sylkie_proto_node *node;
+  if (!lst || !lst->head || !lst->tail) {
+    return SYLKIE_NULL_INPUT;
+  } else {
+    SYLKIE_HEADER_LIST_FOREACH (lst, node) {
+      if (node->hdr.type == type) {
+        rm_proto_node(lst, node);
+        sylkie_proto_node_free(node);
+        return SYLKIE_SUCCESS;
+      }
     }
+    return SYLKIE_NOT_FOUND;
+  }
 }
 
-struct sylkie_proto_node*
-sylkie_proto_list_head(struct sylkie_proto_list* lst) {
-    return (lst) ? lst->head : NULL;
+struct sylkie_proto_node *
+sylkie_proto_list_head(struct sylkie_proto_list *lst) {
+  return (lst) ? lst->head : NULL;
 }
 
-struct sylkie_proto_node*
-sylkie_proto_list_tail(struct sylkie_proto_list* lst) {
-    return (lst) ? lst->tail : NULL;
+struct sylkie_proto_node *
+sylkie_proto_list_tail(struct sylkie_proto_list *lst) {
+  return (lst) ? lst->tail : NULL;
 }
 
-void sylkie_proto_list_free(struct sylkie_proto_list* lst) {
-    struct sylkie_proto_node* node;
-    struct sylkie_proto_node* tmp;
-    if (lst) {
-        if (lst->head && lst->tail) {
-            node = lst->head;
-            while (node != lst->tail) {
-                tmp = node->next;
-                sylkie_proto_node_free(node);
-                node = tmp;
-            }
-            sylkie_proto_node_free(lst->tail);
-        }
-        free(lst);
-        lst = NULL;
+void sylkie_proto_list_free(struct sylkie_proto_list *lst) {
+  struct sylkie_proto_node *node;
+  struct sylkie_proto_node *tmp;
+  if (lst) {
+    if (lst->head && lst->tail) {
+      node = lst->head;
+      while (node != lst->tail) {
+        tmp = node->next;
+        sylkie_proto_node_free(node);
+        node = tmp;
+      }
+      sylkie_proto_node_free(lst->tail);
     }
+    free(lst);
+    lst = NULL;
+  }
 }

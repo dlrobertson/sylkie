@@ -57,217 +57,215 @@ static struct cfg_parser parsers[] = {
     {'z', "timeout", CFG_INT, "wait <n> seconds before sending agein"}};
 static size_t parsers_sz = sizeof(parsers) / sizeof(struct cfg_parser);
 
-int inner_do_ra(const struct cfg_set* set) {
-    int retval = -1, prefix = 64, timeout = 1, repeat = 1, i = 0;
-    enum sylkie_error err = SYLKIE_INVALID_ERR;
-    struct sylkie_sender* sender = NULL;
-    struct sylkie_packet* pkt = NULL;
-    static const u_int8_t all_nodes_eth[] = {0x33, 0x33, 0x00,
-                                             0x00, 0x00, 0x01};
-    static struct in6_addr all_nodes_ip = {
-        .s6_addr = {0xff, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00, 0x00, 0x01}};
-    char* iface_name = NULL;
-    const u_int8_t* dst_mac = NULL;
-    const u_int8_t* src_mac = NULL;
-    const u_int8_t* tgt_mac = NULL;
-    u_int16_t lifetime = 0;
-    struct in6_addr* dst_addr = NULL;
-    struct in6_addr* router_addr = NULL;
-    struct in6_addr* src_addr = NULL;
+int inner_do_ra(const struct cfg_set *set) {
+  int retval = -1, prefix = 64, timeout = 1, repeat = 1, i = 0;
+  enum sylkie_error err = SYLKIE_INVALID_ERR;
+  struct sylkie_sender *sender = NULL;
+  struct sylkie_packet *pkt = NULL;
+  static const u_int8_t all_nodes_eth[] = {0x33, 0x33, 0x00, 0x00, 0x00, 0x01};
+  static struct in6_addr all_nodes_ip = {
+      .s6_addr = {0xff, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                  0x00, 0x00, 0x00, 0x00, 0x00, 0x01}};
+  char *iface_name = NULL;
+  const u_int8_t *dst_mac = NULL;
+  const u_int8_t *src_mac = NULL;
+  const u_int8_t *tgt_mac = NULL;
+  u_int16_t lifetime = 0;
+  struct in6_addr *dst_addr = NULL;
+  struct in6_addr *router_addr = NULL;
+  struct in6_addr *src_addr = NULL;
 
-    if (cfg_set_find_type(set, "interface", CFG_STRING, &iface_name)) {
-        fprintf(stderr, "Must provide an interface to use.\n");
-        cfg_set_usage(set, stderr);
-        return -1;
+  if (cfg_set_find_type(set, "interface", CFG_STRING, &iface_name)) {
+    fprintf(stderr, "Must provide an interface to use.\n");
+    cfg_set_usage(set, stderr);
+    return -1;
+  }
+
+  cfg_set_find_type(set, "dst-mac", CFG_HW_ADDRESS, &dst_mac);
+  cfg_set_find_type(set, "dst-ip", CFG_IPV6_ADDRESS, &dst_addr);
+  cfg_set_find_type(set, "src-ip", CFG_IPV6_ADDRESS, &src_addr);
+  cfg_set_find_type(set, "router-ip", CFG_IPV6_ADDRESS, &router_addr);
+  cfg_set_find_type(set, "lifetime", CFG_WORD, &lifetime);
+
+  if (!dst_mac && !dst_addr) {
+    dst_mac = all_nodes_eth;
+    dst_addr = &all_nodes_ip;
+  } else if (!(dst_mac && dst_addr)) {
+    fprintf(stderr, "Must provide a destination mac and ip"
+                    " address or none at all.\n");
+    cfg_set_usage(set, stderr);
+    return -1;
+  }
+
+  if (!router_addr) {
+    fprintf(stderr, "Must provide a router ip address to spoof.\n");
+    cfg_set_usage(set, stderr);
+    return -1;
+  } else if (!src_addr) {
+    src_addr = router_addr;
+  }
+
+  sender = sylkie_sender_init(iface_name, &err);
+
+  if (err) {
+    switch (err) {
+    case SYLKIE_EPERM:
+      fprintf(stderr,
+              "%s: This program makes heavy use of raw sockets which"
+              " require uid=0. You can either build with -DENABLE_SETUID"
+              " or you must run this as root.\n",
+              sylkie_strerror(err));
+      break;
+    case SYLKIE_NO_DEVICE:
+      fprintf(stderr, "%s: Could not find the device \"%s\"\n",
+              sylkie_strerror(err), iface_name);
+      break;
+    default:
+      fprintf(stderr, "%s\n", sylkie_strerror(err));
+      break;
     }
+    return -1;
+  }
 
-    cfg_set_find_type(set, "dst-mac", CFG_HW_ADDRESS, &dst_mac);
-    cfg_set_find_type(set, "dst-ip", CFG_IPV6_ADDRESS, &dst_addr);
-    cfg_set_find_type(set, "src-ip", CFG_IPV6_ADDRESS, &src_addr);
-    cfg_set_find_type(set, "router-ip", CFG_IPV6_ADDRESS, &router_addr);
-    cfg_set_find_type(set, "lifetime", CFG_WORD, &lifetime);
+  if (!sender) {
+    fprintf(stderr, "Failed to create sender. Please consider submitting a bug"
+                    " report at https://github.com/dlrobertson/sylkie\n");
+    return -1;
+  }
 
-    if (!dst_mac && !dst_addr) {
-        dst_mac = all_nodes_eth;
-        dst_addr = &all_nodes_ip;
-    } else if (!(dst_mac && dst_addr)) {
-        fprintf(stderr, "Must provide a destination mac and ip"
-                        " address or none at all.\n");
-        cfg_set_usage(set, stderr);
-        return -1;
+  if (cfg_set_find_type(set, "src-mac", CFG_HW_ADDRESS, &src_mac)) {
+    src_mac = sylkie_sender_addr(sender);
+  }
+
+  if (cfg_set_find_type(set, "target-mac", CFG_HW_ADDRESS, &tgt_mac)) {
+    tgt_mac = src_mac;
+  }
+
+  pkt =
+      sylkie_router_advert_create(src_mac, dst_mac, src_addr, dst_addr,
+                                  router_addr, prefix, lifetime, tgt_mac, &err);
+
+  if (!pkt) {
+    fprintf(stderr, "%s: Could not create forged router advert\n",
+            sylkie_strerror(err));
+    return -1;
+  }
+
+  cfg_set_find_type(set, "prefix", CFG_BYTE, &prefix);
+  cfg_set_find_type(set, "timeout", CFG_INT, &timeout);
+  cfg_set_find_type(set, "repeat", CFG_INT, &repeat);
+
+  if (timeout < 0) {
+    fprintf(stderr, "%s\n", "timeout must be greater than or equal to 0");
+    return -1;
+  }
+
+  if (repeat <= 0) {
+    while (1) {
+      retval = sylkie_sender_send_packet(sender, pkt, 0, &err);
+      if (err || retval < 0) {
+        fprintf(stderr, "SYLKIE Error:%s\nErrno: %s", sylkie_strerror(err),
+                strerror(errno));
+        retval = -1;
+        break;
+      }
+
+      if (timeout) {
+        sleep(timeout);
+      }
     }
+  } else {
+    for (i = 0; i < repeat; ++i) {
+      retval = sylkie_sender_send_packet(sender, pkt, 0, &err);
+      if (err || retval < 0) {
+        fprintf(stderr, "SYLKIE Error:%s\nErrno: %s", sylkie_strerror(err),
+                strerror(errno));
+        retval = -1;
+        break;
+      }
 
-    if (!router_addr) {
-        fprintf(stderr, "Must provide a router ip address to spoof.\n");
-        cfg_set_usage(set, stderr);
-        return -1;
-    } else if (!src_addr) {
-        src_addr = router_addr;
+      if (timeout) {
+        sleep(timeout);
+      }
     }
+  }
 
-    sender = sylkie_sender_init(iface_name, &err);
+  // Cleanup
 
-    if (err) {
-        switch (err) {
-        case SYLKIE_EPERM:
-            fprintf(stderr,
-                    "%s: This program makes heavy use of raw sockets which"
-                    " require uid=0. You can either build with -DENABLE_SETUID"
-                    " or you must run this as root.\n",
-                    sylkie_strerror(err));
-            break;
-        case SYLKIE_NO_DEVICE:
-            fprintf(stderr, "%s: Could not find the device \"%s\"\n",
-                    sylkie_strerror(err), iface_name);
-            break;
-        default:
-            fprintf(stderr, "%s\n", sylkie_strerror(err));
-            break;
-        }
-        return -1;
-    }
-
-    if (!sender) {
-        fprintf(stderr,
-                "Failed to create sender. Please consider submitting a bug"
-                " report at https://github.com/dlrobertson/sylkie\n");
-        return -1;
-    }
-
-    if (cfg_set_find_type(set, "src-mac", CFG_HW_ADDRESS, &src_mac)) {
-        src_mac = sylkie_sender_addr(sender);
-    }
-
-    if (cfg_set_find_type(set, "target-mac", CFG_HW_ADDRESS, &tgt_mac)) {
-        tgt_mac = src_mac;
-    }
-    cfg_set_find_type(set, "prefix", CFG_BYTE, &prefix);
-
-    pkt = sylkie_router_advert_create(src_mac, dst_mac, src_addr, dst_addr,
-                                      router_addr, prefix, lifetime, tgt_mac,
-                                      &err);
-
-    if (!pkt) {
-        fprintf(stderr, "%s: Could not create forged router advert\n",
-                sylkie_strerror(err));
-        return -1;
-    }
-
-    cfg_set_find_type(set, "timeout", CFG_INT, &timeout);
-    cfg_set_find_type(set, "repeat", CFG_INT, &repeat);
-
-    if (timeout < 0) {
-        fprintf(stderr, "%s\n", "timeout must be greater than or equal to 0");
-        return -1;
-    }
-
-    if (repeat <= 0) {
-        while (1) {
-            retval = sylkie_sender_send_packet(sender, pkt, 0, &err);
-            if (err || retval < 0) {
-                fprintf(stderr, "SYLKIE Error:%s\nErrno: %s",
-                        sylkie_strerror(err), strerror(errno));
-                retval = -1;
-                break;
-            }
-
-            if (timeout) {
-                sleep(timeout);
-            }
-        }
-    } else {
-        for (i = 0; i < repeat; ++i) {
-            retval = sylkie_sender_send_packet(sender, pkt, 0, &err);
-            if (err || retval < 0) {
-                fprintf(stderr, "SYLKIE Error:%s\nErrno: %s",
-                        sylkie_strerror(err), strerror(errno));
-                retval = -1;
-                break;
-            }
-
-            if (timeout) {
-                sleep(timeout);
-            }
-        }
-    }
-
-    // Cleanup
-
-    sylkie_packet_free(pkt);
-    sylkie_sender_free(sender);
-    return retval;
+  sylkie_packet_free(pkt);
+  sylkie_sender_free(sender);
+  return retval;
 }
 
 #ifdef BUILD_JSON
-pid_t ra_json(struct json_object* jobj) {
-    int res = -1;
-    pid_t pid = -1;
-    struct cfg_set set = {
-        .usage = "sylkie ra [OPTIONS]",
-        .summary =
-            "Send ICMPv6 Router Advertisement messages to the given address",
-        .parsers = parsers,
-        .parsers_sz = parsers_sz};
+pid_t ra_json(struct json_object *jobj) {
+  int res = -1;
+  pid_t pid = -1;
+  struct cfg_set set = {
+      .usage = "sylkie ra [OPTIONS]",
+      .summary =
+          "Send ICMPv6 Router Advertisement messages to the given address",
+      .parsers = parsers,
+      .parsers_sz = parsers_sz};
 
-    res = cfg_set_init_json(&set, jobj);
+  res = cfg_set_init_json(&set, jobj);
 
-    if (res) {
-        fprintf(stderr, "Failed to initialize parsers\n");
-        return -1;
-    } else if (cfg_set_find(&set, "help")) {
-        fprintf(stderr,
-                "\"help\" is an invalid option for running sylkie from json\n");
-        cfg_set_free(&set);
-        return -1;
-    }
+  if (res) {
+    fprintf(stderr, "Failed to initialize parsers\n");
+    return -1;
+  } else if (cfg_set_find(&set, "help")) {
+    fprintf(stderr,
+            "\"help\" is an invalid option for running sylkie from json\n");
+    cfg_set_free(&set);
+    return -1;
+  }
 
-    if ((pid = fork()) < 0) {
-        cfg_set_free(&set);
-        return -1;
-    } else if (pid == 0) {
-        if ((res = lockdown())) {
-            fprintf(stderr, "Could not lock down the process\n");
-        } else {
-            res = inner_do_ra(&set);
-        }
-        _exit(res);
+  if ((pid = fork()) < 0) {
+    cfg_set_free(&set);
+    return -1;
+  } else if (pid == 0) {
+    if ((res = lockdown())) {
+      fprintf(stderr, "Could not lock down the process\n");
     } else {
-        cfg_set_free(&set);
-        return pid;
+      res = inner_do_ra(&set);
     }
+    _exit(res);
+  } else {
+    cfg_set_free(&set);
+    return pid;
+  }
 }
 #endif
 
-int ra_cmdline(int argc, const char** argv) {
-    int res = -1;
-    struct cfg_set set = {
-        .usage = "sylkie ra [OPTIONS]",
-        .summary =
-            "Send ICMPv6 Router Advertisement messages to the given address",
-        .parsers = parsers,
-        .parsers_sz = parsers_sz};
+int ra_cmdline(int argc, const char **argv) {
+  int res = -1;
+  struct cfg_set set = {
+      .usage = "sylkie ra [OPTIONS]",
+      .summary =
+          "Send ICMPv6 Router Advertisement messages to the given address",
+      .parsers = parsers,
+      .parsers_sz = parsers_sz};
 
-    if (argc < 1) {
-        fprintf(stderr, "Too few arguments\n");
-        cfg_set_usage(&set, stderr);
-        return -1;
-    }
+  if (argc < 1) {
+    fprintf(stderr, "Too few arguments\n");
+    cfg_set_usage(&set, stderr);
+    return -1;
+  }
 
-    res = cfg_set_init_cmdline(&set, --argc, ++argv);
+  res = cfg_set_init_cmdline(&set, --argc, ++argv);
 
-    if (res) {
-        cfg_set_usage(&set, stderr);
-        return -1;
-    } else if (cfg_set_find(&set, "help")) {
-        cfg_set_usage(&set, stdout);
-        cfg_set_free(&set);
-        return 0;
-    } else {
-        res = inner_do_ra(&set);
-    }
-
+  if (res) {
+    cfg_set_usage(&set, stderr);
+    return -1;
+  } else if (cfg_set_find(&set, "help")) {
+    cfg_set_usage(&set, stdout);
     cfg_set_free(&set);
+    return 0;
+  } else {
+    res = inner_do_ra(&set);
+  }
 
-    return res;
+  cfg_set_free(&set);
+
+  return res;
 }

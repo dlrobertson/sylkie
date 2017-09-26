@@ -47,7 +47,7 @@ struct sylkie_packet;
  *
  * \brief Initialize a sylkie_buffer
  */
-struct sylkie_packet* sylkie_packet_init();
+struct sylkie_packet *sylkie_packet_init();
 
 /**
  * \memberof sylkie_packet
@@ -57,8 +57,8 @@ struct sylkie_packet* sylkie_packet_init();
  * \param data Header data to be added
  * \param sz Size of the header data
  */
-enum sylkie_error sylkie_packet_add(struct sylkie_packet* pkt,
-                                    enum sylkie_proto_type type, void* data,
+enum sylkie_error sylkie_packet_add(struct sylkie_packet *pkt,
+                                    enum sylkie_proto_type type, void *data,
                                     size_t sz);
 
 /**
@@ -68,8 +68,8 @@ enum sylkie_error sylkie_packet_add(struct sylkie_packet* pkt,
  * \param pkt Packet to be converted to a buffer
  * \param err Pointer to the enum set if any errors occur in the conversion
  */
-struct sylkie_buffer* sylkie_packet_to_buffer(struct sylkie_packet* pkt,
-                                              enum sylkie_error* err);
+struct sylkie_buffer *sylkie_packet_to_buffer(struct sylkie_packet *pkt,
+                                              enum sylkie_error *err);
 
 /**
  * \memberof sylkie_packet
@@ -77,7 +77,7 @@ struct sylkie_buffer* sylkie_packet_to_buffer(struct sylkie_packet* pkt,
  * \brief Free the memory allocated to this packet
  * \param pkt Packet to be freed
  */
-void sylkie_packet_free(struct sylkie_packet* pkt);
+void sylkie_packet_free(struct sylkie_packet *pkt);
 
 /// @} end of doxygen packet group
 

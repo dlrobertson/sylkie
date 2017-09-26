@@ -33,25 +33,25 @@
  * \brief Error types
  */
 enum sylkie_error {
-    SYLKIE_SUCCESS = 0,
-    SYLKIE_FATAL,
-    SYLKIE_NULL_INPUT,
-    SYLKIE_NO_DEVICE,
-    SYLKIE_NOT_FOUND,
-    SYLKIE_SYSCALL_FAILED,
-    SYLKIE_NO_MEM,
-    SYLKIE_TOO_LARGE,
-    SYLKIE_EPERM,
-    SYLKIE_EAGAIN,
-    SYLKIE_EINVAL,
-    SYLKIE_INVALID_ERR,
+  SYLKIE_SUCCESS = 0,
+  SYLKIE_FATAL,
+  SYLKIE_NULL_INPUT,
+  SYLKIE_NO_DEVICE,
+  SYLKIE_NOT_FOUND,
+  SYLKIE_SYSCALL_FAILED,
+  SYLKIE_NO_MEM,
+  SYLKIE_TOO_LARGE,
+  SYLKIE_EPERM,
+  SYLKIE_EAGAIN,
+  SYLKIE_EINVAL,
+  SYLKIE_INVALID_ERR,
 };
 
 /**
  * \brief Return the human readable string for the given error
  * \param err error to convert to string
  */
-const char* sylkie_strerror(const enum sylkie_error err);
+const char *sylkie_strerror(const enum sylkie_error err);
 
 /**
  * \brief Set err to new_err
@@ -60,13 +60,13 @@ const char* sylkie_strerror(const enum sylkie_error err);
  *
  * Note: This also checks if the type is different and err is not null
  */
-void sylkie_error_set(enum sylkie_error* err, enum sylkie_error new_err);
+void sylkie_error_set(enum sylkie_error *err, enum sylkie_error new_err);
 
 /**
  * \brief Attempt to convert errno into a sylkie_error
  * \param err Pointer to error that will be set to the converted error
  */
-void sylkie_error_from_errno(enum sylkie_error* err);
+void sylkie_error_from_errno(enum sylkie_error *err);
 
 /// @} end of doxygen errors group
 

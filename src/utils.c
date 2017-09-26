@@ -33,54 +33,54 @@
 
 int lockdown(void) {
 #ifdef BUILD_SECCOMP
-    scmp_filter_ctx ctx;
+  scmp_filter_ctx ctx;
 
-    if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)) {
-        return -1;
-    }
+  if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)) {
+    return -1;
+  }
 
-    ctx = seccomp_init(SCMP_ACT_KILL);
+  ctx = seccomp_init(SCMP_ACT_KILL);
 
-    seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(write), 0);
-    seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(socket), 0);
-    seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(nanosleep), 0);
-    seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(close), 0);
-    seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(ioctl), 0);
-    seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(sendto), 0);
-    seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(exit), 0);
-    seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(exit_group), 0);
+  seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(write), 0);
+  seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(socket), 0);
+  seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(nanosleep), 0);
+  seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(close), 0);
+  seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(ioctl), 0);
+  seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(sendto), 0);
+  seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(exit), 0);
+  seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(exit_group), 0);
 
-    return seccomp_load(ctx);
+  return seccomp_load(ctx);
 #else
-    return 0;
+  return 0;
 #endif
 }
 
-int parse_hwaddr(const char* arg, u_int8_t* addr) {
-    int len = strlen(arg);
-    bool colon_next = false;
-    const char* end = arg + len;
-    char* num_end = NULL;
-    int i = 0;
-    if (len != 17) {
+int parse_hwaddr(const char *arg, u_int8_t *addr) {
+  int len = strlen(arg);
+  bool colon_next = false;
+  const char *end = arg + len;
+  char *num_end = NULL;
+  int i = 0;
+  if (len != 17) {
+    return -1;
+  }
+  while (arg < end && i < ETH_ALEN) {
+    if (*arg == ':' && colon_next) {
+      ++arg;
+      colon_next = false;
+    } else if (!colon_next && (arg + 1) < end) {
+      addr[i] = (u_int8_t)strtol(arg, &num_end, 16);
+      colon_next = true;
+      ++i;
+      if (num_end) {
+        arg = num_end;
+      } else {
         return -1;
+      }
+    } else {
+      return -1;
     }
-    while (arg < end && i < ETH_ALEN) {
-        if (*arg == ':' && colon_next) {
-            ++arg;
-            colon_next = false;
-        } else if (!colon_next && (arg + 1) < end) {
-            addr[i] = (u_int8_t)strtol(arg, &num_end, 16);
-            colon_next = true;
-            ++i;
-            if (num_end) {
-                arg = num_end;
-            } else {
-                return -1;
-            }
-        } else {
-            return -1;
-        }
-    }
-    return 0;
+  }
+  return 0;
 }

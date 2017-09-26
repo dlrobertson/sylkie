@@ -27,29 +27,29 @@
 #include <proto_list.h>
 
 struct sylkie_packet_cache {
-    struct sylkie_buffer* buf;
-    bool dirty;
+  struct sylkie_buffer *buf;
+  bool dirty;
 };
 
 struct sylkie_packet {
-    struct sylkie_proto_list* lst;
-    struct sylkie_packet_cache cache;
+  struct sylkie_proto_list *lst;
+  struct sylkie_packet_cache cache;
 };
 
 static enum sylkie_error
-sylkie_generic_to_buffer(struct sylkie_buffer* buf,
-                         const struct sylkie_proto_node* node) {
-    if (node && !sylkie_buffer_add(buf, node->hdr.data, node->hdr.len)) {
-        return SYLKIE_SUCCESS;
-    } else {
-        return SYLKIE_NO_MEM;
-    }
+sylkie_generic_to_buffer(struct sylkie_buffer *buf,
+                         const struct sylkie_proto_node *node) {
+  if (node && !sylkie_buffer_add(buf, node->hdr.data, node->hdr.len)) {
+    return SYLKIE_SUCCESS;
+  } else {
+    return SYLKIE_NO_MEM;
+  }
 }
 
 static struct {
-    enum sylkie_proto_type type;
-    enum sylkie_error (*fn)(struct sylkie_buffer* buf,
-                            const struct sylkie_proto_node* node);
+  enum sylkie_proto_type type;
+  enum sylkie_error (*fn)(struct sylkie_buffer *buf,
+                          const struct sylkie_proto_node *node);
 } s_to_buffer_cmds[] = {
     {SYLKIE_ETH, sylkie_generic_to_buffer},
     {SYLKIE_IPv6, sylkie_generic_to_buffer},
@@ -57,76 +57,76 @@ static struct {
     {SYLKIE_DATA, sylkie_generic_to_buffer},
 };
 
-struct sylkie_buffer*
-sylkie_packet_cache_refresh(struct sylkie_packet_cache* cache,
-                            struct sylkie_buffer* buf) {
-    cache->buf = sylkie_buffer_clone(buf);
-    if (cache->buf) {
-        cache->dirty = false;
-        return cache->buf;
-    }
-    return NULL;
+struct sylkie_buffer *
+sylkie_packet_cache_refresh(struct sylkie_packet_cache *cache,
+                            struct sylkie_buffer *buf) {
+  cache->buf = sylkie_buffer_clone(buf);
+  if (cache->buf) {
+    cache->dirty = false;
+    return cache->buf;
+  }
+  return NULL;
 }
 
-struct sylkie_packet* sylkie_packet_init() {
-    struct sylkie_packet* pkt = malloc(sizeof(struct sylkie_packet));
-    if (pkt) {
-        pkt->lst = sylkie_proto_list_init();
-        if (pkt->lst) {
-            pkt->cache.buf = NULL;
-            pkt->cache.dirty = true;
-        } else {
-            free(pkt);
-            return NULL;
-        }
+struct sylkie_packet *sylkie_packet_init() {
+  struct sylkie_packet *pkt = malloc(sizeof(struct sylkie_packet));
+  if (pkt) {
+    pkt->lst = sylkie_proto_list_init();
+    if (pkt->lst) {
+      pkt->cache.buf = NULL;
+      pkt->cache.dirty = true;
+    } else {
+      free(pkt);
+      return NULL;
     }
-    return pkt;
+  }
+  return pkt;
 }
 
-enum sylkie_error sylkie_packet_add(struct sylkie_packet* pkt,
-                                    enum sylkie_proto_type type, void* data,
+enum sylkie_error sylkie_packet_add(struct sylkie_packet *pkt,
+                                    enum sylkie_proto_type type, void *data,
                                     size_t sz) {
-    pkt->cache.dirty = true;
-    return sylkie_proto_list_add(pkt->lst, type, data, sz);
+  pkt->cache.dirty = true;
+  return sylkie_proto_list_add(pkt->lst, type, data, sz);
 }
 
-struct sylkie_buffer* sylkie_packet_to_buffer(struct sylkie_packet* pkt,
-                                              enum sylkie_error* err) {
-    struct sylkie_buffer* buf = NULL;
-    struct sylkie_proto_node* node = NULL;
+struct sylkie_buffer *sylkie_packet_to_buffer(struct sylkie_packet *pkt,
+                                              enum sylkie_error *err) {
+  struct sylkie_buffer *buf = NULL;
+  struct sylkie_proto_node *node = NULL;
 
-    if (!pkt->cache.dirty) {
-        sylkie_error_set(err, SYLKIE_SUCCESS);
-        return sylkie_buffer_clone(pkt->cache.buf);
-    }
-
-    buf = sylkie_buffer_init(0);
-    if (!buf) {
-        sylkie_error_set(err, SYLKIE_NO_MEM);
-    }
-
-    SYLKIE_HEADER_LIST_FOREACH(pkt->lst, node) {
-        if (node->hdr.type < SYLKIE_INVALID_HDR_TYPE &&
-            s_to_buffer_cmds[node->hdr.type].fn) {
-            (s_to_buffer_cmds[node->hdr.type].fn)(buf, node);
-        }
-    }
-
-    if (!sylkie_packet_cache_refresh(&pkt->cache, buf)) {
-        sylkie_error_set(err, SYLKIE_NO_MEM);
-    }
-
+  if (!pkt->cache.dirty) {
     sylkie_error_set(err, SYLKIE_SUCCESS);
-    return buf;
+    return sylkie_buffer_clone(pkt->cache.buf);
+  }
+
+  buf = sylkie_buffer_init(0);
+  if (!buf) {
+    sylkie_error_set(err, SYLKIE_NO_MEM);
+  }
+
+  SYLKIE_HEADER_LIST_FOREACH (pkt->lst, node) {
+    if (node->hdr.type < SYLKIE_INVALID_HDR_TYPE &&
+        s_to_buffer_cmds[node->hdr.type].fn) {
+      (s_to_buffer_cmds[node->hdr.type].fn)(buf, node);
+    }
+  }
+
+  if (!sylkie_packet_cache_refresh(&pkt->cache, buf)) {
+    sylkie_error_set(err, SYLKIE_NO_MEM);
+  }
+
+  sylkie_error_set(err, SYLKIE_SUCCESS);
+  return buf;
 }
 
-void sylkie_packet_free(struct sylkie_packet* pkt) {
-    if (pkt) {
-        if (pkt->cache.buf) {
-            sylkie_buffer_free(pkt->cache.buf);
-        }
-        sylkie_proto_list_free(pkt->lst);
-        free(pkt);
-        pkt = NULL;
+void sylkie_packet_free(struct sylkie_packet *pkt) {
+  if (pkt) {
+    if (pkt->cache.buf) {
+      sylkie_buffer_free(pkt->cache.buf);
     }
+    sylkie_proto_list_free(pkt->lst);
+    free(pkt);
+    pkt = NULL;
+  }
 }

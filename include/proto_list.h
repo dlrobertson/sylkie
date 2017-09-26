@@ -35,35 +35,35 @@
  * \brief Enumerated list of supported protocols
  */
 enum sylkie_proto_type {
-    SYLKIE_ETH = 0,
-    SYLKIE_IPv6,
-    SYLKIE_ICMPv6, // Usefull to ensure checksums are calculated correctly
-    SYLKIE_DATA,
-    SYLKIE_INVALID_HDR_TYPE,
+  SYLKIE_ETH = 0,
+  SYLKIE_IPv6,
+  SYLKIE_ICMPv6, // Usefull to ensure checksums are calculated correctly
+  SYLKIE_DATA,
+  SYLKIE_INVALID_HDR_TYPE,
 };
 
 /**
  * \brief Generic structure used to define a protocol header
  */
 struct sylkie_proto {
-    /// Type of the protocol header
-    enum sylkie_proto_type type;
-    /// Raw bytes
-    void* data;
-    /// length of the associated data
-    size_t len;
+  /// Type of the protocol header
+  enum sylkie_proto_type type;
+  /// Raw bytes
+  void *data;
+  /// length of the associated data
+  size_t len;
 };
 
 /**
  * \brief Node of the protocol header linked list
  */
 struct sylkie_proto_node {
-    /// The protocol header for the given node
-    struct sylkie_proto hdr;
-    /// The next node in the list of protocol headers
-    struct sylkie_proto_node* next;
-    /// The next previous node in the list of protocol headers
-    struct sylkie_proto_node* prev;
+  /// The protocol header for the given node
+  struct sylkie_proto hdr;
+  /// The next node in the list of protocol headers
+  struct sylkie_proto_node *next;
+  /// The next previous node in the list of protocol headers
+  struct sylkie_proto_node *prev;
 };
 
 /**
@@ -80,22 +80,22 @@ struct sylkie_proto_list;
  * \param data Raw data contained in the header
  * \param len Length of the raw data
  */
-int sylkie_proto_init(struct sylkie_proto* hdr, enum sylkie_proto_type type,
-                      void* data, size_t len);
+int sylkie_proto_init(struct sylkie_proto *hdr, enum sylkie_proto_type type,
+                      void *data, size_t len);
 
 /**
  * \memberof sylkie_proto_node
  *
  * \brief Free allocated resources associated with a given node
  */
-void sylkie_proto_node_free(struct sylkie_proto_node* node);
+void sylkie_proto_node_free(struct sylkie_proto_node *node);
 
 /**
  * \memberof sylkie_proto_list
  *
  * \brief Initialize a sylkie_proto_list
  */
-struct sylkie_proto_list* sylkie_proto_list_init();
+struct sylkie_proto_list *sylkie_proto_list_init();
 
 /**
  * \memberof sylkie_proto_list
@@ -106,8 +106,8 @@ struct sylkie_proto_list* sylkie_proto_list_init();
  * \param data Raw header data
  * \param len Length of the raw header data
  */
-enum sylkie_error sylkie_proto_list_add(struct sylkie_proto_list* lst,
-                                        enum sylkie_proto_type type, void* data,
+enum sylkie_error sylkie_proto_list_add(struct sylkie_proto_list *lst,
+                                        enum sylkie_proto_type type, void *data,
                                         size_t len);
 
 /**
@@ -117,8 +117,8 @@ enum sylkie_error sylkie_proto_list_add(struct sylkie_proto_list* lst,
  * \param lst Protocol list to add the node to
  * \param node Protocol header list node to add to the list
  */
-enum sylkie_error sylkie_proto_list_add_node(struct sylkie_proto_list* lst,
-                                             struct sylkie_proto_node* node);
+enum sylkie_error sylkie_proto_list_add_node(struct sylkie_proto_list *lst,
+                                             struct sylkie_proto_node *node);
 
 /**
  * \memberof sylkie_proto_list
@@ -127,8 +127,8 @@ enum sylkie_error sylkie_proto_list_add_node(struct sylkie_proto_list* lst,
  * \param lst Protocol header list to remove the node from
  * \param node Pointer to the protocol header list node to remove
  */
-enum sylkie_error sylkie_proto_list_rm_node(struct sylkie_proto_list* lst,
-                                            struct sylkie_proto_node* node);
+enum sylkie_error sylkie_proto_list_rm_node(struct sylkie_proto_list *lst,
+                                            struct sylkie_proto_node *node);
 
 /**
  * \memberof sylkie_proto_list
@@ -137,7 +137,7 @@ enum sylkie_error sylkie_proto_list_rm_node(struct sylkie_proto_list* lst,
  * \param lst Protocol header list to remove the nodes from
  * \param type Type of protocol nodes to remove
  */
-enum sylkie_error sylkie_proto_list_rm(struct sylkie_proto_list* lst,
+enum sylkie_error sylkie_proto_list_rm(struct sylkie_proto_list *lst,
                                        enum sylkie_proto_type type);
 
 /**
@@ -146,7 +146,7 @@ enum sylkie_error sylkie_proto_list_rm(struct sylkie_proto_list* lst,
  * \brief Return the head of a given protocol list
  * \param lst Protocol header list to return the head of
  */
-struct sylkie_proto_node* sylkie_proto_list_head(struct sylkie_proto_list* lst);
+struct sylkie_proto_node *sylkie_proto_list_head(struct sylkie_proto_list *lst);
 
 /**
  * \memberof sylkie_proto_list
@@ -154,7 +154,7 @@ struct sylkie_proto_node* sylkie_proto_list_head(struct sylkie_proto_list* lst);
  * \brief Return the tail of a given protocol list
  * \param lst Protocol header list to return the tail of
  */
-struct sylkie_proto_node* sylkie_proto_list_tail(struct sylkie_proto_list* lst);
+struct sylkie_proto_node *sylkie_proto_list_tail(struct sylkie_proto_list *lst);
 
 /**
  * \memberof sylkie_proto_list
@@ -162,10 +162,10 @@ struct sylkie_proto_node* sylkie_proto_list_tail(struct sylkie_proto_list* lst);
  * \brief Free all allocated resources associated with the list
  * \param lst Protocol header list to deallocate
  */
-void sylkie_proto_list_free(struct sylkie_proto_list* lst);
+void sylkie_proto_list_free(struct sylkie_proto_list *lst);
 
 #define SYLKIE_HEADER_LIST_FOREACH(lst, node)                                  \
-    for (node = sylkie_proto_list_head(lst); node; node = node->next)
+  for (node = sylkie_proto_list_head(lst); node; node = node->next)
 
 /// @} end of doxygen protocol group
 

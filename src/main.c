@@ -41,15 +41,15 @@
 // various subcommands to the sylkie command that are defined elsewhere
 
 // neighbor advert subcommand functions
-extern int na_cmdline(int argc, const char** argv);
+extern int na_cmdline(int argc, const char **argv);
 #ifdef BUILD_JSON
-extern pid_t na_json(struct json_object* jobj);
+extern pid_t na_json(struct json_object *jobj);
 #endif
 
 // router advert subcommand functions
-extern int ra_cmdline(int argc, const char** argv);
+extern int ra_cmdline(int argc, const char **argv);
 #ifdef BUILD_JSON
-extern pid_t ra_json(struct json_object* jobj);
+extern pid_t ra_json(struct json_object *jobj);
 #endif
 
 /**
@@ -59,65 +59,65 @@ extern pid_t ra_json(struct json_object* jobj);
  * Used to track pids of forked child processes.
  */
 struct pid_buf {
-    pid_t* pids;
-    size_t len;
-    size_t cap;
+  pid_t *pids;
+  size_t len;
+  size_t cap;
 };
 
-struct pid_buf* pid_buf_init(size_t len) {
-    struct pid_buf* buf = malloc(sizeof(struct pid_buf));
-    if (!buf) {
-        return NULL;
+struct pid_buf *pid_buf_init(size_t len) {
+  struct pid_buf *buf = malloc(sizeof(struct pid_buf));
+  if (!buf) {
+    return NULL;
+  }
+  if (len) {
+    buf->pids = malloc(len * sizeof(pid_t));
+    if (!buf->pids) {
+      free(buf);
+      return NULL;
     }
-    if (len) {
-        buf->pids = malloc(len * sizeof(pid_t));
-        if (!buf->pids) {
-            free(buf);
-            return NULL;
-        }
-        buf->cap = len;
-        buf->len = 0;
-    } else {
-        buf->pids = malloc(1 * sizeof(pid_t));
-        buf->len = 0;
-        buf->cap = 1;
-    }
-    return buf;
+    buf->cap = len;
+    buf->len = 0;
+  } else {
+    buf->pids = malloc(1 * sizeof(pid_t));
+    buf->len = 0;
+    buf->cap = 1;
+  }
+  return buf;
 }
 
-int pid_buf_add(struct pid_buf* buf, pid_t pid) {
-    pid_t* tmp;
-    if (!((buf->len + 1) < buf->cap)) {
-        tmp = malloc((buf->cap << 1) * sizeof(pid_t));
-        if (!tmp) {
-            return -1;
-        }
-        memcpy(tmp, buf->pids, buf->len);
-        free(buf->pids);
-        buf->pids = tmp;
-        buf->cap = buf->cap << 1;
+int pid_buf_add(struct pid_buf *buf, pid_t pid) {
+  pid_t *tmp;
+  if (!((buf->len + 1) < buf->cap)) {
+    tmp = malloc((buf->cap << 1) * sizeof(pid_t));
+    if (!tmp) {
+      return -1;
     }
-    buf->pids[buf->len] = pid;
-    ++buf->len;
-    return 0;
+    memcpy(tmp, buf->pids, buf->len);
+    free(buf->pids);
+    buf->pids = tmp;
+    buf->cap = buf->cap << 1;
+  }
+  buf->pids[buf->len] = pid;
+  ++buf->len;
+  return 0;
 }
 
-void pid_buf_free(struct pid_buf* buf) {
-    if (buf) {
-        if (buf->pids) {
-            free(buf->pids);
-        }
-        free(buf);
-        buf = NULL;
+void pid_buf_free(struct pid_buf *buf) {
+  if (buf) {
+    if (buf->pids) {
+      free(buf->pids);
     }
+    free(buf);
+    buf = NULL;
+  }
 }
 
 static const struct cmd {
-    const char* short_name;
-    const char* long_name;
-    int (*cmdline_func)(int argc, const char** argv);
+  const char *short_name;
+  const char *long_name;
+  int (*cmdline_func)(int argc, const char **argv);
 #ifdef BUILD_JSON
-    pid_t (*json_func)(struct json_object* jobj);
+  pid_t (*json_func)(struct json_object *jobj);
 #endif
 } cmds[] = {{"na", "neighbor-advert", na_cmdline,
 #ifdef BUILD_JSON
@@ -131,224 +131,224 @@ static const struct cmd {
             },
             {NULL}};
 
-void version(FILE* fd) { fprintf(fd, "sylkie version: " SYLKIE_VERSION "\n"); }
+void version(FILE *fd) { fprintf(fd, "sylkie version: " SYLKIE_VERSION "\n"); }
 
-const struct cmd* find_cmd(const char* input) {
-    const struct cmd* cmd;
-    if (input) {
-        for (cmd = cmds; cmd && cmd->short_name && cmd->long_name; ++cmd) {
-            if (strcmp(input, cmd->short_name) == 0 ||
-                strcmp(input, cmd->long_name) == 0) {
-                return cmd;
-            }
-        }
+const struct cmd *find_cmd(const char *input) {
+  const struct cmd *cmd;
+  if (input) {
+    for (cmd = cmds; cmd && cmd->short_name && cmd->long_name; ++cmd) {
+      if (strcmp(input, cmd->short_name) == 0 ||
+          strcmp(input, cmd->long_name) == 0) {
+        return cmd;
+      }
     }
-    return NULL;
+  }
+  return NULL;
 }
 
-struct sylkie_buffer* read_file(const char* arg) {
-    int fd, res;
-    u_int8_t tmp_buffer[1025];
-    struct sylkie_buffer* buf = sylkie_buffer_init(1024);
-    if (!buf) {
-        return NULL;
+struct sylkie_buffer *read_file(const char *arg) {
+  int fd, res;
+  u_int8_t tmp_buffer[1025];
+  struct sylkie_buffer *buf = sylkie_buffer_init(1024);
+  if (!buf) {
+    return NULL;
+  }
+  if ((fd = open(arg, O_RDONLY)) < 0) {
+    fprintf(stderr, "%s cannot be opened\n", arg);
+    sylkie_buffer_free(buf);
+    return NULL;
+  }
+  while ((res = read(fd, tmp_buffer, 1024)) != 0) {
+    if (res < 0) {
+      fprintf(stderr, "Failed to read from file %s\n", arg);
+      sylkie_buffer_free(buf);
+      return NULL;
     }
-    if ((fd = open(arg, O_RDONLY)) < 0) {
-        fprintf(stderr, "%s cannot be opened\n", arg);
-        sylkie_buffer_free(buf);
-        return NULL;
-    }
-    while ((res = read(fd, tmp_buffer, 1024)) != 0) {
-        if (res < 0) {
-            fprintf(stderr, "Failed to read from file %s\n", arg);
-            sylkie_buffer_free(buf);
-            return NULL;
-        }
-        sylkie_buffer_add(buf, tmp_buffer, res);
-    }
-    // Note: buf->len will be 0 if the file is empty
-    return buf;
+    sylkie_buffer_add(buf, tmp_buffer, res);
+  }
+  // Note: buf->len will be 0 if the file is empty
+  return buf;
 }
 
 #ifdef BUILD_JSON
-pid_t run_json_cmd(int (*func)(struct json_object* jobj),
-                   struct json_object* jobj) {
-    pid_t pid = -1;
-    enum json_type type;
-    struct json_object* tmp;
-    int i, len = json_object_array_length(jobj);
-    for (i = 0; i < len; ++i) {
-        tmp = json_object_array_get_idx(jobj, i);
-        type = json_object_get_type(tmp);
-        if (type != json_type_object) {
-            fprintf(stderr, "Unexpected type at index %d\n", i);
-            return -1;
-        }
-        pid = func(tmp);
+pid_t run_json_cmd(int (*func)(struct json_object *jobj),
+                   struct json_object *jobj) {
+  pid_t pid = -1;
+  enum json_type type;
+  struct json_object *tmp;
+  int i, len = json_object_array_length(jobj);
+  for (i = 0; i < len; ++i) {
+    tmp = json_object_array_get_idx(jobj, i);
+    type = json_object_get_type(tmp);
+    if (type != json_type_object) {
+      fprintf(stderr, "Unexpected type at index %d\n", i);
+      return -1;
     }
-    return pid;
+    pid = func(tmp);
+  }
+  return pid;
 }
 
-pid_t run_from_string(char* line) {
-    const struct cmd* cmd;
-    char* p = strtok(line, " ");
-    static char* args[1024];
-    pid_t pid;
-    int i = 0, retval = 0;
-    while (p != NULL) {
-        if (i < 1023) {
-            args[i] = p;
-            p = strtok(NULL, " ");
-        } else {
-            fprintf(stderr, "ERROR: Too many arguments provided to command\n");
-            return -1;
-        }
-        ++i;
-    }
-    args[i] = NULL;
-    if (i > 0 && (cmd = find_cmd(args[0])) != NULL) {
-        pid = fork();
-        if (pid < 0) {
-            return -1;
-        } else if (pid == 0) {
-            retval = (*cmd->cmdline_func)(i, (const char**)args);
-            _exit(retval);
-        } else {
-            return pid;
-        }
+pid_t run_from_string(char *line) {
+  const struct cmd *cmd;
+  char *p = strtok(line, " ");
+  static char *args[1024];
+  pid_t pid;
+  int i = 0, retval = 0;
+  while (p != NULL) {
+    if (i < 1023) {
+      args[i] = p;
+      p = strtok(NULL, " ");
     } else {
-        fprintf(stderr, "ERROR: could not parse line: \n\t%s\n", line);
+      fprintf(stderr, "ERROR: Too many arguments provided to command\n");
+      return -1;
     }
+    ++i;
+  }
+  args[i] = NULL;
+  if (i > 0 && (cmd = find_cmd(args[0])) != NULL) {
+    pid = fork();
+    if (pid < 0) {
+      return -1;
+    } else if (pid == 0) {
+      retval = (*cmd->cmdline_func)(i, (const char **)args);
+      _exit(retval);
+    } else {
+      return pid;
+    }
+  } else {
+    fprintf(stderr, "ERROR: could not parse line: \n\t%s\n", line);
+  }
+  return -1;
+}
+
+int run_from_plaintext(const char *arg, struct pid_buf *pid_buf) {
+  int retval = 0;
+  struct sylkie_buffer *buf = read_file(arg);
+  const u_int8_t *iter = NULL;
+  const u_int8_t *end = NULL;
+  const u_int8_t *pos = NULL;
+  pid_t pid;
+  size_t len;
+  char *cpy = NULL;
+  if (!buf) {
     return -1;
-}
+  }
 
-int run_from_plaintext(const char* arg, struct pid_buf* pid_buf) {
-    int retval = 0;
-    struct sylkie_buffer* buf = read_file(arg);
-    const u_int8_t* iter = NULL;
-    const u_int8_t* end = NULL;
-    const u_int8_t* pos = NULL;
-    pid_t pid;
-    size_t len;
-    char* cpy = NULL;
-    if (!buf) {
-        return -1;
-    }
-
-    if (buf->len <= 0) {
-        sylkie_buffer_free(buf);
-        fprintf(stderr, "Error: Attempted to read from empty file %s\n", arg);
-        return -1;
-    }
-
-    iter = buf->data;
-    end = buf->data + buf->len;
-    while (iter < end && !retval) {
-        pos = (const u_int8_t*)strchr((const char*)iter, '\n');
-        if (pos < end && pos > iter) {
-            len = pos - iter;
-            cpy = malloc(len + 1);
-            if (cpy) {
-                memcpy(cpy, iter, len);
-                cpy[len] = '\0';
-                pid = run_from_string(cpy);
-                if (pid < 0) {
-                    retval = -1;
-                } else {
-                    pid_buf_add(pid_buf, pid);
-                }
-                free(cpy);
-                iter = ++pos;
-            } else {
-                fprintf(stderr, "Error: No memory!\n");
-                retval = -1;
-            }
-        } else {
-            break;
-        }
-    }
+  if (buf->len <= 0) {
     sylkie_buffer_free(buf);
-    return retval;
+    fprintf(stderr, "Error: Attempted to read from empty file %s\n", arg);
+    return -1;
+  }
+
+  iter = buf->data;
+  end = buf->data + buf->len;
+  while (iter < end && !retval) {
+    pos = (const u_int8_t *)strchr((const char *)iter, '\n');
+    if (pos < end && pos > iter) {
+      len = pos - iter;
+      cpy = malloc(len + 1);
+      if (cpy) {
+        memcpy(cpy, iter, len);
+        cpy[len] = '\0';
+        pid = run_from_string(cpy);
+        if (pid < 0) {
+          retval = -1;
+        } else {
+          pid_buf_add(pid_buf, pid);
+        }
+        free(cpy);
+        iter = ++pos;
+      } else {
+        fprintf(stderr, "Error: No memory!\n");
+        retval = -1;
+      }
+    } else {
+      break;
+    }
+  }
+  sylkie_buffer_free(buf);
+  return retval;
 }
 
-int run_from_json(const char* arg, struct pid_buf* pid_buf) {
-    int retval = 0;
-    pid_t pid = -1;
-    enum json_tokener_error jerr;
-    enum json_type type;
-    struct json_object* jobj = NULL;
-    struct json_tokener* tok = json_tokener_new();
-    struct sylkie_buffer* buf = read_file(arg);
-    const struct cmd* cmd;
+int run_from_json(const char *arg, struct pid_buf *pid_buf) {
+  int retval = 0;
+  pid_t pid = -1;
+  enum json_tokener_error jerr;
+  enum json_type type;
+  struct json_object *jobj = NULL;
+  struct json_tokener *tok = json_tokener_new();
+  struct sylkie_buffer *buf = read_file(arg);
+  const struct cmd *cmd;
 
-    if (!buf) {
-        json_tokener_free(tok);
-        return -1;
-    }
+  if (!buf) {
+    json_tokener_free(tok);
+    return -1;
+  }
 
-    if (!tok) {
-        sylkie_buffer_free(buf);
-        return -1;
-    }
+  if (!tok) {
+    sylkie_buffer_free(buf);
+    return -1;
+  }
 
-    if (buf->len <= 0) {
-        sylkie_buffer_free(buf);
-        json_tokener_free(tok);
-        fprintf(stderr, "Error: Attempted to read from empty file %s\n", arg);
-        return -1;
-    }
+  if (buf->len <= 0) {
+    sylkie_buffer_free(buf);
+    json_tokener_free(tok);
+    fprintf(stderr, "Error: Attempted to read from empty file %s\n", arg);
+    return -1;
+  }
 
-    do {
-        jobj = json_tokener_parse_ex(tok, (const char*)buf->data, buf->len);
-        jerr = json_tokener_get_error(tok);
-    } while (jerr == json_tokener_continue);
+  do {
+    jobj = json_tokener_parse_ex(tok, (const char *)buf->data, buf->len);
+    jerr = json_tokener_get_error(tok);
+  } while (jerr == json_tokener_continue);
 
-    if (jerr != json_tokener_success) {
-        fprintf(stderr, "Error: %s\n", json_tokener_error_desc(jerr));
-        json_object_put(jobj);
-        json_tokener_free(tok);
-        sylkie_buffer_free(buf);
-        return -1;
-    }
-
-    json_object_object_foreach(jobj, key, val) {
-        cmd = find_cmd(key);
-        if (cmd) {
-            type = json_object_get_type(val);
-            switch (type) {
-            case json_type_array:
-                pid = run_json_cmd(cmd->json_func, val);
-                if (pid >= 0) {
-                    retval = pid_buf_add(pid_buf, pid);
-                    if (retval) {
-                        fprintf(stderr, "Failed to track pid but we're going "
-                                        "to keep trucking\n");
-                    }
-                } else {
-                    fprintf(stderr, "Failed to fork proccess\n");
-                }
-                break;
-            default:
-                fprintf(stderr, "Expected array of objects for key %s\n", key);
-                retval = -1;
-                break;
-            }
-
-        } else {
-            fprintf(stderr, "Unknown command: %s\n", arg);
-            retval = -1;
-        }
-
-        if (retval) {
-            break;
-        }
-    }
-
+  if (jerr != json_tokener_success) {
+    fprintf(stderr, "Error: %s\n", json_tokener_error_desc(jerr));
     json_object_put(jobj);
     json_tokener_free(tok);
     sylkie_buffer_free(buf);
+    return -1;
+  }
 
-    return 0;
+  json_object_object_foreach(jobj, key, val) {
+    cmd = find_cmd(key);
+    if (cmd) {
+      type = json_object_get_type(val);
+      switch (type) {
+      case json_type_array:
+        pid = run_json_cmd(cmd->json_func, val);
+        if (pid >= 0) {
+          retval = pid_buf_add(pid_buf, pid);
+          if (retval) {
+            fprintf(stderr, "Failed to track pid but we're going "
+                            "to keep trucking\n");
+          }
+        } else {
+          fprintf(stderr, "Failed to fork proccess\n");
+        }
+        break;
+      default:
+        fprintf(stderr, "Expected array of objects for key %s\n", key);
+        retval = -1;
+        break;
+      }
+
+    } else {
+      fprintf(stderr, "Unknown command: %s\n", arg);
+      retval = -1;
+    }
+
+    if (retval) {
+      break;
+    }
+  }
+
+  json_object_put(jobj);
+  json_tokener_free(tok);
+  sylkie_buffer_free(buf);
+
+  return 0;
 }
 #endif
 
@@ -363,86 +363,85 @@ static struct cfg_subcmd subcmds[] = {{"na", "neighbor-advert"},
                                       {"ra", "router-advert"}};
 static size_t subcmds_sz = sizeof(subcmds) / sizeof(struct cfg_subcmd);
 
-int main(int argc, const char** argv) {
-    char* input_file;
-    const struct cmd* cmd;
-    int retval = 0, i = 0;
-    struct cfg_set set = {
-        .usage = "sylkie [ OPTIONS | SUBCOMMAND ]",
-        .summary = "IPv6 address spoofing with the Neighbor Discovery Protocol",
-        .parsers = parsers,
-        .parsers_sz = parsers_sz,
-        .subcmds = subcmds,
-        .subcmds_sz = subcmds_sz};
-    struct pid_buf* pid_buf = NULL;
+int main(int argc, const char **argv) {
+  char *input_file;
+  const struct cmd *cmd;
+  int retval = 0, i = 0;
+  struct cfg_set set = {
+      .usage = "sylkie [ OPTIONS | SUBCOMMAND ]",
+      .summary = "IPv6 address spoofing with the Neighbor Discovery Protocol",
+      .parsers = parsers,
+      .parsers_sz = parsers_sz,
+      .subcmds = subcmds,
+      .subcmds_sz = subcmds_sz};
+  struct pid_buf *pid_buf = NULL;
 
-    if (argc < 2) {
-        fprintf(stderr, "Too few arguments\n");
-        cfg_set_usage(&set, stderr);
-        return -1;
-    }
+  if (argc < 2) {
+    fprintf(stderr, "Too few arguments\n");
+    cfg_set_usage(&set, stderr);
+    return -1;
+  }
 
-    --argc;
-    ++argv;
-    if (argv[0] && argv[0][0] == '-') {
-        retval = cfg_set_init_cmdline(&set, argc, argv);
+  --argc;
+  ++argv;
+  if (argv[0] && argv[0][0] == '-') {
+    retval = cfg_set_init_cmdline(&set, argc, argv);
 
-        if (retval) {
-            fprintf(stderr, "Failed to parse user input\n");
-            cfg_set_usage(&set, stderr);
-            return -1;
-        } else {
-
-            pid_buf = pid_buf_init(10);
-            if (!pid_buf) {
-                fprintf(stderr, "Could not allocate pid buffer\n");
-                retval = -1;
-            } else {
-
-                if (cfg_set_find(&set, "version")) {
-                    version(stdout);
-                }
-
-                if (cfg_set_find(&set, "help")) {
-                    cfg_set_usage(&set, stdout);
-                }
-
-                if (!cfg_set_find_type(&set, "json", CFG_STRING, &input_file)) {
-#ifdef BUILD_JSON
-                    retval = run_from_json(input_file, pid_buf);
-#else
-                    fprintf(stderr, "sylkie must be built with json support to "
-                                    "use json functions\n");
-                    retval = -1;
-#endif
-                }
-
-                if (!cfg_set_find_type(&set, "execute", CFG_STRING,
-                                       &input_file)) {
-                    run_from_plaintext(input_file, pid_buf);
-                }
-
-                for (i = 0; i < pid_buf->len; ++i) {
-                    waitpid(pid_buf->pids[i], &retval, 0);
-                }
-
-                pid_buf_free(pid_buf);
-            }
-        }
+    if (retval) {
+      fprintf(stderr, "Failed to parse user input\n");
+      cfg_set_usage(&set, stderr);
+      return -1;
     } else {
-        // This is not an option. Forward to next cmd
-        cmd = find_cmd(*argv);
 
-        if (!cmd) {
-            fprintf(stderr, "Unknown command: %s\n", *argv);
-            cfg_set_usage(&set, stderr);
-            retval = -1;
-        } else {
-            retval = (*cmd->cmdline_func)(argc, argv);
+      pid_buf = pid_buf_init(10);
+      if (!pid_buf) {
+        fprintf(stderr, "Could not allocate pid buffer\n");
+        retval = -1;
+      } else {
+
+        if (cfg_set_find(&set, "version")) {
+          version(stdout);
         }
+
+        if (cfg_set_find(&set, "help")) {
+          cfg_set_usage(&set, stdout);
+        }
+
+        if (!cfg_set_find_type(&set, "json", CFG_STRING, &input_file)) {
+#ifdef BUILD_JSON
+          retval = run_from_json(input_file, pid_buf);
+#else
+          fprintf(stderr, "sylkie must be built with json support to "
+                          "use json functions\n");
+          retval = -1;
+#endif
+        }
+
+        if (!cfg_set_find_type(&set, "execute", CFG_STRING, &input_file)) {
+          run_from_plaintext(input_file, pid_buf);
+        }
+
+        for (i = 0; i < pid_buf->len; ++i) {
+          waitpid(pid_buf->pids[i], &retval, 0);
+        }
+
+        pid_buf_free(pid_buf);
+      }
     }
+  } else {
+    // This is not an option. Forward to next cmd
+    cmd = find_cmd(*argv);
 
-    cfg_set_free(&set);
+    if (!cmd) {
+      fprintf(stderr, "Unknown command: %s\n", *argv);
+      cfg_set_usage(&set, stderr);
+      retval = -1;
+    } else {
+      retval = (*cmd->cmdline_func)(argc, argv);
+    }
+  }
 
-    _exit(retval);
+  cfg_set_free(&set);
+
+  _exit(retval);
 }

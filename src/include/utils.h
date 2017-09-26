@@ -24,11 +24,11 @@
 #include <netinet/if_ether.h>
 
 #define ARG_CMP(input, opt1, opt2)                                             \
-    (strcmp(input, opt1) == 0 || strcmp(input, opt2) == 0)
+  (strcmp(input, opt1) == 0 || strcmp(input, opt2) == 0)
 
 u_int8_t hex_char_to_byte(char ch);
 
-int parse_hwaddr(const char* arg, u_int8_t* addr);
+int parse_hwaddr(const char *arg, u_int8_t *addr);
 
 int lockdown(void);
 

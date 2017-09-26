@@ -10,88 +10,87 @@ extern "C" {
 }
 
 TEST(proto_list, basic) {
-    struct icmp6_hdr icmp6;
-    struct sylkie_proto_list* lst = sylkie_proto_list_init();
-    enum sylkie_error err;
+  struct icmp6_hdr icmp6;
+  struct sylkie_proto_list *lst = sylkie_proto_list_init();
+  enum sylkie_error err;
 
-    bzero(&icmp6, sizeof(struct icmp6_hdr));
-    icmp6.icmp6_type = ND_NEIGHBOR_ADVERT;
-    icmp6.icmp6_data8[0] = 0x20;
-    err = sylkie_proto_list_add(lst, SYLKIE_ICMPv6, &icmp6,
-                                sizeof(struct icmp6_hdr));
-    ASSERT_EQ(err, SYLKIE_SUCCESS);
-    sylkie_proto_list_free(lst);
+  bzero(&icmp6, sizeof(struct icmp6_hdr));
+  icmp6.icmp6_type = ND_NEIGHBOR_ADVERT;
+  icmp6.icmp6_data8[0] = 0x20;
+  err = sylkie_proto_list_add(lst, SYLKIE_ICMPv6, &icmp6,
+                              sizeof(struct icmp6_hdr));
+  ASSERT_EQ(err, SYLKIE_SUCCESS);
+  sylkie_proto_list_free(lst);
 }
 
 TEST(proto_list, rm) {
-    int i = 0;
-    struct ethhdr eth;
-    struct ip6_hdr ipv6;
-    struct icmp6_hdr icmp6;
-    struct sylkie_proto_node* node;
-    struct sylkie_proto_list* lst = sylkie_proto_list_init();
-    enum sylkie_error err;
+  int i = 0;
+  struct ethhdr eth;
+  struct ip6_hdr ipv6;
+  struct icmp6_hdr icmp6;
+  struct sylkie_proto_node *node;
+  struct sylkie_proto_list *lst = sylkie_proto_list_init();
+  enum sylkie_error err;
 
-    err = sylkie_proto_list_add(lst, SYLKIE_ETH, &eth, sizeof(struct ethhdr));
-    ASSERT_EQ(err, SYLKIE_SUCCESS);
+  err = sylkie_proto_list_add(lst, SYLKIE_ETH, &eth, sizeof(struct ethhdr));
+  ASSERT_EQ(err, SYLKIE_SUCCESS);
 
-    err =
-        sylkie_proto_list_add(lst, SYLKIE_IPv6, &ipv6, sizeof(struct ip6_hdr));
-    ASSERT_EQ(err, SYLKIE_SUCCESS);
+  err = sylkie_proto_list_add(lst, SYLKIE_IPv6, &ipv6, sizeof(struct ip6_hdr));
+  ASSERT_EQ(err, SYLKIE_SUCCESS);
 
-    err = sylkie_proto_list_add(lst, SYLKIE_ICMPv6, &icmp6,
-                                sizeof(struct icmp6_hdr));
-    ASSERT_EQ(err, SYLKIE_SUCCESS);
+  err = sylkie_proto_list_add(lst, SYLKIE_ICMPv6, &icmp6,
+                              sizeof(struct icmp6_hdr));
+  ASSERT_EQ(err, SYLKIE_SUCCESS);
 
-    err = sylkie_proto_list_add(lst, SYLKIE_DATA, NULL, 0);
-    ASSERT_EQ(err, SYLKIE_SUCCESS);
+  err = sylkie_proto_list_add(lst, SYLKIE_DATA, NULL, 0);
+  ASSERT_EQ(err, SYLKIE_SUCCESS);
 
-    SYLKIE_HEADER_LIST_FOREACH(lst, node) {
-        switch (i) {
-        case 0:
-            EXPECT_EQ(node->hdr.type, SYLKIE_ETH);
-            break;
-        case 1:
-            EXPECT_EQ(node->hdr.type, SYLKIE_IPv6);
-            break;
-        case 2:
-            EXPECT_EQ(node->hdr.type, SYLKIE_ICMPv6);
-            break;
-        case 3:
-            EXPECT_EQ(node->hdr.type, SYLKIE_DATA);
-            break;
-        default:
-            ASSERT_TRUE(false);
-            break;
-        }
-        ++i;
+  SYLKIE_HEADER_LIST_FOREACH (lst, node) {
+    switch (i) {
+    case 0:
+      EXPECT_EQ(node->hdr.type, SYLKIE_ETH);
+      break;
+    case 1:
+      EXPECT_EQ(node->hdr.type, SYLKIE_IPv6);
+      break;
+    case 2:
+      EXPECT_EQ(node->hdr.type, SYLKIE_ICMPv6);
+      break;
+    case 3:
+      EXPECT_EQ(node->hdr.type, SYLKIE_DATA);
+      break;
+    default:
+      ASSERT_TRUE(false);
+      break;
     }
+    ++i;
+  }
 
-    ASSERT_EQ(i, 4);
+  ASSERT_EQ(i, 4);
 
-    err = sylkie_proto_list_rm(lst, SYLKIE_IPv6);
-    ASSERT_EQ(err, SYLKIE_SUCCESS);
+  err = sylkie_proto_list_rm(lst, SYLKIE_IPv6);
+  ASSERT_EQ(err, SYLKIE_SUCCESS);
 
-    i = 0;
-    SYLKIE_HEADER_LIST_FOREACH(lst, node) {
-        switch (i) {
-        case 0:
-            EXPECT_EQ(node->hdr.type, SYLKIE_ETH);
-            break;
-        case 1:
-            EXPECT_EQ(node->hdr.type, SYLKIE_ICMPv6);
-            break;
-        case 2:
-            EXPECT_EQ(node->hdr.type, SYLKIE_DATA);
-            break;
-        default:
-            ASSERT_TRUE(false);
-            break;
-        }
-        ++i;
+  i = 0;
+  SYLKIE_HEADER_LIST_FOREACH (lst, node) {
+    switch (i) {
+    case 0:
+      EXPECT_EQ(node->hdr.type, SYLKIE_ETH);
+      break;
+    case 1:
+      EXPECT_EQ(node->hdr.type, SYLKIE_ICMPv6);
+      break;
+    case 2:
+      EXPECT_EQ(node->hdr.type, SYLKIE_DATA);
+      break;
+    default:
+      ASSERT_TRUE(false);
+      break;
     }
+    ++i;
+  }
 
-    ASSERT_EQ(i, 3);
+  ASSERT_EQ(i, 3);
 
-    sylkie_proto_list_free(lst);
+  sylkie_proto_list_free(lst);
 }

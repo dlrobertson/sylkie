@@ -48,10 +48,10 @@
  *
  * @see sylkie_packet
  */
-struct sylkie_packet* sylkie_neighbor_advert_create(
+struct sylkie_packet *sylkie_neighbor_advert_create(
     const u_int8_t eth_src[ETH_ALEN], const u_int8_t eth_dst[ETH_ALEN],
-    struct in6_addr* ip_src, struct in6_addr* ip_dst, struct in6_addr* tgt_ip,
-    const u_int8_t tgt_hw[ETH_ALEN], enum sylkie_error* err);
+    struct in6_addr *ip_src, struct in6_addr *ip_dst, struct in6_addr *tgt_ip,
+    const u_int8_t tgt_hw[ETH_ALEN], enum sylkie_error *err);
 
 /**
  * \brief Create a sylkie_packet containing a Router Advertisement
@@ -72,11 +72,11 @@ struct sylkie_packet* sylkie_neighbor_advert_create(
  *
  * @see sylkie_packet
  */
-struct sylkie_packet* sylkie_router_advert_create(
+struct sylkie_packet *sylkie_router_advert_create(
     const u_int8_t eth_src[ETH_ALEN], const u_int8_t eth_dst[ETH_ALEN],
-    struct in6_addr* ip_src, struct in6_addr* ip_dst, struct in6_addr* tgt_ip,
+    struct in6_addr *ip_src, struct in6_addr *ip_dst, struct in6_addr *tgt_ip,
     u_int8_t prefix, u_int16_t lifetime, const u_int8_t tgt_hw[ETH_ALEN],
-    enum sylkie_error* err);
+    enum sylkie_error *err);
 
 /**
  * \brief Convert the sylkie_packet into a sylkie_buffer
@@ -89,8 +89,8 @@ struct sylkie_packet* sylkie_router_advert_create(
  *
  * @see sylkie_packet
  */
-enum sylkie_error sylkie_icmpv6_to_buffer(struct sylkie_buffer* buf,
-                                          const struct sylkie_proto_node* node);
+enum sylkie_error sylkie_icmpv6_to_buffer(struct sylkie_buffer *buf,
+                                          const struct sylkie_proto_node *node);
 
 /// @} end of doxygen sylkie_nd group
 

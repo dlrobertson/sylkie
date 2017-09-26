@@ -33,12 +33,12 @@
  * \brief Generic growable buffer structure
  */
 struct sylkie_buffer {
-    /// Length of the buffer
-    size_t len;
-    /// Capactity of the buffer
-    size_t cap;
-    /// Raw pointer to the buffer
-    u_int8_t* data;
+  /// Length of the buffer
+  size_t len;
+  /// Capactity of the buffer
+  size_t cap;
+  /// Raw pointer to the buffer
+  u_int8_t *data;
 };
 
 /**
@@ -54,7 +54,7 @@ struct sylkie_buffer {
  * @see sylkie_buffer_add
  * @see sylkie_buffer_add_value
  */
-struct sylkie_buffer* sylkie_buffer_init(size_t sz);
+struct sylkie_buffer *sylkie_buffer_init(size_t sz);
 
 /**
  * \memberof sylkie_buffer
@@ -64,7 +64,7 @@ struct sylkie_buffer* sylkie_buffer_init(size_t sz);
  * \param ptr Pointer to the data to be added
  * \param sz Size of the data pointer
  */
-int sylkie_buffer_add(struct sylkie_buffer* buf, const void* ptr, size_t sz);
+int sylkie_buffer_add(struct sylkie_buffer *buf, const void *ptr, size_t sz);
 
 /**
  * \memberof sylkie_buffer
@@ -74,7 +74,7 @@ int sylkie_buffer_add(struct sylkie_buffer* buf, const void* ptr, size_t sz);
  * \param value Value to be repeated
  * \param sz Number of times to repeat the value in the buffer
  */
-int sylkie_buffer_add_value(struct sylkie_buffer* buf, const u_int8_t value,
+int sylkie_buffer_add_value(struct sylkie_buffer *buf, const u_int8_t value,
                             size_t sz);
 
 /**
@@ -83,7 +83,7 @@ int sylkie_buffer_add_value(struct sylkie_buffer* buf, const u_int8_t value,
  * \brief Copy the given buffer
  * \param buf Buffer that will be cloned
  */
-struct sylkie_buffer* sylkie_buffer_clone(const struct sylkie_buffer* buf);
+struct sylkie_buffer *sylkie_buffer_clone(const struct sylkie_buffer *buf);
 
 /**
  * \memberof sylkie_buffer
@@ -91,7 +91,7 @@ struct sylkie_buffer* sylkie_buffer_clone(const struct sylkie_buffer* buf);
  * \brief Print the contents of the buffer in hexadecimal to stdout
  * \param buf Buffer to be printed
  */
-void sylkie_buffer_print(const struct sylkie_buffer* buf);
+void sylkie_buffer_print(const struct sylkie_buffer *buf);
 
 /**
  * \memberof sylkie_buffer
@@ -99,7 +99,7 @@ void sylkie_buffer_print(const struct sylkie_buffer* buf);
  * \brief Free the memory allocated to this buffer
  * \param buf Buffer to be freed
  */
-void sylkie_buffer_free(struct sylkie_buffer* buf);
+void sylkie_buffer_free(struct sylkie_buffer *buf);
 
 /// @} end of doxygen buffer group
 

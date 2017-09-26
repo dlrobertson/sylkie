@@ -41,28 +41,28 @@
  * \brief Valid types allowed for arguments
  */
 enum cfg_value_type {
-    CFG_INT = 0x0,
-    CFG_WORD = 0x1,
-    CFG_BYTE = 0x2,
-    CFG_STRING = 0x4,
-    CFG_IPV6_ADDRESS = 0x8,
-    CFG_HW_ADDRESS = 0x10,
-    CFG_BOOL = 0x20,
-    CFG_INVALID = 0x40,
+  CFG_INT = 0x0,
+  CFG_WORD = 0x1,
+  CFG_BYTE = 0x2,
+  CFG_STRING = 0x4,
+  CFG_IPV6_ADDRESS = 0x8,
+  CFG_HW_ADDRESS = 0x10,
+  CFG_BOOL = 0x20,
+  CFG_INVALID = 0x40,
 };
 
 /**
  * \brief Define the interface for providing a given argument to a command
  */
 struct cfg_parser {
-    /// the single character version of the option
-    char short_name;
-    /// the string version of the option
-    const char* long_name;
-    /// the type of the value expected
-    enum cfg_value_type type;
-    /// helpful text describing how to use the argument
-    const char* usage;
+  /// the single character version of the option
+  char short_name;
+  /// the string version of the option
+  const char *long_name;
+  /// the type of the value expected
+  enum cfg_value_type type;
+  /// helpful text describing how to use the argument
+  const char *usage;
 };
 
 // TODO(dlrobertson): Make this useful. Currently this is only used to
@@ -74,10 +74,10 @@ struct cfg_parser {
  * used to ensure the usage function prints correctly
  */
 struct cfg_subcmd {
-    /// the shorthand version of a subcommand
-    const char* short_name;
-    /// the longhandhand version of a subcommand
-    const char* long_name;
+  /// the shorthand version of a subcommand
+  const char *short_name;
+  /// the longhandhand version of a subcommand
+  const char *long_name;
 };
 
 /**
@@ -86,14 +86,14 @@ struct cfg_subcmd {
  * A value may be any one of cfg_value_type.
  */
 struct cfg_value {
-    union {
-        void* data;
-        int integer;
-        u_int16_t word;
-        u_int8_t byte;
-        bool boolean;
-    };
-    enum cfg_value_type type;
+  union {
+    void *data;
+    int integer;
+    u_int16_t word;
+    u_int8_t byte;
+    bool boolean;
+  };
+  enum cfg_value_type type;
 };
 
 /**
@@ -105,8 +105,8 @@ struct cfg_value {
  * __not__ the short_name.
  */
 struct cfg_set_item {
-    const char* name;
-    struct cfg_value value;
+  const char *name;
+  struct cfg_value value;
 };
 
 /**
@@ -116,9 +116,9 @@ struct cfg_set_item {
  * and their associated values.
  */
 struct cfg_map {
-    struct cfg_set_item** map;
-    size_t len;
-    size_t cap;
+  struct cfg_set_item **map;
+  size_t len;
+  size_t cap;
 };
 
 /**
@@ -128,20 +128,20 @@ struct cfg_map {
  * argument parsing framework
  */
 struct cfg_set {
-    const char* usage;
-    const char* summary;
-    const struct cfg_parser* parsers;
-    size_t parsers_sz;
-    struct cfg_map options;
-    struct cfg_subcmd* subcmds;
-    size_t subcmds_sz;
+  const char *usage;
+  const char *summary;
+  const struct cfg_parser *parsers;
+  size_t parsers_sz;
+  struct cfg_map options;
+  struct cfg_subcmd *subcmds;
+  size_t subcmds_sz;
 };
 
 /**
  * \brief Create a cfg_set_item from a parser and a pointer to the value
  */
-struct cfg_set_item* cfg_set_item_create(const struct cfg_parser* parser,
-                                         void* data);
+struct cfg_set_item *cfg_set_item_create(const struct cfg_parser *parser,
+                                         void *data);
 
 /**
  * \brief Free any allocated resources associated with an item.
@@ -149,7 +149,7 @@ struct cfg_set_item* cfg_set_item_create(const struct cfg_parser* parser,
  * This is at a minumum sizeof(struct cfg_set_item), but may also be the
  * size of the data contained depending on the value type.
  */
-void cfg_set_item_free(struct cfg_set_item* item);
+void cfg_set_item_free(struct cfg_set_item *item);
 
 /**
  * \brief Populate the cfg_set map
@@ -157,7 +157,7 @@ void cfg_set_item_free(struct cfg_set_item* item);
  * Populate the cfg_set map with the user provided arguments and values from
  * argv/argc.
  */
-int cfg_set_init_cmdline(struct cfg_set* set, size_t argc, const char** argv);
+int cfg_set_init_cmdline(struct cfg_set *set, size_t argc, const char **argv);
 
 #ifdef BUILD_JSON
 /**
@@ -168,7 +168,7 @@ int cfg_set_init_cmdline(struct cfg_set* set, size_t argc, const char** argv);
  *
  * Note: Only available if compiled with json support.
  */
-int cfg_set_init_json(struct cfg_set* set, struct json_object* jobj);
+int cfg_set_init_json(struct cfg_set *set, struct json_object *jobj);
 #endif
 
 /**
@@ -177,8 +177,8 @@ int cfg_set_init_json(struct cfg_set* set, struct json_object* jobj);
  * Search the cfg_sets btree by name and return a pointer to the entire item.
  * When a lookup fails, the returned value is NULL
  */
-const struct cfg_set_item* cfg_set_find(const struct cfg_set* set,
-                                        const char* name);
+const struct cfg_set_item *cfg_set_find(const struct cfg_set *set,
+                                        const char *name);
 
 /**
  * \brief Search the cfg_set for an item and type
@@ -187,20 +187,20 @@ const struct cfg_set_item* cfg_set_find(const struct cfg_set* set,
  * memory pointed to by the data argument to the given value. If no match
  * is found, do not mutate the data argument, but rather return -1
  */
-int cfg_set_find_type(const struct cfg_set* set, const char* name,
-                      enum cfg_value_type type, void* data);
+int cfg_set_find_type(const struct cfg_set *set, const char *name,
+                      enum cfg_value_type type, void *data);
 
 /**
  * \brief Print the help text for the parsers provided to cfg_set_init
  */
-void cfg_set_usage(const struct cfg_set* set, FILE* output);
+void cfg_set_usage(const struct cfg_set *set, FILE *output);
 
 /**
  * \brief Free a given cfg_set item.
  *
  * Note: The stored object only needs to be freed if the type is a CFG_DATA
  */
-void cfg_set_free(struct cfg_set* set);
+void cfg_set_free(struct cfg_set *set);
 
 // @} end of doxygen cfg group
 
