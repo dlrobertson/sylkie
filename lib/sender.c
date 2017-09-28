@@ -37,6 +37,10 @@
 
 // Complete definition of sylkie_sender
 struct sylkie_sender {
+  // Interface name of the sender
+  char* name;
+  // Interface index of the interface used
+  int ifindex;
   // File descriptor of the socket to be used
   int fd;
   // MTU of the link
@@ -56,7 +60,13 @@ struct sylkie_sender *sylkie_sender_init(const char *iface,
     return NULL;
   }
 
-  if ((sender->fd = socket(AF_PACKET, SOCK_RAW, ETH_P_ALL)) < 0) {
+  if (name_len <= 0) {
+    sylkie_error_set(err, SYLKIE_NULL_INPUT);
+    free(sender);
+    return NULL;
+  }
+
+  if ((sender->fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL))) < 0) {
     sylkie_error_from_errno(err);
     free(sender);
     return NULL;
@@ -65,6 +75,14 @@ struct sylkie_sender *sylkie_sender_init(const char *iface,
   memset(&sender->addr, 0, sizeof(struct sockaddr_ll));
   memset(&ifr, 0, sizeof(ifr));
   strncpy(ifr.ifr_name, iface, name_len);
+  if (ioctl(sender->fd, SIOCGIFINDEX, &ifr)) {
+    sylkie_error_from_errno(err);
+    close(sender->fd);
+    free(sender);
+    return NULL;
+  }
+  sender->ifindex = ifr.ifr_ifindex;
+
   if (ioctl(sender->fd, SIOCGIFHWADDR, &ifr)) {
     sylkie_error_from_errno(err);
     close(sender->fd);
@@ -89,6 +107,16 @@ struct sylkie_sender *sylkie_sender_init(const char *iface,
     return NULL;
   }
   sender->addr.sll_ifindex = ifr.ifr_ifindex;
+
+  sender->name = malloc(name_len + 1);
+  strncpy(sender->name, iface, name_len);
+  sender->name[name_len] = 0x00;
+  if (!sender->name) {
+    sylkie_error_from_errno(err);
+    close(sender->fd);
+    free(sender);
+    return NULL;
+  }
 
   sylkie_error_set(err, SYLKIE_SUCCESS);
   return sender;
@@ -166,11 +194,22 @@ void sylkie_sender_free(struct sylkie_sender *sender) {
     if (sender->fd >= 0) {
       close(sender->fd);
     }
+    if (sender->name) {
+      free(sender->name);
+    }
     free(sender);
     sender = NULL;
   }
 }
 
-const u_int8_t *sylkie_sender_addr(struct sylkie_sender *sender) {
+const u_int8_t *sylkie_sender_addr(const struct sylkie_sender *sender) {
   return (sender) ? sender->addr.sll_addr : NULL;
+}
+
+const char *sylkie_sender_name(const struct sylkie_sender *sender) {
+  return (sender) ? sender->name : NULL;
+}
+
+int sylkie_sender_ifindex(const struct sylkie_sender *sender) {
+  return (sender) ? sender->ifindex : -1;
 }

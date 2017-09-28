@@ -98,7 +98,24 @@ int sylkie_sender_send(struct sylkie_sender *sender, const u_int8_t *data,
  * \brief Return the link address associated with a given sender
  * \param sender sylkie_sender to return the address for
  */
-const u_int8_t *sylkie_sender_addr(struct sylkie_sender *sender);
+const u_int8_t *sylkie_sender_addr(const struct sylkie_sender *sender);
+
+/**
+ * \memberof sylkie_sender
+ *
+ * \brief Return the interface index associated with a given sender
+ * \param sender sylkie_sender to return the interface index of
+ */
+
+int sylkie_sender_ifindex(const struct sylkie_sender *sender);
+
+/**
+ * \memberof sylkie_sender
+ *
+ * \brief Return the interface name associated with a given sender
+ * \param sender sylkie_sender to return the name of
+ */
+const char *sylkie_sender_name(const struct sylkie_sender *sender);
 
 /**
  * \memberof sylkie_sender
