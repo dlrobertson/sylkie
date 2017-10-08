@@ -56,7 +56,7 @@ struct sylkie_sender* sylkie_sender_init(const char* iface,
         return NULL;
     }
 
-    if ((sender->fd = socket(AF_PACKET, SOCK_RAW, ETH_P_ALL)) < 0) {
+    if ((sender->fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL))) < 0) {
         sylkie_error_from_errno(err);
         free(sender);
         return NULL;

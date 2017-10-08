@@ -142,6 +142,7 @@ int inner_do_ra(const struct cfg_set* set) {
     if (cfg_set_find_type(set, "target-mac", CFG_HW_ADDRESS, &tgt_mac)) {
         tgt_mac = src_mac;
     }
+    cfg_set_find_type(set, "prefix", CFG_BYTE, &prefix);
 
     pkt = sylkie_router_advert_create(src_mac, dst_mac, src_addr, dst_addr,
                                       router_addr, prefix, lifetime, tgt_mac,
@@ -153,7 +154,6 @@ int inner_do_ra(const struct cfg_set* set) {
         return -1;
     }
 
-    cfg_set_find_type(set, "prefix", CFG_BYTE, &prefix);
     cfg_set_find_type(set, "timeout", CFG_INT, &timeout);
     cfg_set_find_type(set, "repeat", CFG_INT, &repeat);
 
