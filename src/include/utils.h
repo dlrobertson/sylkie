@@ -21,15 +21,19 @@
 #ifndef SYLKIE_SRC_INCLUDE_UTILS_H
 #define SYLKIE_SRC_INCLUDE_UTILS_H
 
-#include <netinet/if_ether.h>
-
-#define ARG_CMP(input, opt1, opt2)                                             \
-  (strcmp(input, opt1) == 0 || strcmp(input, opt2) == 0)
+#include <sys/types.h>
 
 u_int8_t hex_char_to_byte(char ch);
 
 int parse_hwaddr(const char *arg, u_int8_t *addr);
 
 int lockdown(void);
+
+struct packet_command {
+  int interface;
+  struct sylkie_packet *pkt;
+  int timeout;
+  int repeat;
+};
 
 #endif

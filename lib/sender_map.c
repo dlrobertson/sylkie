@@ -77,8 +77,9 @@ struct sylkie_sender_map *sylkie_sender_map_init(size_t sz) {
   return map;
 }
 
-struct sylkie_sender *sylkie_sender_map_get_name(struct sylkie_sender_map *map,
-                                                 const char* name) {
+struct sylkie_sender *
+sylkie_sender_map_get_name(const struct sylkie_sender_map *map,
+                           const char *name) {
   int i;
   if (map) {
     for (i = 0; i < map->len; ++i) {
@@ -95,16 +96,16 @@ static int sender_cmp(const void *elem1, const void *elem2) {
   int s1_idx = sylkie_sender_ifindex(*(struct sylkie_sender **)elem1);
   int s2_idx = sylkie_sender_ifindex(*(struct sylkie_sender **)elem2);
   if (s1_idx < s2_idx) {
-      return -1;
+    return -1;
   } else if (s1_idx > s2_idx) {
-      return 1;
+    return 1;
   } else {
-      return 0;
+    return 0;
   }
 }
 
 struct sylkie_sender *sylkie_sender_map_add(struct sylkie_sender_map *map,
-                                            const char* name,
+                                            const char *name,
                                             enum sylkie_error *err) {
   struct sylkie_sender *sender;
   if (!map) {
@@ -122,8 +123,7 @@ struct sylkie_sender *sylkie_sender_map_add(struct sylkie_sender_map *map,
   }
   map->senders[map->len] = sender;
   ++map->len;
-  qsort(map->senders, map->len, sizeof(struct sylkie_sender *),
-        sender_cmp);
+  qsort(map->senders, map->len, sizeof(struct sylkie_sender *), sender_cmp);
   return sender;
 }
 
@@ -163,14 +163,14 @@ static struct sylkie_sender *find_inner(struct sylkie_sender **begin,
   }
 }
 
-struct sylkie_sender *sylkie_sender_map_get(struct sylkie_sender_map *map,
+struct sylkie_sender *sylkie_sender_map_get(const struct sylkie_sender_map *map,
                                             int ifindex) {
   size_t mid;
   if (map && map->len) {
     // We already know there is at least one item, so it is okay if mid is 0
     mid = map->len / 2;
-    return find_inner(map->senders, map->senders + map->len,
-                      map->senders + mid, ifindex);
+    return find_inner(map->senders, map->senders + map->len, map->senders + mid,
+                      ifindex);
   } else {
     return NULL;
   }
@@ -179,8 +179,6 @@ struct sylkie_sender *sylkie_sender_map_get(struct sylkie_sender_map *map,
 void sylkie_sender_map_free(struct sylkie_sender_map *map) {
   struct sylkie_sender **sender;
   if (map) {
-    SYLKIE_SENDER_MAP_FOREACH(map, sender) {
-      sylkie_sender_free(*sender);
-    }
+    SYLKIE_SENDER_MAP_FOREACH(map, sender) { sylkie_sender_free(*sender); }
   }
 }

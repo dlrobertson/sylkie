@@ -611,13 +611,16 @@ static int cfg_set_parse_short(struct cfg_map *map,
 
 // Initialize a cfg_set for json parsing
 #ifdef BUILD_JSON
-int cfg_set_init_json(struct cfg_set *set, struct json_object *jobj) {
+int cfg_set_init_json(struct cfg_set *set, const struct cfg_template *templt,
+                      struct json_object *jobj) {
   const struct cfg_parser *parser = NULL;
   struct cfg_set_item *item = NULL;
 
-  // TODO(dlrobertson): Allow this to work
-  set->subcmds = NULL;
-  set->subcmds_sz = 0;
+  if (templt) {
+    set->templt = templt;
+  } else {
+    return -1;
+  }
 
   // TODO(dlrobertson): This is an entirely random number. Find a
   // more clever way of doing this or prove this is a good value.
@@ -633,7 +636,8 @@ int cfg_set_init_json(struct cfg_set *set, struct json_object *jobj) {
 
   // Loop through the json object and parse the associated value.
   json_object_object_foreach(jobj, key, val) {
-    if ((parser = find_parser_str(key, 0, set->parsers_sz, set->parsers))) {
+    if ((parser = find_parser_str(key, 0, set->templt->parsers_sz,
+                                  set->templt->parsers))) {
       item = parse_json_arg(parser, val);
       if (item) {
         cfg_set_add(&set->options, item);
@@ -656,13 +660,23 @@ int cfg_set_init_json(struct cfg_set *set, struct json_object *jobj) {
 #endif
 
 // Initialize a cfg_set for command line parsing
-int cfg_set_init_cmdline(struct cfg_set *set, size_t argc, const char **argv) {
+int cfg_set_init_cmdline(struct cfg_set *set, const struct cfg_template *templt,
+                         size_t argc, const char **argv) {
   bool next_consumed = false;
   const char **iter = argv;
   const char **end = argv + argc;
   const char *arg;
-  size_t len = (argc) ? (argc / 2) : 1;
+  size_t len = argc / 2;
 
+  if (templt) {
+    set->templt = templt;
+  } else {
+    return -1;
+  }
+
+  if (argc < 1) {
+    return -1;
+  }
   // It is likely the user is using --arg <value> or -a <value>. As aresult,
   // it is likely we need half of argc * the size of an item
   set->options.map = malloc(sizeof(struct cfg_set_item *) * len);
@@ -685,16 +699,18 @@ int cfg_set_init_cmdline(struct cfg_set *set, size_t argc, const char **argv) {
     if (len > 1 && arg[0] == '-') {
       if (arg[1] != '-') {
         ++iter;
-        if (cfg_set_parse_short(&set->options, set->parsers, set->parsers_sz,
-                                ++arg, --len, *iter, &next_consumed)) {
+        if (cfg_set_parse_short(&set->options, set->templt->parsers,
+                                set->templt->parsers_sz, ++arg, --len, *iter,
+                                &next_consumed)) {
           cfg_set_free(set);
           return -1;
         }
       } else if (len > 2) {
         ++iter;
         arg += 2;
-        if (cfg_set_parse_long(&set->options, set->parsers, set->parsers_sz,
-                               arg, *iter, &next_consumed)) {
+        if (cfg_set_parse_long(&set->options, set->templt->parsers,
+                               set->templt->parsers_sz, arg, *iter,
+                               &next_consumed)) {
           cfg_set_free(set);
           return -1;
         }
@@ -811,7 +827,16 @@ int cfg_set_find_type(const struct cfg_set *set, const char *name,
   }
 }
 
-// Convert a cfg_set into nice help text. General format is
+// Print the cfg_set's associated templates help text
+void cfg_set_usage(const struct cfg_set *set, FILE *output) {
+  if (!set || !set->templt) {
+    return;
+  } else {
+    cfg_template_usage(set->templt, output);
+  }
+}
+
+// Convert a cfg_template into nice help text. General format is
 //
 // Usage: <usage string>
 //
@@ -821,41 +846,41 @@ int cfg_set_find_type(const struct cfg_set *set, const char *name,
 //
 // -<c> | --<string>    <Helpful parser text>
 //
-void cfg_set_usage(const struct cfg_set *set, FILE *output) {
+void cfg_template_usage(const struct cfg_template *templt, FILE *output) {
   int i, longest = 0, tmp = 0;
-  if (set->usage) {
-    fprintf(output, "Usage: %s\n\n", set->usage);
+  if (templt->usage) {
+    fprintf(output, "Usage: %s\n\n", templt->usage);
   }
-  if (set->summary) {
-    fprintf(output, "%s\n\n", set->summary);
+  if (templt->summary) {
+    fprintf(output, "%s\n\n", templt->summary);
   }
-  if (set->subcmds_sz) {
+  if (templt->subcmds_sz) {
     fprintf(output, "Available subcommands:\n");
-    for (i = 0, longest = 0; i < set->subcmds_sz; ++i) {
-      if ((tmp = strlen(set->subcmds[i].long_name)) > longest) {
+    for (i = 0, longest = 0; i < templt->subcmds_sz; ++i) {
+      if ((tmp = strlen(templt->subcmds[i].long_name)) > longest) {
         longest = tmp;
       }
     }
     // TODO(dlrobertson): Snag the subcommands set summary and print here
-    for (i = 0; i < set->subcmds_sz; ++i) {
-      fprintf(output, " %s | %-*s\n", set->subcmds[i].short_name, longest,
-              set->subcmds[i].long_name);
+    for (i = 0; i < templt->subcmds_sz; ++i) {
+      fprintf(output, " %s | %-*s\n", templt->subcmds[i].short_name, longest,
+              templt->subcmds[i].long_name);
     }
     fprintf(output, "\n");
   }
-  if (set->parsers_sz) {
-    for (i = 0, longest = 0; i < set->parsers_sz; ++i) {
-      if ((tmp = strlen(set->parsers[i].long_name)) > longest) {
+  if (templt->parsers_sz) {
+    for (i = 0, longest = 0; i < templt->parsers_sz; ++i) {
+      if ((tmp = strlen(templt->parsers[i].long_name)) > longest) {
         longest = tmp;
       }
     }
     fprintf(output, "Available options:\n");
-    for (i = 0; i < set->parsers_sz; ++i) {
+    for (i = 0; i < templt->parsers_sz; ++i) {
       // TODO(dlrobertson): If a given parser has a super long string
       // this looks wierd. Find a way to handle long parser usage strings
       // better.
-      fprintf(output, " -%c | --%-*s  %s\n", set->parsers[i].short_name,
-              longest, set->parsers[i].long_name, set->parsers[i].usage);
+      fprintf(output, " -%c | --%-*s  %s\n", templt->parsers[i].short_name,
+              longest, templt->parsers[i].long_name, templt->parsers[i].usage);
     }
   }
 }

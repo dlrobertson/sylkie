@@ -38,7 +38,7 @@
 // Complete definition of sylkie_sender
 struct sylkie_sender {
   // Interface name of the sender
-  char* name;
+  char *name;
   // Interface index of the interface used
   int ifindex;
   // File descriptor of the socket to be used

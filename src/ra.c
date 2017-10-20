@@ -24,6 +24,7 @@
 
 #include <nd.h>
 #include <sender.h>
+#include <sender_map.h>
 
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -37,7 +38,7 @@
 #include <cfg.h>
 #include <utils.h>
 
-static struct cfg_parser parsers[] = {
+const struct cfg_parser ra_parsers[] = {
     {'h', "help", CFG_BOOL, "print helpful usage information"},
     {'i', "interface", CFG_STRING,
      "network interface that will be used to send packets"},
@@ -55,13 +56,24 @@ static struct cfg_parser parsers[] = {
     {'r', "repeat", CFG_INT, "send the packet <num> times"},
     {'l', "lifetime", CFG_WORD, "valid and preferred lifetime of router"},
     {'z', "timeout", CFG_INT, "wait <n> seconds before sending agein"}};
-static size_t parsers_sz = sizeof(parsers) / sizeof(struct cfg_parser);
 
-int inner_do_ra(const struct cfg_set *set) {
-  int retval = -1, prefix = 64, timeout = 1, repeat = 1, i = 0;
-  enum sylkie_error err = SYLKIE_INVALID_ERR;
+const struct cfg_template *generate_ra_template() {
+  static const struct cfg_template ra_templt = {
+      .usage = "sylkie ra [OPTIONS]",
+      .summary =
+          "Send ICMPv6 Router Advertisement messages to the given address",
+      .parsers = ra_parsers,
+      .parsers_sz = sizeof(ra_parsers) / sizeof(struct cfg_parser),
+      .subcmds = NULL,
+      .subcmds_sz = 0};
+  return &ra_templt;
+}
+
+struct packet_command *ra_parse(struct sylkie_sender_map *ifaces,
+                                const struct cfg_set *set) {
+  int prefix = 64;
+  enum sylkie_error err = SYLKIE_SUCCESS;
   struct sylkie_sender *sender = NULL;
-  struct sylkie_packet *pkt = NULL;
   static const u_int8_t all_nodes_eth[] = {0x33, 0x33, 0x00, 0x00, 0x00, 0x01};
   static struct in6_addr all_nodes_ip = {
       .s6_addr = {0xff, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -74,11 +86,22 @@ int inner_do_ra(const struct cfg_set *set) {
   struct in6_addr *dst_addr = NULL;
   struct in6_addr *router_addr = NULL;
   struct in6_addr *src_addr = NULL;
+  struct packet_command *cmd = malloc(sizeof(struct packet_command));
+
+  if (!cmd) {
+    fprintf(stderr, "No memory.\n");
+    return NULL;
+  } else {
+    cmd->pkt = NULL;
+    cmd->interface = -1;
+    cmd->timeout = -1;
+    cmd->repeat = 0;
+  }
 
   if (cfg_set_find_type(set, "interface", CFG_STRING, &iface_name)) {
     fprintf(stderr, "Must provide an interface to use.\n");
     cfg_set_usage(set, stderr);
-    return -1;
+    return NULL;
   }
 
   cfg_set_find_type(set, "dst-mac", CFG_HW_ADDRESS, &dst_mac);
@@ -94,18 +117,21 @@ int inner_do_ra(const struct cfg_set *set) {
     fprintf(stderr, "Must provide a destination mac and ip"
                     " address or none at all.\n");
     cfg_set_usage(set, stderr);
-    return -1;
+    return NULL;
   }
 
   if (!router_addr) {
     fprintf(stderr, "Must provide a router ip address to spoof.\n");
     cfg_set_usage(set, stderr);
-    return -1;
+    return NULL;
   } else if (!src_addr) {
     src_addr = router_addr;
   }
 
-  sender = sylkie_sender_init(iface_name, &err);
+  sender = sylkie_sender_map_get_name(ifaces, iface_name);
+  if (!sender) {
+    sender = sylkie_sender_map_add(ifaces, iface_name, &err);
+  }
 
   if (err) {
     switch (err) {
@@ -124,13 +150,15 @@ int inner_do_ra(const struct cfg_set *set) {
       fprintf(stderr, "%s\n", sylkie_strerror(err));
       break;
     }
-    return -1;
+    return NULL;
   }
+
+  cmd->interface = sylkie_sender_ifindex(sender);
 
   if (!sender) {
     fprintf(stderr, "Failed to create sender. Please consider submitting a bug"
                     " report at https://github.com/dlrobertson/sylkie\n");
-    return -1;
+    return NULL;
   }
 
   if (cfg_set_find_type(set, "src-mac", CFG_HW_ADDRESS, &src_mac)) {
@@ -141,131 +169,20 @@ int inner_do_ra(const struct cfg_set *set) {
     tgt_mac = src_mac;
   }
 
-  pkt =
+  cfg_set_find_type(set, "prefix", CFG_BYTE, &prefix);
+
+  cmd->pkt =
       sylkie_router_advert_create(src_mac, dst_mac, src_addr, dst_addr,
                                   router_addr, prefix, lifetime, tgt_mac, &err);
 
-  if (!pkt) {
+  if (!cmd->pkt) {
     fprintf(stderr, "%s: Could not create forged router advert\n",
             sylkie_strerror(err));
-    return -1;
+    return NULL;
   }
 
-  cfg_set_find_type(set, "prefix", CFG_BYTE, &prefix);
-  cfg_set_find_type(set, "timeout", CFG_INT, &timeout);
-  cfg_set_find_type(set, "repeat", CFG_INT, &repeat);
+  cfg_set_find_type(set, "timeout", CFG_INT, &cmd->timeout);
+  cfg_set_find_type(set, "repeat", CFG_INT, &cmd->repeat);
 
-  if (timeout < 0) {
-    fprintf(stderr, "%s\n", "timeout must be greater than or equal to 0");
-    return -1;
-  }
-
-  if (repeat <= 0) {
-    while (1) {
-      retval = sylkie_sender_send_packet(sender, pkt, 0, &err);
-      if (err || retval < 0) {
-        fprintf(stderr, "SYLKIE Error:%s\nErrno: %s", sylkie_strerror(err),
-                strerror(errno));
-        retval = -1;
-        break;
-      }
-
-      if (timeout) {
-        sleep(timeout);
-      }
-    }
-  } else {
-    for (i = 0; i < repeat; ++i) {
-      retval = sylkie_sender_send_packet(sender, pkt, 0, &err);
-      if (err || retval < 0) {
-        fprintf(stderr, "SYLKIE Error:%s\nErrno: %s", sylkie_strerror(err),
-                strerror(errno));
-        retval = -1;
-        break;
-      }
-
-      if (timeout) {
-        sleep(timeout);
-      }
-    }
-  }
-
-  // Cleanup
-
-  sylkie_packet_free(pkt);
-  sylkie_sender_free(sender);
-  return retval;
-}
-
-#ifdef BUILD_JSON
-pid_t ra_json(struct json_object *jobj) {
-  int res = -1;
-  pid_t pid = -1;
-  struct cfg_set set = {
-      .usage = "sylkie ra [OPTIONS]",
-      .summary =
-          "Send ICMPv6 Router Advertisement messages to the given address",
-      .parsers = parsers,
-      .parsers_sz = parsers_sz};
-
-  res = cfg_set_init_json(&set, jobj);
-
-  if (res) {
-    fprintf(stderr, "Failed to initialize parsers\n");
-    return -1;
-  } else if (cfg_set_find(&set, "help")) {
-    fprintf(stderr,
-            "\"help\" is an invalid option for running sylkie from json\n");
-    cfg_set_free(&set);
-    return -1;
-  }
-
-  if ((pid = fork()) < 0) {
-    cfg_set_free(&set);
-    return -1;
-  } else if (pid == 0) {
-    if ((res = lockdown())) {
-      fprintf(stderr, "Could not lock down the process\n");
-    } else {
-      res = inner_do_ra(&set);
-    }
-    _exit(res);
-  } else {
-    cfg_set_free(&set);
-    return pid;
-  }
-}
-#endif
-
-int ra_cmdline(int argc, const char **argv) {
-  int res = -1;
-  struct cfg_set set = {
-      .usage = "sylkie ra [OPTIONS]",
-      .summary =
-          "Send ICMPv6 Router Advertisement messages to the given address",
-      .parsers = parsers,
-      .parsers_sz = parsers_sz};
-
-  if (argc < 1) {
-    fprintf(stderr, "Too few arguments\n");
-    cfg_set_usage(&set, stderr);
-    return -1;
-  }
-
-  res = cfg_set_init_cmdline(&set, --argc, ++argv);
-
-  if (res) {
-    cfg_set_usage(&set, stderr);
-    return -1;
-  } else if (cfg_set_find(&set, "help")) {
-    cfg_set_usage(&set, stdout);
-    cfg_set_free(&set);
-    return 0;
-  } else {
-    res = inner_do_ra(&set);
-  }
-
-  cfg_set_free(&set);
-
-  return res;
+  return cmd;
 }

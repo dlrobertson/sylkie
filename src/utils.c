@@ -22,6 +22,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <netinet/ether.h>
+
 #include <sylkie_config.h>
 
 #ifdef BUILD_SECCOMP

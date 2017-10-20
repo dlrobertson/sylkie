@@ -65,6 +65,24 @@ struct cfg_parser {
   const char *usage;
 };
 
+/**
+ * \brief Template used to parse arguments
+ */
+struct cfg_template {
+  /// the available arguments
+  const struct cfg_parser *parsers;
+  /// number of available arguments
+  const size_t parsers_sz;
+  /// usage string
+  const char *usage;
+  /// summary string
+  const char *summary;
+  /// available subcommands
+  struct cfg_subcmd *subcmds;
+  /// length of available subcommands
+  size_t subcmds_sz;
+};
+
 // TODO(dlrobertson): Make this useful. Currently this is only used to
 // ensure everything is documented in the usage fn
 /**
@@ -128,13 +146,8 @@ struct cfg_map {
  * argument parsing framework
  */
 struct cfg_set {
-  const char *usage;
-  const char *summary;
-  const struct cfg_parser *parsers;
-  size_t parsers_sz;
+  const struct cfg_template *templt;
   struct cfg_map options;
-  struct cfg_subcmd *subcmds;
-  size_t subcmds_sz;
 };
 
 /**
@@ -157,7 +170,8 @@ void cfg_set_item_free(struct cfg_set_item *item);
  * Populate the cfg_set map with the user provided arguments and values from
  * argv/argc.
  */
-int cfg_set_init_cmdline(struct cfg_set *set, size_t argc, const char **argv);
+int cfg_set_init_cmdline(struct cfg_set *set, const struct cfg_template *tmplt,
+                         size_t argc, const char **argv);
 
 #ifdef BUILD_JSON
 /**
@@ -168,7 +182,8 @@ int cfg_set_init_cmdline(struct cfg_set *set, size_t argc, const char **argv);
  *
  * Note: Only available if compiled with json support.
  */
-int cfg_set_init_json(struct cfg_set *set, struct json_object *jobj);
+int cfg_set_init_json(struct cfg_set *set, const struct cfg_template *tmplt,
+                      struct json_object *jobj);
 #endif
 
 /**
@@ -191,7 +206,7 @@ int cfg_set_find_type(const struct cfg_set *set, const char *name,
                       enum cfg_value_type type, void *data);
 
 /**
- * \brief Print the help text for the parsers provided to cfg_set_init
+ * \brief Print the help text for the template provided to cfg_set_init
  */
 void cfg_set_usage(const struct cfg_set *set, FILE *output);
 
@@ -201,6 +216,11 @@ void cfg_set_usage(const struct cfg_set *set, FILE *output);
  * Note: The stored object only needs to be freed if the type is a CFG_DATA
  */
 void cfg_set_free(struct cfg_set *set);
+
+/**
+ * \brief Print the help text for the template provided to cfg_set_init
+ */
+void cfg_template_usage(const struct cfg_template *templt, FILE *output);
 
 // @} end of doxygen cfg group
 

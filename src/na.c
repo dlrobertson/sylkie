@@ -24,6 +24,7 @@
 
 #include <nd.h>
 #include <sender.h>
+#include <sender_map.h>
 
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -37,7 +38,7 @@
 #include <cfg.h>
 #include <utils.h>
 
-static struct cfg_parser parsers[] = {
+const struct cfg_parser na_parsers[] = {
     {'h', "help", CFG_BOOL, "print helpful usage information"},
     {'i', "interface", CFG_STRING,
      "network interface that will be used to send packets"},
@@ -55,10 +56,21 @@ static struct cfg_parser parsers[] = {
     {'r', "repeat", CFG_INT, "send the packet <num> times"},
     {'z', "timeout", CFG_INT,
      "wait <seconds> before sending the packet agein"}};
-static size_t parsers_sz = sizeof(parsers) / sizeof(struct cfg_parser);
 
-int inner_do_na(const struct cfg_set *set) {
-  int retval = -1, prefix = 64, timeout = 1, repeat = 1, i = 0;
+const struct cfg_template *generate_na_template() {
+  static const struct cfg_template na_templt = {
+      .usage = "sylkie na [OPTIONS]",
+      .summary =
+          "Send ICMPv6 Neighbor Advertisement messages to the given address",
+      .parsers = na_parsers,
+      .parsers_sz = sizeof(na_parsers) / sizeof(struct cfg_parser),
+      .subcmds = NULL,
+      .subcmds_sz = 0};
+  return &na_templt;
+}
+
+struct packet_command *na_parse(struct sylkie_sender_map *ifaces,
+                                const struct cfg_set *set) {
   const char *iface_name;
   const u_int8_t *dst_mac = NULL;
   const u_int8_t *src_mac = NULL;
@@ -66,30 +78,43 @@ int inner_do_na(const struct cfg_set *set) {
   struct in6_addr *dst_addr;
   struct in6_addr *src_addr;
   struct in6_addr *tgt_addr;
-  enum sylkie_error err = SYLKIE_INVALID_ERR;
+  enum sylkie_error err = SYLKIE_SUCCESS;
   struct sylkie_sender *sender = NULL;
-  struct sylkie_packet *pkt = NULL;
+  struct packet_command *cmd = malloc(sizeof(struct packet_command));
+
+  if (!cmd) {
+    fprintf(stderr, "No memory.\n");
+    return NULL;
+  } else {
+    cmd->pkt = NULL;
+    cmd->interface = -1;
+    cmd->timeout = -1;
+    cmd->repeat = 0;
+  }
 
   // Required input
   if (cfg_set_find_type(set, "interface", CFG_STRING, &iface_name)) {
     fprintf(stderr, "Must provide an interface to use.\n");
     cfg_set_usage(set, stderr);
-    return -1;
+    return NULL;
   } else if (cfg_set_find_type(set, "dst-mac", CFG_HW_ADDRESS, &dst_mac)) {
     fprintf(stderr, "Must provide a destination mac address.\n");
     cfg_set_usage(set, stderr);
-    return -1;
+    return NULL;
   } else if (cfg_set_find_type(set, "dst-ip", CFG_IPV6_ADDRESS, &dst_addr)) {
     fprintf(stderr, "Must provide a destination ip address.\n");
     cfg_set_usage(set, stderr);
-    return -1;
+    return NULL;
   } else if (cfg_set_find_type(set, "src-ip", CFG_IPV6_ADDRESS, &src_addr)) {
     fprintf(stderr, "Must provide a source ip address.\n");
     cfg_set_usage(set, stderr);
-    return -1;
+    return NULL;
   }
 
-  sender = sylkie_sender_init(iface_name, &err);
+  sender = sylkie_sender_map_get_name(ifaces, iface_name);
+  if (!sender) {
+    sender = sylkie_sender_map_add(ifaces, iface_name, &err);
+  }
 
   if (err) {
     switch (err) {
@@ -108,13 +133,15 @@ int inner_do_na(const struct cfg_set *set) {
       fprintf(stderr, "%s\n", sylkie_strerror(err));
       break;
     }
-    return -1;
+    return NULL;
   }
+
+  cmd->interface = sylkie_sender_ifindex(sender);
 
   if (!sender) {
     fprintf(stderr, "Failed to create sender. Please consider submitting a bug"
                     " report at https://github.com/dlrobertson/sylkie\n");
-    return -1;
+    return NULL;
   }
 
   if (cfg_set_find_type(set, "src-mac", CFG_HW_ADDRESS, &src_mac)) {
@@ -129,126 +156,17 @@ int inner_do_na(const struct cfg_set *set) {
     tgt_addr = src_addr;
   }
 
-  pkt = sylkie_neighbor_advert_create(src_mac, dst_mac, src_addr, dst_addr,
-                                      tgt_addr, tgt_mac, &err);
+  cmd->pkt = sylkie_neighbor_advert_create(src_mac, dst_mac, src_addr, dst_addr,
+                                           tgt_addr, tgt_mac, &err);
 
-  if (!pkt) {
+  if (!cmd->pkt) {
     fprintf(stderr, "%s: Could not create forged neighbor advert\n",
             sylkie_strerror(err));
-    return -1;
+    return NULL;
   }
 
-  cfg_set_find_type(set, "prefix", CFG_BYTE, &prefix);
-  cfg_set_find_type(set, "timeout", CFG_INT, &timeout);
-  cfg_set_find_type(set, "repeat", CFG_INT, &repeat);
+  cfg_set_find_type(set, "timeout", CFG_INT, &cmd->timeout);
+  cfg_set_find_type(set, "repeat", CFG_INT, &cmd->repeat);
 
-  if (repeat <= 0) {
-    while (1) {
-      retval = sylkie_sender_send_packet(sender, pkt, 0, &err);
-      if (err || retval < 0) {
-        fprintf(stderr, "SYLKIE Error:%s\nErrno: %s", sylkie_strerror(err),
-                strerror(errno));
-        retval = -1;
-        break;
-      }
-
-      if (timeout) {
-        sleep(timeout);
-      }
-    }
-  } else {
-    for (i = 0; i < repeat; ++i) {
-      retval = sylkie_sender_send_packet(sender, pkt, 0, &err);
-      if (err || retval < 0) {
-        fprintf(stderr, "SYLKIE Error:%s\nErrno: %s", sylkie_strerror(err),
-                strerror(errno));
-        retval = -1;
-        break;
-      }
-
-      if (timeout) {
-        sleep(timeout);
-      }
-    }
-  }
-
-  // Cleanup
-
-  sylkie_packet_free(pkt);
-  sylkie_sender_free(sender);
-  return retval;
-}
-
-#ifdef BUILD_JSON
-pid_t na_json(struct json_object *jobj) {
-  int res = -1;
-  pid_t pid = -1;
-  struct cfg_set set = {
-      .usage = "sylkie na [OPTIONS]",
-      .summary =
-          "Send ICMPv6 Neighbor Advertisement messages to the given address",
-      .parsers = parsers,
-      .parsers_sz = parsers_sz};
-
-  res = cfg_set_init_json(&set, jobj);
-
-  if (res) {
-    fprintf(stderr, "Failed to initialize parsers\n");
-    return -1;
-  } else if (cfg_set_find(&set, "help")) {
-    fprintf(stderr,
-            "\"help\" is an invalid option for running sylkie from json\n");
-    cfg_set_free(&set);
-    return -1;
-  }
-
-  if ((pid = fork()) < 0) {
-    cfg_set_free(&set);
-    return -1;
-  } else if (pid == 0) {
-    if ((res = lockdown())) {
-      fprintf(stderr, "Could not lock down the process\n");
-    } else {
-      res = inner_do_na(&set);
-    }
-    _exit(res);
-  } else {
-    cfg_set_free(&set);
-    return pid;
-  }
-}
-#endif
-
-int na_cmdline(int argc, const char **argv) {
-  int res = -1;
-  struct cfg_set set = {
-      .usage = "sylkie na [OPTIONS]",
-      .summary =
-          "Send ICMPv6 Neighbor Advertisement messages to the given address",
-      .parsers = parsers,
-      .parsers_sz = parsers_sz};
-
-  if (argc < 1) {
-    fprintf(stderr, "Too few arguments\n");
-    cfg_set_usage(&set, stderr);
-    return -1;
-  }
-
-  res = cfg_set_init_cmdline(&set, --argc, ++argv);
-
-  if (res) {
-    cfg_set_usage(&set, stderr);
-    return -1;
-  } else if (cfg_set_find(&set, "help")) {
-    cfg_set_usage(&set, stdout);
-    cfg_set_free(&set);
-    return 0;
-  } else {
-    lockdown();
-    res = inner_do_na(&set);
-  }
-
-  cfg_set_free(&set);
-
-  return res;
+  return cmd;
 }

@@ -61,7 +61,7 @@ struct sylkie_sender *sylkie_sender_map_add(struct sylkie_sender_map *map,
  *
  * This function uses a B-tree search and therefore is O(log n)
  */
-struct sylkie_sender *sylkie_sender_map_get(struct sylkie_sender_map *map,
+struct sylkie_sender *sylkie_sender_map_get(const struct sylkie_sender_map *map,
                                             int ifindex);
 
 /**
@@ -71,8 +71,9 @@ struct sylkie_sender *sylkie_sender_map_get(struct sylkie_sender_map *map,
  *
  * @see sylkie_sender_map_get
  */
-struct sylkie_sender *sylkie_sender_map_get_name(struct sylkie_sender_map *map,
-                                                 const char* name);
+struct sylkie_sender *
+sylkie_sender_map_get_name(const struct sylkie_sender_map *map,
+                           const char *name);
 
 /**
  * \brief Free all associated resources
@@ -80,8 +81,8 @@ struct sylkie_sender *sylkie_sender_map_get_name(struct sylkie_sender_map *map,
  */
 void sylkie_sender_map_free(struct sylkie_sender_map *map);
 
-#define SYLKIE_SENDER_MAP_FOREACH(map, cur) \
-    for (cur = map->senders; cur < map->senders + map->len && cur; ++cur)
+#define SYLKIE_SENDER_MAP_FOREACH(map, cur)                                    \
+  for (cur = map->senders; cur < map->senders + map->len && cur; ++cur)
 
 /// @} end of doxygen sender_map group
 
