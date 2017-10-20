@@ -41,64 +41,13 @@ static u_int8_t all_nodes[] = {0xff, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 
 static u_int8_t lo_mac[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-#ifdef BUILD_JSON
-
-#endif
-
 class Cfg : public ::testing::Test {
 public:
-  static char usage[];
-  static char summary[];
+  static const struct cfg_template templt;
 
 protected:
+  struct packet_command *pkt_cmd = NULL;
   struct cfg_set config_set;
-#ifdef BUILD_JSON
-  struct json_object *jobj;
-#endif
-
-  virtual void SetUp() {
-    config_set.usage = usage;
-    config_set.summary = summary;
-    config_set.parsers = parsers;
-    config_set.parsers_sz = parsers_sz;
-#ifdef BUILD_JSON
-    jobj = get_json_object();
-#endif
-  }
-
-  virtual void TearDown() {
-    cfg_set_free(&config_set);
-#ifdef BUILD_JSON
-    json_object_put(jobj);
-#endif
-  }
-
-#ifdef BUILD_JSON
-  static struct json_object *get_json_object(void) {
-    static char json_input[] = "{ \
-                            \"verbosity\": 42, \
-                            \"bool\": true, \
-                            \"baz\": \
-                            \"thisisastring\", \
-                            \"example\": \"ff02::1\", \
-                            \"foo\": 255, \
-                            \"bar\": 512, \
-                            \"qux\": \"00:00:00:00:00:00\" \
-                            }";
-    enum json_tokener_error jerr;
-    struct json_object *jobj = NULL;
-    struct json_tokener *tok = json_tokener_new();
-
-    do {
-      jobj = json_tokener_parse_ex(tok, json_input, sizeof(json_input));
-      jerr = json_tokener_get_error(tok);
-    } while (jerr == json_tokener_continue);
-
-    json_tokener_free(tok);
-
-    return jobj;
-  }
-#endif
 
   void test_order() {
     size_t i;
@@ -208,56 +157,92 @@ protected:
   }
 };
 
-char Cfg::usage[] = "Usage: This is a test parser";
-char Cfg::summary[] = "Summary of a unit test";
+const struct cfg_template Cfg::templt = {
+    parsers,
+    parsers_sz,
+    "Usage: This is a test parser",
+    "Summary of a unit test",
+    NULL,
+    0
+};
 
-TEST_F(Cfg, cmdline_order) {
-  cfg_set_init_cmdline(&config_set, argc, argv);
+class CfgCmdline : public Cfg {
+protected:
+  virtual void SetUp() {
+    cfg_set_init_cmdline(&config_set, &Cfg::templt, argc, argv);
+  }
 
+  virtual void TearDown() {
+    cfg_set_free(&config_set);
+  }
+};
+
+#ifdef BUILD_JSON
+class CfgJson : public Cfg {
+protected:
+  struct json_object *jobj;
+
+  virtual void SetUp() {
+    static char json_input[] = "{ \
+                            \"verbosity\": 42, \
+                            \"bool\": true, \
+                            \"baz\": \
+                            \"thisisastring\", \
+                            \"example\": \"ff02::1\", \
+                            \"foo\": 255, \
+                            \"bar\": 512, \
+                            \"qux\": \"00:00:00:00:00:00\" \
+                            }";
+    enum json_tokener_error jerr;
+    struct json_tokener *tok = json_tokener_new();
+
+    do {
+      jobj = json_tokener_parse_ex(tok, json_input, sizeof(json_input));
+      jerr = json_tokener_get_error(tok);
+    } while (jerr == json_tokener_continue);
+
+    json_tokener_free(tok);
+    cfg_set_init_json(&config_set, &Cfg::templt, jobj);
+  }
+
+  virtual void TearDown() {
+    json_object_put(jobj);
+    cfg_set_free(&config_set);
+  }
+};
+#endif
+
+TEST_F(CfgCmdline, order) {
   test_order();
 }
 
-TEST_F(Cfg, cmdline_basic_find) {
-  cfg_set_init_cmdline(&config_set, argc, argv);
-
+TEST_F(CfgCmdline, basic_find) {
   test_basic_find();
 }
 
-TEST_F(Cfg, cmdline_find) {
-  cfg_set_init_cmdline(&config_set, argc, argv);
-
+TEST_F(CfgCmdline, find) {
   test_find();
 }
 
-TEST_F(Cfg, cmdline_find_type) {
-  cfg_set_init_cmdline(&config_set, argc, argv);
-
+TEST_F(CfgCmdline, find_type) {
   test_find_type();
 }
 
 #ifdef BUILD_JSON
 
-TEST_F(Cfg, json_order) {
-  cfg_set_init_json(&config_set, jobj);
-
+TEST_F(CfgJson, order) {
   test_order();
 }
 
-TEST_F(Cfg, json_basic_find) {
-  cfg_set_init_json(&config_set, jobj);
-
+TEST_F(CfgJson, basic_find) {
   test_basic_find();
 }
 
-TEST_F(Cfg, json_find) {
-  cfg_set_init_json(&config_set, jobj);
-
+TEST_F(CfgJson, find) {
   test_find();
 }
 
-TEST_F(Cfg, json_find_type) {
-  cfg_set_init_json(&config_set, jobj);
-
+TEST_F(CfgJson, find_type) {
   test_find_type();
 }
 
