@@ -18,12 +18,3 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <sys/types.h>
-#include <sys/wait.h>
-
-#include <utils.h>
-
-int rx_main(const struct command_list *lst, pid_t tx_pid) {
-  waitpid(tx_pid, NULL, 0);
-  return -1;
-}

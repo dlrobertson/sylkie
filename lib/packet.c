@@ -22,7 +22,7 @@
 #include <strings.h>
 
 #include <errors.h>
-#include <nd.h>
+#include <ndp.h>
 #include <packet.h>
 #include <proto_list.h>
 

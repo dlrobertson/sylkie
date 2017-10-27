@@ -23,8 +23,6 @@
 
 #include <sys/types.h>
 
-#include <packet.h>
-
 u_int8_t hex_char_to_byte(char ch);
 
 int parse_hwaddr(const char *arg, u_int8_t *addr);
@@ -125,14 +123,5 @@ int lockdown(void);
 #define GENERIC_LIST(T, name) \
   GENERIC_LIST_FORWARD(T, name) \
   GENERIC_LIST_IMPL(T, name)
-
-struct packet_command {
-  struct sylkie_sender *sender;
-  struct sylkie_packet *pkt;
-  int timeout;
-  int repeat;
-};
-
-GENERIC_LIST_FORWARD(struct packet_command *, command_list);
 
 #endif

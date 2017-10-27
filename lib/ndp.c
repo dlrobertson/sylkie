@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include <strings.h>
 
-#include <nd.h>
+#include <ndp.h>
 
 #include <stdio.h>
 

@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <nd.h>
+#include <ndp.h>
 #include <sender.h>
 #include <sender_map.h>
 
@@ -36,7 +36,7 @@
 #endif
 
 #include <cfg.h>
-#include <utils.h>
+#include <cmds.h>
 
 const struct cfg_parser ra_parsers[] = {
     {'h', "help", CFG_BOOL, "print helpful usage information"},
@@ -69,8 +69,9 @@ const struct cfg_template *generate_ra_template() {
   return &ra_templt;
 }
 
-struct packet_command *ra_parse(struct sylkie_sender_map *ifaces,
-                                const struct cfg_set *set) {
+int ra_parse(struct sylkie_sender_map *ifaces,
+             const struct cfg_set *set,
+             struct command_lists* cmds) {
   int prefix = 64;
   enum sylkie_error err = SYLKIE_SUCCESS;
   struct sylkie_sender *sender = NULL;
@@ -90,7 +91,7 @@ struct packet_command *ra_parse(struct sylkie_sender_map *ifaces,
 
   if (!cmd) {
     fprintf(stderr, "No memory.\n");
-    return NULL;
+    return -1;
   } else {
     cmd->pkt = NULL;
     cmd->sender = NULL;
@@ -101,7 +102,8 @@ struct packet_command *ra_parse(struct sylkie_sender_map *ifaces,
   if (cfg_set_find_type(set, "interface", CFG_STRING, &iface_name)) {
     fprintf(stderr, "Must provide an interface to use.\n");
     cfg_set_usage(set, stderr);
-    return NULL;
+    free(cmd);
+    return -1;
   }
 
   cfg_set_find_type(set, "dst-mac", CFG_HW_ADDRESS, &dst_mac);
@@ -117,13 +119,15 @@ struct packet_command *ra_parse(struct sylkie_sender_map *ifaces,
     fprintf(stderr, "Must provide a destination mac and ip"
                     " address or none at all.\n");
     cfg_set_usage(set, stderr);
-    return NULL;
+    free(cmd);
+    return -1;
   }
 
   if (!router_addr) {
     fprintf(stderr, "Must provide a router ip address to spoof.\n");
     cfg_set_usage(set, stderr);
-    return NULL;
+    free(cmd);
+    return -1;
   } else if (!src_addr) {
     src_addr = router_addr;
   }
@@ -150,7 +154,8 @@ struct packet_command *ra_parse(struct sylkie_sender_map *ifaces,
       fprintf(stderr, "%s\n", sylkie_strerror(err));
       break;
     }
-    return NULL;
+    free(cmd);
+    return -1;
   }
 
   cmd->sender = sender;
@@ -158,7 +163,8 @@ struct packet_command *ra_parse(struct sylkie_sender_map *ifaces,
   if (!sender) {
     fprintf(stderr, "Failed to create sender. Please consider submitting a bug"
                     " report at https://github.com/dlrobertson/sylkie\n");
-    return NULL;
+    free(cmd);
+    return -1;
   }
 
   if (cfg_set_find_type(set, "src-mac", CFG_HW_ADDRESS, &src_mac)) {
@@ -178,11 +184,18 @@ struct packet_command *ra_parse(struct sylkie_sender_map *ifaces,
   if (!cmd->pkt) {
     fprintf(stderr, "%s: Could not create forged router advert\n",
             sylkie_strerror(err));
-    return NULL;
+    free(cmd);
+    return -1;
   }
 
   cfg_set_find_type(set, "timeout", CFG_INT, &cmd->timeout);
   cfg_set_find_type(set, "repeat", CFG_INT, &cmd->repeat);
 
-  return cmd;
+  if (command_lists_add(cmds, SYLKIE_CMD_PACKET, cmd)) {
+    sylkie_packet_free(cmd->pkt);
+    free(cmd);
+    return -1;
+  }
+
+  return 0;
 }

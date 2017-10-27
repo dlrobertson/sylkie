@@ -25,7 +25,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/wait.h>
+#include <sys/socket.h>
 #include <unistd.h>
 
 #include <sylkie_config.h>
@@ -39,25 +39,30 @@
 #include <sender_map.h>
 
 #include <cfg.h>
-#include <utils.h>
+#include <cmds.h>
 
 // Transmitter fork main function
-extern int tx_main(const struct command_list *buf,
-                   struct sylkie_sender_map *map);
+extern int tx_main(const struct pkt_cmd_list *lst,
+                   struct sylkie_sender_map *map,
+                   int ipc);
 
 // Receiver fork main function (main thread)
-extern int rx_main(const struct command_list *buf, pid_t tx_pid);
+extern int rx_main(const struct lst_cmd_list *lst,
+                   pid_t tx_pid,
+                   int ipc);
 
 // various subcommands to the sylkie command that are defined elsewhere
 
 // neighbor advert subcommand functions
-extern struct packet_command *na_parse(const struct sylkie_sender_map *ifaces,
-                                       const struct cfg_set *set);
+extern int na_parse(const struct sylkie_sender_map *ifaces,
+                    const struct cfg_set *set,
+                    struct command_lists *lists);
 extern const struct cfg_template *generate_na_template();
 
 // router advert subcommand functions
-extern struct packet_command *ra_parse(const struct sylkie_sender_map *ifaces,
-                                       const struct cfg_set *set);
+extern int ra_parse(const struct sylkie_sender_map *ifaces,
+                    const struct cfg_set *set,
+                    struct command_lists *lists);
 extern const struct cfg_template *generate_ra_template();
 
 static struct sylkie_sender_map *s_ifaces = NULL;
@@ -65,8 +70,9 @@ static struct sylkie_sender_map *s_ifaces = NULL;
 static const struct cmd {
   const char *short_name;
   const char *long_name;
-  struct packet_command *(*parse)(const struct sylkie_sender_map *ifaces,
-                                  const struct cfg_set *set);
+  int (*parse)(const struct sylkie_sender_map *ifaces,
+               const struct cfg_set *set,
+               struct command_lists *lists);
   const struct cfg_template *(*generate_template)();
 } cmds[] = {{"na", "neighbor-advert", na_parse, generate_na_template},
             {"ra", "router-advert", ra_parse, generate_ra_template},
@@ -75,57 +81,57 @@ static const struct cmd {
 // Helper functions used to translate a json file or command line
 // arguments into a cfg_set
 #ifdef BUILD_JSON
-struct packet_command *parse_json(struct json_object *jobj,
-                                  const struct cmd *cmd) {
+int parse_json(struct json_object *jobj,
+               const struct cmd *cmd,
+               struct command_lists *lists) {
   int res = -1;
   struct cfg_set set;
-  struct packet_command *pkt;
 
   res = cfg_set_init_json(&set, cmd->generate_template(), jobj);
 
   if (res) {
     fprintf(stderr, "Failed to initialize parsers\n");
-    return NULL;
+    return res;
   } else if (cfg_set_find(&set, "help")) {
     fprintf(stderr,
             "\"help\" is an invalid option for running sylkie from json\n");
     cfg_set_free(&set);
-    return NULL;
+    return res;
   }
 
-  pkt = cmd->parse(s_ifaces, &set);
+  res = cmd->parse(s_ifaces, &set, lists);
   cfg_set_free(&set);
-  return pkt;
+  return res;
 }
 #endif
 
-struct packet_command *parse_cmdline(int argc, const char **argv,
-                                     const struct cmd *cmd) {
-  int res = 0;
-  struct packet_command *pkt;
+int parse_cmdline(int argc, const char **argv,
+                  const struct cmd *cmd,
+                  struct command_lists *cmd_lists) {
+  int res = -1;
   struct cfg_set set;
 
   if (argc < 1) {
     fprintf(stderr, "Too few arguments\n");
     cfg_set_usage(&set, stderr);
-    return NULL;
+    return res;
   }
 
   res = cfg_set_init_cmdline(&set, cmd->generate_template(), --argc, ++argv);
 
   if (res) {
     cfg_set_usage(&set, stderr);
-    return NULL;
+    return res;
   } else if (cfg_set_find(&set, "help")) {
     cfg_set_usage(&set, stdout);
     cfg_set_free(&set);
     exit(0);
   }
 
-  pkt = cmd->parse(s_ifaces, &set);
+  res = cmd->parse(s_ifaces, &set, cmd_lists);
   cfg_set_free(&set);
 
-  return pkt;
+  return res;
 }
 
 void version(FILE *fd) { fprintf(fd, "sylkie version: " SYLKIE_VERSION "\n"); }
@@ -169,11 +175,10 @@ struct sylkie_buffer *read_file(const char *arg) {
 
 #ifdef BUILD_JSON
 int get_json_cmd(const struct cmd *cmd, struct json_object *jobj,
-                 struct command_list *buf) {
+                 struct command_lists *lists) {
   enum json_type type;
   struct json_object *tmp;
-  struct packet_command *pkt_cmd;
-  int i, len = json_object_array_length(jobj);
+  int i, len = json_object_array_length(jobj), retval;
   for (i = 0; i < len; ++i) {
     tmp = json_object_array_get_idx(jobj, i);
     type = json_object_get_type(tmp);
@@ -181,25 +186,17 @@ int get_json_cmd(const struct cmd *cmd, struct json_object *jobj,
       fprintf(stderr, "Unexpected type at index %d\n", i);
       return -1;
     }
-    pkt_cmd = parse_json(tmp, cmd);
-    if (pkt_cmd) {
-      if (!command_list_add(buf, pkt_cmd)) {
-        fprintf(stderr, "Could not add command to command list: No Memory\n");
-        if (pkt_cmd->pkt) {
-          sylkie_packet_free(pkt_cmd->pkt);
-        }
-        free(pkt_cmd);
-        return -1;
-      }
-    } else {
-      return -1;
+    retval = parse_json(tmp, cmd, lists);
+    if (retval) {
+      return retval;
     }
   }
   return 0;
 }
 #endif
 
-struct packet_command *run_from_string(char *line) {
+int run_from_string(char *line,
+                    struct command_lists *cmd_lists) {
   const struct cmd *cmd;
   char *p = strtok(line, " ");
   static char *args[1024];
@@ -210,23 +207,23 @@ struct packet_command *run_from_string(char *line) {
       p = strtok(NULL, " ");
     } else {
       fprintf(stderr, "ERROR: Too many arguments provided to command\n");
-      return NULL;
+      return -1;
     }
     ++i;
   }
   args[i] = NULL;
   if (i > 0 && (cmd = find_cmd(args[0])) != NULL) {
-    return parse_cmdline(i, (const char **)args, cmd);
+    return parse_cmdline(i, (const char **)args, cmd, cmd_lists);
   } else {
     fprintf(stderr, "ERROR: could not parse line: \n\t%s\n", line);
+    return -1;
   }
-  return NULL;
 }
 
-int run_from_plaintext(const char *arg, struct command_list *cmd_buf) {
+int run_from_plaintext(const char *arg,
+                       struct command_lists* cmd_lists) {
   int retval = 0;
   struct sylkie_buffer *buf = read_file(arg);
-  struct packet_command *pkt_cmd;
   const u_int8_t *iter = NULL;
   const u_int8_t *end = NULL;
   const u_int8_t *pos = NULL;
@@ -252,13 +249,11 @@ int run_from_plaintext(const char *arg, struct command_list *cmd_buf) {
       if (cpy) {
         memcpy(cpy, iter, len);
         cpy[len] = '\0';
-        pkt_cmd = run_from_string(cpy);
-        if (!pkt_cmd) {
+        retval = run_from_string(cpy, cmd_lists);
+        if (retval) {
           free(cpy);
-          retval = -1;
           break;
         } else {
-          command_list_add(cmd_buf, pkt_cmd);
           free(cpy);
           iter = ++pos;
         }
@@ -276,7 +271,7 @@ int run_from_plaintext(const char *arg, struct command_list *cmd_buf) {
 }
 
 #ifdef BUILD_JSON
-int run_from_json(const char *arg, struct command_list *list) {
+int run_from_json(const char *arg, struct command_lists *lists) {
   int retval = 0;
   enum json_tokener_error jerr;
   enum json_type type;
@@ -321,7 +316,7 @@ int run_from_json(const char *arg, struct command_list *list) {
       type = json_object_get_type(val);
       switch (type) {
       case json_type_array:
-        retval = get_json_cmd(cmd, val, list);
+        retval = get_json_cmd(cmd, val, lists);
         break;
       default:
         fprintf(stderr, "Expected array of objects for key %s\n", key);
@@ -362,7 +357,7 @@ int main(int argc, const char **argv) {
   char *input_file;
   const struct cmd *cmd;
   int retval = 0;
-  struct command_list_item *item;
+  struct pkt_cmd_list_item *item;
   pid_t tx_pid = 0;
   struct cfg_set set;
   struct cfg_template templt = {
@@ -372,8 +367,10 @@ int main(int argc, const char **argv) {
       .parsers_sz = parsers_sz,
       .subcmds = subcmds,
       .subcmds_sz = subcmds_sz};
-  struct packet_command *pkt_cmd = NULL;
-  struct command_list *list = NULL;
+  struct command_lists cmd_lists;
+  int sv[2] = {-1, -1};
+  cmd_lists.pkt_cmds = NULL;
+  cmd_lists.lst_cmds = NULL;
 
   // Ensure we were given args
   if (argc < 2) {
@@ -385,9 +382,15 @@ int main(int argc, const char **argv) {
 
   // Initialize the global command list and
   // interface cache.
-  list = command_list_init();
+  cmd_lists.pkt_cmds = pkt_cmd_list_init();
+  cmd_lists.lst_cmds = lst_cmd_list_init();
+  if (!(cmd_lists.pkt_cmds || cmd_lists.lst_cmds)) {
+    fprintf(stderr, "Could not initialize list of commands: No Memory\n");
+    return -1;
+  }
+
   s_ifaces = sylkie_sender_map_init(2);
-  if (!list) {
+  if (!s_ifaces) {
     fprintf(stderr, "Could not initialize list of senders: No Memory\n");
     return -1;
   }
@@ -413,7 +416,7 @@ int main(int argc, const char **argv) {
 
       if (!cfg_set_find_type(&set, "json", CFG_STRING, &input_file)) {
 #ifdef BUILD_JSON
-        retval = run_from_json(input_file, list);
+        retval = run_from_json(input_file, &cmd_lists);
 #else
         fprintf(stderr, "sylkie must be built with json support to "
                         "use json functions\n");
@@ -422,7 +425,7 @@ int main(int argc, const char **argv) {
       }
 
       if (!cfg_set_find_type(&set, "execute", CFG_STRING, &input_file)) {
-        run_from_plaintext(input_file, list);
+        retval = run_from_plaintext(input_file, &cmd_lists);
       }
       cfg_set_free(&set);
     }
@@ -435,33 +438,34 @@ int main(int argc, const char **argv) {
       cfg_template_usage(&templt, stderr);
       retval = -1;
     } else {
-      pkt_cmd = parse_cmdline(argc, argv, cmd);
-      if (!pkt_cmd) {
+      retval = parse_cmdline(argc, argv, cmd, &cmd_lists);
+    }
+  }
+
+  // Setup the socket for communication on the rx and tx procs
+  if (!socketpair(AF_UNIX, SOCK_SEQPACKET, 0, sv)) {
+    // Create the receiver and transmitter procs
+    if (cmd_lists.pkt_cmds->head || cmd_lists.lst_cmds->head) {
+      if ((tx_pid = fork()) < 0) {
+        fprintf(stderr, "Failed to create transmitter fork\n");
         retval = -1;
+      } else if (tx_pid == 0) {
+        retval = tx_main(cmd_lists.pkt_cmds, s_ifaces, sv[0]);
+        _exit(retval);
       } else {
-        command_list_add(list, pkt_cmd);
+        rx_main(NULL, tx_pid, sv[1]);
       }
     }
+    close(sv[0]);
+    close(sv[1]);
+  } else {
+    fprintf(stderr, "Could not create ipc socets\n");
   }
 
-  // Create the receiver and transmitter processes
-
-  if (list->head) {
-    if ((tx_pid = fork()) < 0) {
-      fprintf(stderr, "Failed to create transmitter fork\n");
-      retval = -1;
-    } else if (tx_pid == 0) {
-      retval = tx_main(list, s_ifaces);
-      _exit(retval);
-    } else {
-      rx_main(list, tx_pid);
-    }
-  }
-
-  for (item = list->head; item; item = item->next) {
+  for (item = cmd_lists.pkt_cmds->head; item; item = item->next) {
     sylkie_packet_free(item->value->pkt);
   }
-  command_list_free(list);
+  command_lists_free(&cmd_lists);
 
   _exit(retval);
 }

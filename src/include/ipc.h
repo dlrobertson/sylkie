@@ -18,9 +18,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <gtest/gtest.h>
+#ifndef SYLKIE_SRC_INCLUDE_IPC_H
+#define SYLKIE_SRC_INCLUDE_IPC_H
 
-int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
+enum ipc_commands {
+    IPC_RM = 0x01,
+    IPC_ADD = 0x02,
+};
+
+#endif // SYLKIE_SRC_INCLUDE_UTILS_H

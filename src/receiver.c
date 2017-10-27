@@ -18,9 +18,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <gtest/gtest.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
-int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+#include <cmds.h>
+
+int rx_main(const struct lst_cmd_list *lst,
+            pid_t tx_pid,
+            int ipc) {
+  waitpid(tx_pid, NULL, 0);
+  return -1;
 }

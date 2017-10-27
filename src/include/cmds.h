@@ -18,9 +18,49 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <gtest/gtest.h>
 
-int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
+#ifndef SYLKIE_SRC_INCLUDE_CMDS_H
+#define SYLKIE_SRC_INCLUDE_CMDS_H
+
+#include <packet.h>
+#include <utils.h>
+
+struct packet_command {
+  struct sylkie_sender *sender;
+  struct sylkie_packet *pkt;
+  int timeout;
+  int repeat;
+};
+
+GENERIC_LIST_FORWARD(struct packet_command *, pkt_cmd_list);
+
+struct listen_command {
+  struct sylkie_sender *sender;
+  struct in6_addr* src;
+  struct in6_addr* dst;
+};
+
+struct listen_command *listen_command_create(struct sylkie_sender *sender,
+                                             struct in6_addr* src,
+                                             struct in6_addr* dst);
+
+void listen_command_free(struct listen_command* cmd);
+
+GENERIC_LIST_FORWARD(struct listen_command *, lst_cmd_list);
+
+struct command_lists {
+  struct pkt_cmd_list *pkt_cmds;
+  struct lst_cmd_list *lst_cmds;
+};
+
+enum sylkie_command_type {
+  SYLKIE_CMD_PACKET,
+  SYLKIE_CMD_LISTEN,
+};
+
+int command_lists_add(struct command_lists *lists,
+                      enum sylkie_command_type type,
+                      void* cmd);
+
+void command_lists_free(struct command_lists *lists);
+#endif

@@ -32,7 +32,7 @@
 #include <error.h>
 #include <sender.h>
 #include <sender_map.h>
-#include <utils.h>
+#include <cmds.h>
 #include <time.h>
 
 struct rx_event {
@@ -56,7 +56,7 @@ struct rx_events_item *add_packet_timer(struct packet_command *cmd,
     return NULL;
   }
   rx_event->fd = timerfd_create(1, 0);
-  if (rx_event->fd < 0 || cmd->timeout < 0) {
+  if (rx_event->fd < 0) {
     free(rx_event);
     return NULL;
   } else {
@@ -84,11 +84,17 @@ struct rx_events_item *add_packet_timer(struct packet_command *cmd,
       --cmd->repeat;
     } else {
       // If repeat has a value, set it_interval.tv_sec because we want
-      // this timer to fire at an interval
-      ts.it_interval.tv_sec = cmd->timeout;
-	  ts.it_interval.tv_nsec = 0;
-      ts.it_value.tv_sec = 0;
+      // this timer to fire at an interval. If the timeout value is less
+      // than or equal to zero, set this to a few nanoseconds
+      if (cmd->timeout <= 0) {
+        ts.it_interval.tv_sec = 0;
+	    ts.it_interval.tv_nsec = 10000;
+      } else {
+        ts.it_interval.tv_sec = cmd->timeout;
+	    ts.it_interval.tv_nsec = 0;
+      }
       // Set tv_nsec to 1 so that it is immediately sent
+      ts.it_value.tv_sec = 0;
       ts.it_value.tv_nsec = 1;
       if (cmd->repeat > 0) {
         // repeat is not infinate. Decrement it for the first time.
@@ -111,14 +117,15 @@ struct rx_events_item *add_packet_timer(struct packet_command *cmd,
   return rx_item;
 }
 
-int tx_main(const struct command_list *lst,
-            struct sylkie_sender_map *map) {
+int tx_main(const struct pkt_cmd_list *lst,
+            struct sylkie_sender_map *map,
+            int ipc) {
   int ret, i, nfds, exiting = 0, closing = 0;
   int efd = epoll_create1(0);
   enum sylkie_error err = SYLKIE_SUCCESS;
   struct epoll_event ev, events[MAX_EVENTS];
   uint64_t res = 0;
-  struct command_list_item *cmd_item = NULL;
+  struct pkt_cmd_list_item *cmd_item = NULL;
   struct rx_events_item *rx_item = NULL;
   struct rx_event *rx_event = NULL;
   struct rx_events *evs = rx_events_init();
