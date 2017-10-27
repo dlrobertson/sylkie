@@ -93,7 +93,7 @@ struct packet_command *ra_parse(struct sylkie_sender_map *ifaces,
     return NULL;
   } else {
     cmd->pkt = NULL;
-    cmd->interface = -1;
+    cmd->sender = NULL;
     cmd->timeout = -1;
     cmd->repeat = 0;
   }
@@ -153,7 +153,7 @@ struct packet_command *ra_parse(struct sylkie_sender_map *ifaces,
     return NULL;
   }
 
-  cmd->interface = sylkie_sender_ifindex(sender);
+  cmd->sender = sender;
 
   if (!sender) {
     fprintf(stderr, "Failed to create sender. Please consider submitting a bug"

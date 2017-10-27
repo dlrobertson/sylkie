@@ -18,7 +18,7 @@ TEST(buffer, zero_size_init) {
   for (i = 0; i < buf->len; ++i) {
     EXPECT_EQ(buf->data[i], 0x00);
   }
-  EXPECT_EQ(i, 9);
+  EXPECT_EQ(i, (size_t)9);
 
   sylkie_buffer_free(buf);
 }

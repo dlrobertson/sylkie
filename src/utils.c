@@ -86,3 +86,5 @@ int parse_hwaddr(const char *arg, u_int8_t *addr) {
   }
   return 0;
 }
+
+GENERIC_LIST_IMPL(struct packet_command *, command_list);
