@@ -62,6 +62,8 @@ extern const struct cfg_template *generate_ra_template();
 
 static struct sylkie_sender_map *s_ifaces = NULL;
 
+struct known_routers_list * g_kr = NULL;
+
 static const struct cmd {
   const char *short_name;
   const char *long_name;

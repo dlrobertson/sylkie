@@ -50,8 +50,9 @@
  */
 struct sylkie_packet *sylkie_neighbor_advert_create(
     const u_int8_t eth_src[ETH_ALEN], const u_int8_t eth_dst[ETH_ALEN],
-    struct in6_addr *ip_src, struct in6_addr *ip_dst, struct in6_addr *tgt_ip,
-    const u_int8_t tgt_hw[ETH_ALEN], enum sylkie_error *err);
+    const struct in6_addr *ip_src, const struct in6_addr *ip_dst,
+    const struct in6_addr *tgt_ip, const u_int8_t tgt_hw[ETH_ALEN],
+    enum sylkie_error *err);
 
 /**
  * \brief Create a sylkie_packet containing a Router Advertisement
@@ -74,9 +75,9 @@ struct sylkie_packet *sylkie_neighbor_advert_create(
  */
 struct sylkie_packet *sylkie_router_advert_create(
     const u_int8_t eth_src[ETH_ALEN], const u_int8_t eth_dst[ETH_ALEN],
-    struct in6_addr *ip_src, struct in6_addr *ip_dst, struct in6_addr *tgt_ip,
-    u_int8_t prefix, u_int16_t lifetime, const u_int8_t tgt_hw[ETH_ALEN],
-    enum sylkie_error *err);
+    const struct in6_addr *ip_src, const struct in6_addr *ip_dst,
+    const struct in6_addr *tgt_ip, u_int8_t prefix, u_int16_t lifetime,
+    const u_int8_t tgt_hw[ETH_ALEN], enum sylkie_error *err);
 
 /**
  * \brief Convert the sylkie_packet into a sylkie_buffer

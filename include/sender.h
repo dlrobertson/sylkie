@@ -120,6 +120,14 @@ const char *sylkie_sender_name(const struct sylkie_sender *sender);
 /**
  * \memberof sylkie_sender
  *
+ * \brief Return the file descriptor associated with a given sender
+ * \param sender sylkie_sender to return the descriptor of
+ */
+int sylkie_sender_fd(const struct sylkie_sender *sender);
+
+/**
+ * \memberof sylkie_sender
+ *
  * \brief Deallocate all associated resources
  * \param sender sylkie_sender to be deallocated
  */

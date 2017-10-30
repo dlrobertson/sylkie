@@ -18,14 +18,26 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <stdio.h>
+
 #include <sys/types.h>
+#include <signal.h>
 #include <sys/wait.h>
 
 #include <cmds.h>
 
-int rx_main(const struct lst_cmd_list *lst, pid_t tx_pid, int ipc) {
-  // TODO(dlrobertson): This does nothing but wait for the transmitter
-  // process to finish at the moment. Make this listen for debug info,
-  // send useful info to the transmitter, etc.
-  return waitpid(tx_pid, NULL, 0);
+extern struct known_routers * g_kr;
+
+int rx_main(const struct lst_cmd_list *lst,
+            pid_t tx_pid,
+            int ipc) {
+  g_kr = known_routers_list_init();
+  g_kr = pkt_cmd_list_init();
+  if (!g_kr) {
+    fprintf(stderr, "Could not initialize list of known routers.\n");
+    //kill(tx_pid, SIGINT);
+    return -1;
+  }
+  //waitpid(tx_pid, NULL, 0);
+  return -1;
 }

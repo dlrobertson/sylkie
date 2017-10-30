@@ -37,7 +37,7 @@
 enum sylkie_proto_type {
   SYLKIE_ETH = 0,
   SYLKIE_IPv6,
-  SYLKIE_ICMPv6, // Usefull to ensure checksums are calculated correctly
+  SYLKIE_ICMPv6,
   SYLKIE_DATA,
   SYLKIE_INVALID_HDR_TYPE,
 };
@@ -166,6 +166,9 @@ void sylkie_proto_list_free(struct sylkie_proto_list *lst);
 
 #define SYLKIE_HEADER_LIST_FOREACH(lst, node)                                  \
   for (node = sylkie_proto_list_head(lst); node; node = node->next)
+
+#define SYLKIE_HEADER_LIST_REV_FOREACH(lst, node)                                  \
+  for (node = sylkie_proto_list_tail(lst); node; node = node->prev)
 
 /// @} end of doxygen protocol group
 

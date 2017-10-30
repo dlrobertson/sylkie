@@ -210,6 +210,10 @@ const char *sylkie_sender_name(const struct sylkie_sender *sender) {
   return (sender) ? sender->name : NULL;
 }
 
+int sylkie_sender_fd(const struct sylkie_sender *sender) {
+  return (sender) ? sender->fd : -1;
+}
+
 int sylkie_sender_ifindex(const struct sylkie_sender *sender) {
   return (sender) ? sender->ifindex : -1;
 }

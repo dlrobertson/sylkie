@@ -105,7 +105,7 @@ struct sylkie_buffer *sylkie_packet_to_buffer(struct sylkie_packet *pkt,
     sylkie_error_set(err, SYLKIE_NO_MEM);
   }
 
-  SYLKIE_HEADER_LIST_FOREACH (pkt->lst, node) {
+  SYLKIE_HEADER_LIST_REV_FOREACH (pkt->lst, node) {
     if (node->hdr.type < SYLKIE_INVALID_HDR_TYPE &&
         s_to_buffer_cmds[node->hdr.type].fn) {
       (s_to_buffer_cmds[node->hdr.type].fn)(buf, node);

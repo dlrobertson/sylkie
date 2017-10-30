@@ -24,6 +24,8 @@ GENERIC_LIST_IMPL(struct packet_command *, pkt_cmd_list);
 
 GENERIC_LIST_IMPL(struct listen_command *, lst_cmd_list);
 
+GENERIC_LIST_IMPL(struct known_router *, known_routers);
+
 struct listen_command *listen_command_create(struct sylkie_sender *sender,
                                              struct in6_addr *src,
                                              struct in6_addr *dst) {

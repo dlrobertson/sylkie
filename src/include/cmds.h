@@ -21,6 +21,9 @@
 #ifndef SYLKIE_SRC_INCLUDE_CMDS_H
 #define SYLKIE_SRC_INCLUDE_CMDS_H
 
+#include <netinet/if_ether.h>
+#include <netinet/ip6.h>
+
 #include <packet.h>
 #include <utils.h>
 
@@ -33,11 +36,39 @@ struct packet_command {
 
 GENERIC_LIST_FORWARD(struct packet_command *, pkt_cmd_list);
 
+enum listen_action_type {
+  ACTION_PRINT,
+  ACTION_IPC_COMMAND,
+};
+
+struct listen_action {
+  enum listen_action_type type;
+  union {
+    struct ipc_command * ipc_command;
+    struct {
+      const char* data;
+      size_t len;
+    } print_command;
+  } action;
+};
+
 struct listen_command {
   struct sylkie_sender *sender;
   struct in6_addr *src;
   struct in6_addr *dst;
+  char* iface;
+  int timeout;
+  struct listen_action *(*action)(const struct ethhdr* eth,
+                                  const struct ip6_hdr* ip6,
+                                  const u_int8_t *packet, size_t len);
 };
+
+struct known_router {
+  struct in6_addr r_addr;
+  struct in6_addr s_addr;
+};
+
+GENERIC_LIST_FORWARD(struct known_router *, known_routers);
 
 struct listen_command *listen_command_create(struct sylkie_sender *sender,
                                              struct in6_addr *src,

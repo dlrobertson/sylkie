@@ -28,7 +28,8 @@
 static struct sylkie_packet *
 sylkie_base_packet_create(const u_int8_t eth_src[ETH_ALEN],
                           const u_int8_t eth_dst[ETH_ALEN],
-                          struct in6_addr *ip_src, struct in6_addr *ip_dst,
+                          const struct in6_addr *ip_src,
+                          const struct in6_addr *ip_dst,
                           u_int16_t len, enum sylkie_error *err) {
   struct ethhdr eth;
   struct ip6_hdr ipv6;
@@ -72,8 +73,9 @@ sylkie_base_packet_create(const u_int8_t eth_src[ETH_ALEN],
 
 struct sylkie_packet *sylkie_neighbor_advert_create(
     const u_int8_t eth_src[ETH_ALEN], const u_int8_t eth_dst[ETH_ALEN],
-    struct in6_addr *ip_src, struct in6_addr *ip_dst, struct in6_addr *tgt_ip,
-    const u_int8_t tgt_hw[ETH_ALEN], enum sylkie_error *err) {
+    const struct in6_addr *ip_src, const struct in6_addr *ip_dst,
+    const struct in6_addr *tgt_ip, const u_int8_t tgt_hw[ETH_ALEN],
+    enum sylkie_error *err) {
   enum sylkie_error local_err;
   static const u_int8_t options[2] = {0x02, 0x01};
   struct sylkie_packet *pkt = NULL;
@@ -119,9 +121,9 @@ struct sylkie_packet *sylkie_neighbor_advert_create(
 
 struct sylkie_packet *sylkie_router_advert_create(
     const u_int8_t eth_src[ETH_ALEN], const u_int8_t eth_dst[ETH_ALEN],
-    struct in6_addr *ip_src, struct in6_addr *ip_dst, struct in6_addr *tgt_ip,
-    u_int8_t prefix, u_int16_t lifetime, const u_int8_t tgt_hw[ETH_ALEN],
-    enum sylkie_error *err) {
+    const struct in6_addr *ip_src, const struct in6_addr *ip_dst,
+    const struct in6_addr *tgt_ip, u_int8_t prefix, u_int16_t lifetime,
+    const u_int8_t tgt_hw[ETH_ALEN], enum sylkie_error *err) {
   struct icmp6_hdr icmpv6;
   enum sylkie_error local_err;
   struct sylkie_buffer *buf = sylkie_buffer_init(2 + ETH_ALEN + 8);
