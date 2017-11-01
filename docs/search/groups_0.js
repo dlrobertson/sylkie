@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['cfg_5fset_20structures_20and_20methods',['cfg_set structures and methods',['../group__cfg.html',1,'']]],
-  ['core_20public_20functions_20and_20structures',['Core public functions and structures',['../group__libsylkie.html',1,'']]]
+  ['b_2dtree_20map_20structure_20for_20sylkie_5fsender_27s',['B-Tree map structure for sylkie_sender&apos;s',['../group__sender__map.html',1,'']]]
 ];

@@ -29,7 +29,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sylkie
-   &#160;<span id="projectnumber">0.0.2</span>
+   &#160;<span id="projectnumber">0.0.4</span>
    </div>
    <div id="projectbrief">IPv6 Address Spoofing with the NDP</div>
   </td>
@@ -103,9 +103,15 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ga19aa3965ab717b474688e3fb27010ca5"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sender.html#ga19aa3965ab717b474688e3fb27010ca5">sylkie_sender_send</a> (struct <a class="el" href="structsylkie__sender.html">sylkie_sender</a> *sender, const u_int8_t *data, size_t len, int flags, enum <a class="el" href="group__errors.html#gaa49039a04eb836e3f41cb48345448ec9">sylkie_error</a> *err)</td></tr>
 <tr class="memdesc:ga19aa3965ab717b474688e3fb27010ca5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send raw data given a the length of the data.  <a href="group__sender.html#ga19aa3965ab717b474688e3fb27010ca5">More...</a><br /></td></tr>
 <tr class="separator:ga19aa3965ab717b474688e3fb27010ca5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga8dc6c3355b0ed397c45eb0298815b433"><td class="memItemLeft" align="right" valign="top">const u_int8_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sender.html#ga8dc6c3355b0ed397c45eb0298815b433">sylkie_sender_addr</a> (struct <a class="el" href="structsylkie__sender.html">sylkie_sender</a> *sender)</td></tr>
-<tr class="memdesc:ga8dc6c3355b0ed397c45eb0298815b433"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the link address associated with a given sender.  <a href="group__sender.html#ga8dc6c3355b0ed397c45eb0298815b433">More...</a><br /></td></tr>
-<tr class="separator:ga8dc6c3355b0ed397c45eb0298815b433"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga080aa9a708eb92798bfe5c957730dc95"><td class="memItemLeft" align="right" valign="top">const u_int8_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sender.html#ga080aa9a708eb92798bfe5c957730dc95">sylkie_sender_addr</a> (const struct <a class="el" href="structsylkie__sender.html">sylkie_sender</a> *sender)</td></tr>
+<tr class="memdesc:ga080aa9a708eb92798bfe5c957730dc95"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the link address associated with a given sender.  <a href="group__sender.html#ga080aa9a708eb92798bfe5c957730dc95">More...</a><br /></td></tr>
+<tr class="separator:ga080aa9a708eb92798bfe5c957730dc95"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae33d86e52919087cf3facd502152627c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sender.html#gae33d86e52919087cf3facd502152627c">sylkie_sender_ifindex</a> (const struct <a class="el" href="structsylkie__sender.html">sylkie_sender</a> *sender)</td></tr>
+<tr class="memdesc:gae33d86e52919087cf3facd502152627c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the interface index associated with a given sender.  <a href="group__sender.html#gae33d86e52919087cf3facd502152627c">More...</a><br /></td></tr>
+<tr class="separator:gae33d86e52919087cf3facd502152627c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7992c847fe7bccbdf589f6237a00983c"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sender.html#ga7992c847fe7bccbdf589f6237a00983c">sylkie_sender_name</a> (const struct <a class="el" href="structsylkie__sender.html">sylkie_sender</a> *sender)</td></tr>
+<tr class="memdesc:ga7992c847fe7bccbdf589f6237a00983c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the interface name associated with a given sender.  <a href="group__sender.html#ga7992c847fe7bccbdf589f6237a00983c">More...</a><br /></td></tr>
+<tr class="separator:ga7992c847fe7bccbdf589f6237a00983c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga940e28686f536634fa3b98042c8bf93b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sender.html#ga940e28686f536634fa3b98042c8bf93b">sylkie_sender_free</a> (struct <a class="el" href="structsylkie__sender.html">sylkie_sender</a> *sender)</td></tr>
 <tr class="memdesc:ga940e28686f536634fa3b98042c8bf93b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deallocate all associated resources.  <a href="group__sender.html#ga940e28686f536634fa3b98042c8bf93b">More...</a><br /></td></tr>
 <tr class="separator:ga940e28686f536634fa3b98042c8bf93b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -115,6 +121,12 @@ Public Member Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Data Fields</h2></td></tr>
+<tr class="memitem:aa861444443e3279b7bbae0b72382fb02"><td class="memItemLeft" align="right" valign="top"><a id="aa861444443e3279b7bbae0b72382fb02"></a>
+char *&#160;</td><td class="memItemRight" valign="bottom"><b>name</b></td></tr>
+<tr class="separator:aa861444443e3279b7bbae0b72382fb02"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afaeb3d52729cdcfcf58edf64f785dd0a"><td class="memItemLeft" align="right" valign="top"><a id="afaeb3d52729cdcfcf58edf64f785dd0a"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>ifindex</b></td></tr>
+<tr class="separator:afaeb3d52729cdcfcf58edf64f785dd0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3062c33ac113ca605034bf4d4e16141c"><td class="memItemLeft" align="right" valign="top"><a id="a3062c33ac113ca605034bf4d4e16141c"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>fd</b></td></tr>
 <tr class="separator:a3062c33ac113ca605034bf4d4e16141c"><td class="memSeparator" colspan="2">&#160;</td></tr>

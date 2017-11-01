@@ -5,5 +5,6 @@ var group__libsylkie =
     [ "NDP packet creation helpers", "group__sylkie__nd.html", "group__sylkie__nd" ],
     [ "sylkie_packet structures and methods", "group__packet.html", "group__packet" ],
     [ "protocol list structures and methods", "group__protocol.html", "group__protocol" ],
-    [ "sylkie_sender structures and methods", "group__sender.html", "group__sender" ]
+    [ "sylkie_sender structures and methods", "group__sender.html", "group__sender" ],
+    [ "B-Tree map structure for sylkie_sender's", "group__sender__map.html", "group__sender__map" ]
 ];

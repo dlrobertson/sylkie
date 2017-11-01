@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['hdr',['hdr',['../structsylkie__proto__node.html#a84a712855b76029c2e0ca3e3702ec5bf',1,'sylkie_proto_node']]]
+  ['data',['data',['../structsylkie__buffer.html#ae8b185e771b7df770c0b761bf92cd525',1,'sylkie_buffer::data()'],['../structsylkie__proto.html#a26fec9fd42aef39f1bc77ce1306c0643',1,'sylkie_proto::data()']]]
 ];

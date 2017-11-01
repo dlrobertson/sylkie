@@ -29,7 +29,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sylkie
-   &#160;<span id="projectnumber">0.0.2</span>
+   &#160;<span id="projectnumber">0.0.4</span>
    </div>
    <div id="projectbrief">IPv6 Address Spoofing with the NDP</div>
   </td>
@@ -102,9 +102,15 @@ Functions</h2></td></tr>
 <tr class="memitem:ga19aa3965ab717b474688e3fb27010ca5"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sender.html#ga19aa3965ab717b474688e3fb27010ca5">sylkie_sender::sylkie_sender_send</a> (struct <a class="el" href="structsylkie__sender.html">sylkie_sender</a> *sender, const u_int8_t *data, size_t len, int flags, enum <a class="el" href="group__errors.html#gaa49039a04eb836e3f41cb48345448ec9">sylkie_error</a> *err)</td></tr>
 <tr class="memdesc:ga19aa3965ab717b474688e3fb27010ca5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send raw data given a the length of the data.  <a href="#ga19aa3965ab717b474688e3fb27010ca5">More...</a><br /></td></tr>
 <tr class="separator:ga19aa3965ab717b474688e3fb27010ca5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga8dc6c3355b0ed397c45eb0298815b433"><td class="memItemLeft" align="right" valign="top">const u_int8_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sender.html#ga8dc6c3355b0ed397c45eb0298815b433">sylkie_sender::sylkie_sender_addr</a> (struct <a class="el" href="structsylkie__sender.html">sylkie_sender</a> *sender)</td></tr>
-<tr class="memdesc:ga8dc6c3355b0ed397c45eb0298815b433"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the link address associated with a given sender.  <a href="#ga8dc6c3355b0ed397c45eb0298815b433">More...</a><br /></td></tr>
-<tr class="separator:ga8dc6c3355b0ed397c45eb0298815b433"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga080aa9a708eb92798bfe5c957730dc95"><td class="memItemLeft" align="right" valign="top">const u_int8_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sender.html#ga080aa9a708eb92798bfe5c957730dc95">sylkie_sender::sylkie_sender_addr</a> (const struct <a class="el" href="structsylkie__sender.html">sylkie_sender</a> *sender)</td></tr>
+<tr class="memdesc:ga080aa9a708eb92798bfe5c957730dc95"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the link address associated with a given sender.  <a href="#ga080aa9a708eb92798bfe5c957730dc95">More...</a><br /></td></tr>
+<tr class="separator:ga080aa9a708eb92798bfe5c957730dc95"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae33d86e52919087cf3facd502152627c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sender.html#gae33d86e52919087cf3facd502152627c">sylkie_sender::sylkie_sender_ifindex</a> (const struct <a class="el" href="structsylkie__sender.html">sylkie_sender</a> *sender)</td></tr>
+<tr class="memdesc:gae33d86e52919087cf3facd502152627c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the interface index associated with a given sender.  <a href="#gae33d86e52919087cf3facd502152627c">More...</a><br /></td></tr>
+<tr class="separator:gae33d86e52919087cf3facd502152627c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7992c847fe7bccbdf589f6237a00983c"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sender.html#ga7992c847fe7bccbdf589f6237a00983c">sylkie_sender::sylkie_sender_name</a> (const struct <a class="el" href="structsylkie__sender.html">sylkie_sender</a> *sender)</td></tr>
+<tr class="memdesc:ga7992c847fe7bccbdf589f6237a00983c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the interface name associated with a given sender.  <a href="#ga7992c847fe7bccbdf589f6237a00983c">More...</a><br /></td></tr>
+<tr class="separator:ga7992c847fe7bccbdf589f6237a00983c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga940e28686f536634fa3b98042c8bf93b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sender.html#ga940e28686f536634fa3b98042c8bf93b">sylkie_sender::sylkie_sender_free</a> (struct <a class="el" href="structsylkie__sender.html">sylkie_sender</a> *sender)</td></tr>
 <tr class="memdesc:ga940e28686f536634fa3b98042c8bf93b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deallocate all associated resources.  <a href="#ga940e28686f536634fa3b98042c8bf93b">More...</a><br /></td></tr>
 <tr class="separator:ga940e28686f536634fa3b98042c8bf93b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -150,8 +156,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ga8dc6c3355b0ed397c45eb0298815b433"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga8dc6c3355b0ed397c45eb0298815b433">&#9670;&nbsp;</a></span>sylkie_sender_addr()</h2>
+<a id="ga080aa9a708eb92798bfe5c957730dc95"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga080aa9a708eb92798bfe5c957730dc95">&#9670;&nbsp;</a></span>sylkie_sender_addr()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -159,7 +165,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="memname">const u_int8_t * sylkie_sender_addr </td>
           <td>(</td>
-          <td class="paramtype">struct <a class="el" href="structsylkie__sender.html">sylkie_sender</a> *&#160;</td>
+          <td class="paramtype">const struct <a class="el" href="structsylkie__sender.html">sylkie_sender</a> *&#160;</td>
           <td class="paramname"><em>sender</em></td><td>)</td>
           <td></td>
         </tr>
@@ -202,6 +208,32 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="gae33d86e52919087cf3facd502152627c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gae33d86e52919087cf3facd502152627c">&#9670;&nbsp;</a></span>sylkie_sender_ifindex()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int sylkie_sender_ifindex </td>
+          <td>(</td>
+          <td class="paramtype">const struct <a class="el" href="structsylkie__sender.html">sylkie_sender</a> *&#160;</td>
+          <td class="paramname"><em>sender</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Return the interface index associated with a given sender. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">sender</td><td><a class="el" href="structsylkie__sender.html">sylkie_sender</a> to return the interface index of </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="ga50e39e96e518edb0d1e7b0b80f2e6272"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ga50e39e96e518edb0d1e7b0b80f2e6272">&#9670;&nbsp;</a></span>sylkie_sender_init()</h2>
 
@@ -233,6 +265,32 @@ Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramname">iface</td><td>Name of the interface to be used </td></tr>
     <tr><td class="paramname">err</td><td>Pointer to sylkie_error to be set on error </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga7992c847fe7bccbdf589f6237a00983c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga7992c847fe7bccbdf589f6237a00983c">&#9670;&nbsp;</a></span>sylkie_sender_name()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char * sylkie_sender_name </td>
+          <td>(</td>
+          <td class="paramtype">const struct <a class="el" href="structsylkie__sender.html">sylkie_sender</a> *&#160;</td>
+          <td class="paramname"><em>sender</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Return the interface name associated with a given sender. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">sender</td><td><a class="el" href="structsylkie__sender.html">sylkie_sender</a> to return the name of </td></tr>
   </table>
   </dd>
 </dl>

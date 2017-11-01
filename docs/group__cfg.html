@@ -29,7 +29,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sylkie
-   &#160;<span id="projectnumber">0.0.2</span>
+   &#160;<span id="projectnumber">0.0.4</span>
    </div>
    <div id="projectbrief">IPv6 Address Spoofing with the NDP</div>
   </td>
@@ -95,6 +95,9 @@ Data Structures</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structcfg__parser.html">cfg_parser</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Define the interface for providing a given argument to a command.  <a href="structcfg__parser.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structcfg__template.html">cfg_template</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Template used to parse arguments.  <a href="structcfg__template.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structcfg__subcmd.html">cfg_subcmd</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Define the interface for a given subcommand.  <a href="structcfg__subcmd.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -137,9 +140,9 @@ struct <a class="el" href="structcfg__set__item.html">cfg_set_item</a> *&#160;</
 <tr class="memitem:gac2dba26ca482b1cf7cbee2d9f2cd0973"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__cfg.html#gac2dba26ca482b1cf7cbee2d9f2cd0973">cfg_set_item_free</a> (struct <a class="el" href="structcfg__set__item.html">cfg_set_item</a> *item)</td></tr>
 <tr class="memdesc:gac2dba26ca482b1cf7cbee2d9f2cd0973"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free any allocated resources associated with an item.  <a href="#gac2dba26ca482b1cf7cbee2d9f2cd0973">More...</a><br /></td></tr>
 <tr class="separator:gac2dba26ca482b1cf7cbee2d9f2cd0973"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga94acd590c8cd604e91b1f5e3b1cdff89"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__cfg.html#ga94acd590c8cd604e91b1f5e3b1cdff89">cfg_set_init_cmdline</a> (struct <a class="el" href="structcfg__set.html">cfg_set</a> *set, size_t argc, const char **argv)</td></tr>
-<tr class="memdesc:ga94acd590c8cd604e91b1f5e3b1cdff89"><td class="mdescLeft">&#160;</td><td class="mdescRight">Populate the <a class="el" href="structcfg__set.html" title="A set of user provided arguments. ">cfg_set</a> map.  <a href="#ga94acd590c8cd604e91b1f5e3b1cdff89">More...</a><br /></td></tr>
-<tr class="separator:ga94acd590c8cd604e91b1f5e3b1cdff89"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gafc6d5abdb94fbd341c2e83ce1a7435fa"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__cfg.html#gafc6d5abdb94fbd341c2e83ce1a7435fa">cfg_set_init_cmdline</a> (struct <a class="el" href="structcfg__set.html">cfg_set</a> *set, const struct <a class="el" href="structcfg__template.html">cfg_template</a> *tmplt, size_t argc, const char **argv)</td></tr>
+<tr class="memdesc:gafc6d5abdb94fbd341c2e83ce1a7435fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Populate the <a class="el" href="structcfg__set.html" title="A set of user provided arguments. ">cfg_set</a> map.  <a href="#gafc6d5abdb94fbd341c2e83ce1a7435fa">More...</a><br /></td></tr>
+<tr class="separator:gafc6d5abdb94fbd341c2e83ce1a7435fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga6ea67310bda16c4b6fa19576c2e9fdf8"><td class="memItemLeft" align="right" valign="top">const struct <a class="el" href="structcfg__set__item.html">cfg_set_item</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__cfg.html#ga6ea67310bda16c4b6fa19576c2e9fdf8">cfg_set_find</a> (const struct <a class="el" href="structcfg__set.html">cfg_set</a> *set, const char *name)</td></tr>
 <tr class="memdesc:ga6ea67310bda16c4b6fa19576c2e9fdf8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Search the <a class="el" href="structcfg__set.html" title="A set of user provided arguments. ">cfg_set</a> for an item and return it.  <a href="#ga6ea67310bda16c4b6fa19576c2e9fdf8">More...</a><br /></td></tr>
 <tr class="separator:ga6ea67310bda16c4b6fa19576c2e9fdf8"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -148,11 +151,15 @@ struct <a class="el" href="structcfg__set__item.html">cfg_set_item</a> *&#160;</
 <tr class="separator:ga603899e7dcc5520a975512e8841eee5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga56d0e6cdf7e0dced563ef7c5fd7d9699"><td class="memItemLeft" align="right" valign="top"><a id="ga56d0e6cdf7e0dced563ef7c5fd7d9699"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__cfg.html#ga56d0e6cdf7e0dced563ef7c5fd7d9699">cfg_set_usage</a> (const struct <a class="el" href="structcfg__set.html">cfg_set</a> *set, FILE *output)</td></tr>
-<tr class="memdesc:ga56d0e6cdf7e0dced563ef7c5fd7d9699"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print the help text for the parsers provided to cfg_set_init. <br /></td></tr>
+<tr class="memdesc:ga56d0e6cdf7e0dced563ef7c5fd7d9699"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print the help text for the template provided to cfg_set_init. <br /></td></tr>
 <tr class="separator:ga56d0e6cdf7e0dced563ef7c5fd7d9699"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gacba59fdb5bb2d3ca7489496d7c2ae575"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__cfg.html#gacba59fdb5bb2d3ca7489496d7c2ae575">cfg_set_free</a> (struct <a class="el" href="structcfg__set.html">cfg_set</a> *set)</td></tr>
 <tr class="memdesc:gacba59fdb5bb2d3ca7489496d7c2ae575"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free a given <a class="el" href="structcfg__set.html" title="A set of user provided arguments. ">cfg_set</a> item.  <a href="#gacba59fdb5bb2d3ca7489496d7c2ae575">More...</a><br /></td></tr>
 <tr class="separator:gacba59fdb5bb2d3ca7489496d7c2ae575"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac3df7d3ab8cfccf2423fb1cd06b07209"><td class="memItemLeft" align="right" valign="top"><a id="gac3df7d3ab8cfccf2423fb1cd06b07209"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__cfg.html#gac3df7d3ab8cfccf2423fb1cd06b07209">cfg_template_usage</a> (const struct <a class="el" href="structcfg__template.html">cfg_template</a> *templt, FILE *output)</td></tr>
+<tr class="memdesc:gac3df7d3ab8cfccf2423fb1cd06b07209"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print the help text for the template provided to cfg_set_init. <br /></td></tr>
+<tr class="separator:gac3df7d3ab8cfccf2423fb1cd06b07209"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
@@ -251,8 +258,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="grou
 
 </div>
 </div>
-<a id="ga94acd590c8cd604e91b1f5e3b1cdff89"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga94acd590c8cd604e91b1f5e3b1cdff89">&#9670;&nbsp;</a></span>cfg_set_init_cmdline()</h2>
+<a id="gafc6d5abdb94fbd341c2e83ce1a7435fa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gafc6d5abdb94fbd341c2e83ce1a7435fa">&#9670;&nbsp;</a></span>cfg_set_init_cmdline()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -262,6 +269,12 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="grou
           <td>(</td>
           <td class="paramtype">struct <a class="el" href="structcfg__set.html">cfg_set</a> *&#160;</td>
           <td class="paramname"><em>set</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const struct <a class="el" href="structcfg__template.html">cfg_template</a> *&#160;</td>
+          <td class="paramname"><em>tmplt</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>

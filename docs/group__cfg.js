@@ -6,6 +6,14 @@ var group__cfg =
       [ "type", "structcfg__parser.html#ad99524f672966db7ecc5b49e8a8eafbd", null ],
       [ "usage", "structcfg__parser.html#a9f29c22abcd507ca90a20f803a563684", null ]
     ] ],
+    [ "cfg_template", "structcfg__template.html", [
+      [ "parsers", "structcfg__template.html#a8701c1decf4a01269433ce8303de9be7", null ],
+      [ "parsers_sz", "structcfg__template.html#a04cd210b39b7697fe9c4031716e8b1be", null ],
+      [ "subcmds", "structcfg__template.html#a19ebec69bce2db98cf1627d30fde9997", null ],
+      [ "subcmds_sz", "structcfg__template.html#a7274be31b722cd64c9dc68ed39d51dca", null ],
+      [ "summary", "structcfg__template.html#a998842f103886e63c9e0a86d0b2b19fa", null ],
+      [ "usage", "structcfg__template.html#a1a187eb1b668f07136fe48716fc9783e", null ]
+    ] ],
     [ "cfg_subcmd", "structcfg__subcmd.html", [
       [ "long_name", "structcfg__subcmd.html#a2f3e6925abe0b82e3eab7e12c754c46b", null ],
       [ "short_name", "structcfg__subcmd.html#a22c1513e257ba7cace17c4c6386c6f8b", null ]
@@ -29,19 +37,15 @@ var group__cfg =
     ] ],
     [ "cfg_set", "structcfg__set.html", [
       [ "options", "structcfg__set.html#acbf651904689376cf596d8f5b8768b96", null ],
-      [ "parsers", "structcfg__set.html#af1b41be23f165ecea4de9a4c0292d481", null ],
-      [ "parsers_sz", "structcfg__set.html#aae8b70e5a015878ec32c78daaece3176", null ],
-      [ "subcmds", "structcfg__set.html#a10b046e1feb1ce3a3e10cdd1ecab8e4f", null ],
-      [ "subcmds_sz", "structcfg__set.html#a32074575f011bfc98f383c51bb070094", null ],
-      [ "summary", "structcfg__set.html#a27521c6016cb8bee576848f449ef93bc", null ],
-      [ "usage", "structcfg__set.html#ace2e68e62da0f3f903f3ae80316cd872", null ]
+      [ "templt", "structcfg__set.html#a79a6b39f8318fe460f0061d52907a29b", null ]
     ] ],
     [ "cfg_value_type", "group__cfg.html#ga572de49adfa0924547335ceb84893f3f", null ],
     [ "cfg_set_find", "group__cfg.html#ga6ea67310bda16c4b6fa19576c2e9fdf8", null ],
     [ "cfg_set_find_type", "group__cfg.html#ga603899e7dcc5520a975512e8841eee5c", null ],
     [ "cfg_set_free", "group__cfg.html#gacba59fdb5bb2d3ca7489496d7c2ae575", null ],
-    [ "cfg_set_init_cmdline", "group__cfg.html#ga94acd590c8cd604e91b1f5e3b1cdff89", null ],
+    [ "cfg_set_init_cmdline", "group__cfg.html#gafc6d5abdb94fbd341c2e83ce1a7435fa", null ],
     [ "cfg_set_item_create", "group__cfg.html#gac0078c9cf372e1f6cd109dda304191ae", null ],
     [ "cfg_set_item_free", "group__cfg.html#gac2dba26ca482b1cf7cbee2d9f2cd0973", null ],
-    [ "cfg_set_usage", "group__cfg.html#ga56d0e6cdf7e0dced563ef7c5fd7d9699", null ]
+    [ "cfg_set_usage", "group__cfg.html#ga56d0e6cdf7e0dced563ef7c5fd7d9699", null ],
+    [ "cfg_template_usage", "group__cfg.html#gac3df7d3ab8cfccf2423fb1cd06b07209", null ]
 ];
