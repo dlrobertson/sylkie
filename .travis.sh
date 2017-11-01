@@ -13,9 +13,9 @@ cmake -G "${GEN}" -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DBUILD_TESTS=ON ..
 
 if [[ "${GEN}" == "Ninja" ]]
 then
-    ninja
+    ninja -v
 else
-    make
+    VERBOSE=1 make
 fi
 
 ./sylkie_test

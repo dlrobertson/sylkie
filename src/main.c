@@ -23,9 +23,9 @@
 #include <string.h>
 
 #include <fcntl.h>
+#include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/socket.h>
 #include <unistd.h>
 
 #include <sylkie_config.h>
@@ -43,26 +43,21 @@
 
 // Transmitter fork main function
 extern int tx_main(const struct pkt_cmd_list *lst,
-                   struct sylkie_sender_map *map,
-                   int ipc);
+                   struct sylkie_sender_map *map, int ipc);
 
 // Receiver fork main function (main thread)
-extern int rx_main(const struct lst_cmd_list *lst,
-                   pid_t tx_pid,
-                   int ipc);
+extern int rx_main(const struct lst_cmd_list *lst, pid_t tx_pid, int ipc);
 
 // various subcommands to the sylkie command that are defined elsewhere
 
 // neighbor advert subcommand functions
 extern int na_parse(const struct sylkie_sender_map *ifaces,
-                    const struct cfg_set *set,
-                    struct command_lists *lists);
+                    const struct cfg_set *set, struct command_lists *lists);
 extern const struct cfg_template *generate_na_template();
 
 // router advert subcommand functions
 extern int ra_parse(const struct sylkie_sender_map *ifaces,
-                    const struct cfg_set *set,
-                    struct command_lists *lists);
+                    const struct cfg_set *set, struct command_lists *lists);
 extern const struct cfg_template *generate_ra_template();
 
 static struct sylkie_sender_map *s_ifaces = NULL;
@@ -71,8 +66,7 @@ static const struct cmd {
   const char *short_name;
   const char *long_name;
   int (*parse)(const struct sylkie_sender_map *ifaces,
-               const struct cfg_set *set,
-               struct command_lists *lists);
+               const struct cfg_set *set, struct command_lists *lists);
   const struct cfg_template *(*generate_template)();
 } cmds[] = {{"na", "neighbor-advert", na_parse, generate_na_template},
             {"ra", "router-advert", ra_parse, generate_ra_template},
@@ -81,8 +75,7 @@ static const struct cmd {
 // Helper functions used to translate a json file or command line
 // arguments into a cfg_set
 #ifdef BUILD_JSON
-int parse_json(struct json_object *jobj,
-               const struct cmd *cmd,
+int parse_json(struct json_object *jobj, const struct cmd *cmd,
                struct command_lists *lists) {
   int res = -1;
   struct cfg_set set;
@@ -105,8 +98,7 @@ int parse_json(struct json_object *jobj,
 }
 #endif
 
-int parse_cmdline(int argc, const char **argv,
-                  const struct cmd *cmd,
+int parse_cmdline(int argc, const char **argv, const struct cmd *cmd,
                   struct command_lists *cmd_lists) {
   int res = -1;
   struct cfg_set set;
@@ -195,8 +187,7 @@ int get_json_cmd(const struct cmd *cmd, struct json_object *jobj,
 }
 #endif
 
-int run_from_string(char *line,
-                    struct command_lists *cmd_lists) {
+int run_from_string(char *line, struct command_lists *cmd_lists) {
   const struct cmd *cmd;
   char *p = strtok(line, " ");
   static char *args[1024];
@@ -220,8 +211,7 @@ int run_from_string(char *line,
   }
 }
 
-int run_from_plaintext(const char *arg,
-                       struct command_lists* cmd_lists) {
+int run_from_plaintext(const char *arg, struct command_lists *cmd_lists) {
   int retval = 0;
   struct sylkie_buffer *buf = read_file(arg);
   const u_int8_t *iter = NULL;
@@ -379,12 +369,11 @@ int main(int argc, const char **argv) {
     return -1;
   }
 
-
   // Initialize the global command list and
   // interface cache.
   cmd_lists.pkt_cmds = pkt_cmd_list_init();
   cmd_lists.lst_cmds = lst_cmd_list_init();
-  if (!(cmd_lists.pkt_cmds || cmd_lists.lst_cmds)) {
+  if (!cmd_lists.pkt_cmds || !cmd_lists.lst_cmds) {
     fprintf(stderr, "Could not initialize list of commands: No Memory\n");
     return -1;
   }
@@ -422,9 +411,8 @@ int main(int argc, const char **argv) {
                         "use json functions\n");
         retval = -1;
 #endif
-      }
-
-      if (!cfg_set_find_type(&set, "execute", CFG_STRING, &input_file)) {
+      } else if (!retval &&
+                 !cfg_set_find_type(&set, "execute", CFG_STRING, &input_file)) {
         retval = run_from_plaintext(input_file, &cmd_lists);
       }
       cfg_set_free(&set);
@@ -443,29 +431,32 @@ int main(int argc, const char **argv) {
   }
 
   // Setup the socket for communication on the rx and tx procs
-  if (!socketpair(AF_UNIX, SOCK_SEQPACKET, 0, sv)) {
-    // Create the receiver and transmitter procs
-    if (cmd_lists.pkt_cmds->head || cmd_lists.lst_cmds->head) {
-      if ((tx_pid = fork()) < 0) {
-        fprintf(stderr, "Failed to create transmitter fork\n");
-        retval = -1;
-      } else if (tx_pid == 0) {
-        retval = tx_main(cmd_lists.pkt_cmds, s_ifaces, sv[0]);
-        _exit(retval);
-      } else {
-        rx_main(NULL, tx_pid, sv[1]);
+  if (!retval) {
+    if (!socketpair(AF_UNIX, SOCK_SEQPACKET, 0, sv)) {
+      // Create the receiver and transmitter procs
+      if (cmd_lists.pkt_cmds->head || cmd_lists.lst_cmds->head) {
+        if ((tx_pid = fork()) < 0) {
+          fprintf(stderr, "Failed to create transmitter fork\n");
+          retval = -1;
+        } else if (tx_pid == 0) {
+          retval = tx_main(cmd_lists.pkt_cmds, s_ifaces, sv[0]);
+          _exit(retval);
+        } else {
+          rx_main(NULL, tx_pid, sv[1]);
+        }
       }
+      close(sv[0]);
+      close(sv[1]);
+    } else {
+      fprintf(stderr, "Could not create ipc socets\n");
     }
-    close(sv[0]);
-    close(sv[1]);
-  } else {
-    fprintf(stderr, "Could not create ipc socets\n");
   }
 
   for (item = cmd_lists.pkt_cmds->head; item; item = item->next) {
     sylkie_packet_free(item->value->pkt);
+    free(item->value);
   }
   command_lists_free(&cmd_lists);
 
-  _exit(retval);
+  return retval;
 }

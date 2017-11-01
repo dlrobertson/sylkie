@@ -21,7 +21,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(
     sylkie
-    VERSION 0.0.3
+    VERSION 0.0.4
     LANGUAGES C CXX
     )
 
@@ -143,20 +143,20 @@ list(REMOVE_ITEM EXE_SRCS "${EXE_DIR}/main.c")
 
 # CFLAGS
 
-set(DEFAULT_DEBUG "-g -ggdb -O0")
+set(DEFAULT_DEBUG "-g -O0")
 set(DEV_WARNINGS "-Wall -Wshadow -Wstrict-overflow -fno-strict-aliasing")
 set(CMAKE_C_FLAGS_DEBUG
-    "${CMAKE_C_FLAGS_DEBUG} -std=c11 ${DEFAULT_DEBUG} ${DEV_WARNINGS}")
+    "${CMAKE_C_FLAGS_DEBUG} ${DEFAULT_DEBUG} ${DEV_WARNINGS}")
 set(CMAKE_CXX_FLAGS_DEBUG
     "${CMAKE_CXX_FLAGS_DEBUG} -std=c++11 ${DEFAULT_DEBUG} ${DEV_WARNINGS}")
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -std=c11 -O2 -Wall")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O2 -Wall")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -std=c++11 -O2 -Wall")
 
 # Add custom build type
 
 # Add new build types
 set(CMAKE_C_FLAGS_ASAN
-    "${DEFAULT_DEBUG} ${DEV_WARNINGS} -std=c11 -fsanitize=address -fno-omit-frame-pointer"
+    "${DEFAULT_DEBUG} ${DEV_WARNINGS} -fsanitize=address -fno-omit-frame-pointer"
     CACHE STRING "Flags used by the C compiler during address sanitizer builds."
     FORCE )
 set(CMAKE_CXX_FLAGS_ASAN
@@ -186,15 +186,18 @@ set_target_properties(${PROJECT_NAME}-shared PROPERTIES
     OUTPUT_NAME ${PROJECT_NAME})
 set_target_properties(${PROJECT_NAME}-shared PROPERTIES
     SOVERSION ${PROJECT_VERSION_MAJOR})
+set_property(TARGET ${PROJECT_NAME}-shared PROPERTY C_STANDARD 11)
 
 add_library(${PROJECT_NAME}-static STATIC ${LIB_SRCS})
 set_target_properties(${PROJECT_NAME}-static PROPERTIES
     OUTPUT_NAME ${PROJECT_NAME})
+set_property(TARGET ${PROJECT_NAME}-static PROPERTY C_STANDARD 11)
 
 add_executable(${PROJECT_NAME}-bin ${EXE_SRCS} ${EXE_DIR}/main.c)
 target_include_directories(${PROJECT_NAME}-bin PRIVATE ${EXE_DIR}/include)
 set_target_properties(${PROJECT_NAME}-bin PROPERTIES
     OUTPUT_NAME ${PROJECT_NAME})
+set_property(TARGET ${PROJECT_NAME}-bin PROPERTY C_STANDARD 11)
 if(ENABLE_STATIC)
     target_link_libraries(${PROJECT_NAME}-bin PRIVATE
         ${PROJECT_NAME}-static)
@@ -331,6 +334,8 @@ if(BUILD_TESTS)
     endforeach(test)
 
     add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
+    set_property(TARGET ${PROJECT_NAME}_test PROPERTY C_STANDARD 11)
+    set_property(TARGET ${PROJECT_NAME}_test PROPERTY CXX_STANDARD 11)
 endif(BUILD_TESTS)
 
 # Install

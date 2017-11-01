@@ -69,8 +69,7 @@ const struct cfg_template *generate_na_template() {
   return &na_templt;
 }
 
-int na_parse(struct sylkie_sender_map *ifaces,
-             const struct cfg_set *set,
+int na_parse(struct sylkie_sender_map *ifaces, const struct cfg_set *set,
              struct command_lists *cmds) {
   const char *iface_name;
   const u_int8_t *dst_mac = NULL;

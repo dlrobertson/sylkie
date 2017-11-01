@@ -20,32 +20,31 @@
 
 #define MAX_EVENTS 10
 
-#include <stdio.h>
 #include <errno.h>
 #include <inttypes.h>
-#include <sys/types.h>
+#include <stdio.h>
 #include <sys/epoll.h>
+#include <time.h>
 #include <sys/timerfd.h>
+#include <sys/types.h>
 
 #include <unistd.h>
 
+#include <cmds.h>
 #include <error.h>
 #include <sender.h>
 #include <sender_map.h>
-#include <cmds.h>
-#include <time.h>
 
 struct rx_event {
-  struct packet_command* cmd;
+  struct packet_command *cmd;
   int fd;
 };
 
-GENERIC_LIST(struct rx_event*, rx_events);
+GENERIC_LIST(struct rx_event *, rx_events);
 
 // Create a timer and register it to the epoll fd
 struct rx_events_item *add_packet_timer(struct packet_command *cmd,
-                                        struct rx_events *evs,
-                                        int efd) {
+                                        struct rx_events *evs, int efd) {
   struct itimerspec ts;
   struct epoll_event ev;
   struct rx_event *rx_event = malloc(sizeof(struct rx_event));
@@ -68,14 +67,14 @@ struct rx_events_item *add_packet_timer(struct packet_command *cmd,
     if (cmd->repeat == 0) {
       // We assume a repeat value of 0 was meant to be 1.
       ts.it_interval.tv_sec = 0;
-	  ts.it_interval.tv_nsec = 0;
+      ts.it_interval.tv_nsec = 0;
       ts.it_value.tv_sec = (cmd->timeout >= 0) ? cmd->timeout : 0;
       ts.it_value.tv_nsec = 1;
     } else if (cmd->repeat == 1) {
       // repeat is 1. Do not set an interval to fire at and decrement
       // repeat.
       ts.it_interval.tv_sec = 0;
-	  ts.it_interval.tv_nsec = 0;
+      ts.it_interval.tv_nsec = 0;
       // We assume a timeout set when repeat is 0 means you want a
       // delay before we send the packet
       ts.it_value.tv_sec = (cmd->timeout >= 0) ? cmd->timeout : 0;
@@ -88,10 +87,10 @@ struct rx_events_item *add_packet_timer(struct packet_command *cmd,
       // than or equal to zero, set this to a few nanoseconds
       if (cmd->timeout <= 0) {
         ts.it_interval.tv_sec = 0;
-	    ts.it_interval.tv_nsec = 10000;
+        ts.it_interval.tv_nsec = 10000;
       } else {
         ts.it_interval.tv_sec = cmd->timeout;
-	    ts.it_interval.tv_nsec = 0;
+        ts.it_interval.tv_nsec = 0;
       }
       // Set tv_nsec to 1 so that it is immediately sent
       ts.it_value.tv_sec = 0;
@@ -117,8 +116,18 @@ struct rx_events_item *add_packet_timer(struct packet_command *cmd,
   return rx_item;
 }
 
-int tx_main(const struct pkt_cmd_list *lst,
-            struct sylkie_sender_map *map,
+void rx_events_free_all(struct rx_events *evs) {
+  struct rx_events_item *rx_item = NULL;
+  for (rx_item = evs->head; rx_item; rx_item = rx_item->next) {
+    if (rx_item->value) {
+      close(rx_item->value->fd);
+      free(rx_item->value);
+    }
+  }
+  rx_events_free(evs);
+}
+
+int tx_main(const struct pkt_cmd_list *lst, struct sylkie_sender_map *map,
             int ipc) {
   int ret, i, nfds, exiting = 0, closing = 0;
   int efd = epoll_create1(0);
@@ -129,14 +138,16 @@ int tx_main(const struct pkt_cmd_list *lst,
   struct rx_events_item *rx_item = NULL;
   struct rx_event *rx_event = NULL;
   struct rx_events *evs = rx_events_init();
+
   if (!evs) {
-    // TODO(dlrobertson): cleanup
     return -1;
   }
+
   for (cmd_item = lst->head; cmd_item; cmd_item = cmd_item->next) {
     rx_item = add_packet_timer(cmd_item->value, evs, efd);
     if (!rx_item) {
-      // TODO(dlrobertson): cleanup
+      close(efd);
+      rx_events_free_all(evs);
       return -1;
     }
   }
@@ -153,8 +164,7 @@ int tx_main(const struct pkt_cmd_list *lst,
       ev = events[i];
       if ((rx_item = ev.data.ptr) && (rx_event = rx_item->value)) {
         if (rx_event->cmd) {
-          sylkie_sender_send_packet(rx_event->cmd->sender,
-                                    rx_event->cmd->pkt,
+          sylkie_sender_send_packet(rx_event->cmd->sender, rx_event->cmd->pkt,
                                     0, &err);
           if (err) {
             exiting = 1;
@@ -165,8 +175,7 @@ int tx_main(const struct pkt_cmd_list *lst,
           } else if (rx_event->cmd->repeat == 0) {
             // We cannot count on rx_item being alive past this point
             rx_events_rm(evs, rx_item);
-            if (epoll_ctl(efd, EPOLL_CTL_DEL,
-                          rx_event->fd, NULL) < 0) {
+            if (epoll_ctl(efd, EPOLL_CTL_DEL, rx_event->fd, NULL) < 0) {
               exiting = 1;
               break;
             }
@@ -189,6 +198,9 @@ int tx_main(const struct pkt_cmd_list *lst,
       }
     }
   }
+
+  close(efd);
+  rx_events_free_all(evs);
 
   return exiting;
 }

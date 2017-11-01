@@ -22,8 +22,8 @@
 #define SYLKIE_SRC_INCLUDE_IPC_H
 
 enum ipc_commands {
-    IPC_RM = 0x01,
-    IPC_ADD = 0x02,
+  IPC_RM = 0x01,
+  IPC_ADD = 0x02,
 };
 
 #endif // SYLKIE_SRC_INCLUDE_UTILS_H

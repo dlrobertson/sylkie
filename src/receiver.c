@@ -23,9 +23,9 @@
 
 #include <cmds.h>
 
-int rx_main(const struct lst_cmd_list *lst,
-            pid_t tx_pid,
-            int ipc) {
-  waitpid(tx_pid, NULL, 0);
-  return -1;
+int rx_main(const struct lst_cmd_list *lst, pid_t tx_pid, int ipc) {
+  // TODO(dlrobertson): This does nothing but wait for the transmitter
+  // process to finish at the moment. Make this listen for debug info,
+  // send useful info to the transmitter, etc.
+  return waitpid(tx_pid, NULL, 0);
 }

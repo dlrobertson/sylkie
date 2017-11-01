@@ -177,14 +177,12 @@ protected:
   }
 };
 
-const struct cfg_template Cfg::templt = {
-    parsers,
-    parsers_sz,
-    "Usage: This is a test parser",
-    "Summary of a unit test",
-    NULL,
-    0
-};
+const struct cfg_template Cfg::templt = {parsers,
+                                         parsers_sz,
+                                         "Usage: This is a test parser",
+                                         "Summary of a unit test",
+                                         NULL,
+                                         0};
 
 class CfgCmdline : public Cfg {
 protected:
@@ -192,9 +190,7 @@ protected:
     cfg_set_init_cmdline(&config_set, &Cfg::templt, argc, argv);
   }
 
-  virtual void TearDown() {
-    cfg_set_free(&config_set);
-  }
+  virtual void TearDown() { cfg_set_free(&config_set); }
 };
 
 #ifdef BUILD_JSON
@@ -232,38 +228,22 @@ protected:
 };
 #endif
 
-TEST_F(CfgCmdline, order) {
-  test_order();
-}
+TEST_F(CfgCmdline, order) { test_order(); }
 
-TEST_F(CfgCmdline, basic_find) {
-  test_basic_find();
-}
+TEST_F(CfgCmdline, basic_find) { test_basic_find(); }
 
-TEST_F(CfgCmdline, find) {
-  test_find();
-}
+TEST_F(CfgCmdline, find) { test_find(); }
 
-TEST_F(CfgCmdline, find_type) {
-  test_find_type();
-}
+TEST_F(CfgCmdline, find_type) { test_find_type(); }
 
 #ifdef BUILD_JSON
 
-TEST_F(CfgJson, order) {
-  test_order();
-}
+TEST_F(CfgJson, order) { test_order(); }
 
-TEST_F(CfgJson, basic_find) {
-  test_basic_find();
-}
+TEST_F(CfgJson, basic_find) { test_basic_find(); }
 
-TEST_F(CfgJson, find) {
-  test_find();
-}
+TEST_F(CfgJson, find) { test_find(); }
 
-TEST_F(CfgJson, find_type) {
-  test_find_type();
-}
+TEST_F(CfgJson, find_type) { test_find_type(); }
 
 #endif

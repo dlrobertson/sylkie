@@ -14,7 +14,6 @@ addons:
       - cmake3
       - libseccomp-dev
       - libjson-c-dev
-      - clang-tidy-3.9
       - ninja
 script:
     - ./.travis.sh

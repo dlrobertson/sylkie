@@ -69,9 +69,8 @@ const struct cfg_template *generate_ra_template() {
   return &ra_templt;
 }
 
-int ra_parse(struct sylkie_sender_map *ifaces,
-             const struct cfg_set *set,
-             struct command_lists* cmds) {
+int ra_parse(struct sylkie_sender_map *ifaces, const struct cfg_set *set,
+             struct command_lists *cmds) {
   int prefix = 64;
   enum sylkie_error err = SYLKIE_SUCCESS;
   struct sylkie_sender *sender = NULL;
