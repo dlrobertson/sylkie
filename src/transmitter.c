@@ -31,7 +31,7 @@
 #include <unistd.h>
 
 #include <cmds.h>
-#include <error.h>
+#include <errors.h>
 #include <sender.h>
 #include <sender_map.h>
 
