@@ -22,7 +22,7 @@ cmake_minimum_required(VERSION 3.5)
 project(
     sylkie
     VERSION 0.0.4
-    LANGUAGES C CXX
+    LANGUAGES C
     )
 
 set(LIB_DIR "${PROJECT_SOURCE_DIR}/lib")
@@ -215,7 +215,7 @@ if(ENABLE_JSON OR ENABLE_JSON STREQUAL "AUTO")
         target_link_libraries(${PROJECT_NAME}-bin PRIVATE json-c)
     else(JSON_LIB AND JSON_HEADER_FOUND)
         message(FATAL_ERROR "Could not find json-c library. Either install "
-            "json-c or run with -DJSON=OFF to build without json support")
+            "json-c or run with -DENABLE_JSON=OFF to build without json support")
     endif(JSON_LIB AND JSON_HEADER_FOUND)
     set(BUILD_JSON 1)
 endif(ENABLE_JSON OR ENABLE_JSON STREQUAL "AUTO")
@@ -228,7 +228,7 @@ if(ENABLE_SECCOMP OR ENABLE_SECCOMP STREQUAL "AUTO")
         target_link_libraries(${PROJECT_NAME}-bin PRIVATE seccomp)
     else(SECCOMP_LIB AND SECCOMP_HEADER_FOUND AND PRCTL_HEADER_FOUND)
         message(FATAL_ERROR "Could not find seccomp library. Either install "
-            "libseccomp or run with -DSECCOMP=OFF to build without seccomp support")
+            "libseccomp or run with -DENABLE_SECCOMP=OFF to build without seccomp support")
     endif(SECCOMP_LIB AND SECCOMP_HEADER_FOUND AND PRCTL_HEADER_FOUND)
     set(BUILD_SECCOMP 1)
 endif(ENABLE_SECCOMP OR ENABLE_SECCOMP STREQUAL "AUTO")
@@ -273,6 +273,7 @@ endif(BUILD_DOCS)
 # Tests
 
 if(BUILD_TESTS)
+    enable_language(CXX)
     enable_testing()
 
     include(CTest)
